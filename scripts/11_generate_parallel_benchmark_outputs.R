@@ -316,7 +316,7 @@ readr::write_csv(
 
 readr::write_csv(
   speed_summary,
-  file.path(figure_source_dir, "Figure_6_Source_Parallel_Runtime_SpeedRatio_CI95.csv")
+  file.path(figure_source_dir, "Figure_6_Source_Parallel_Runtime_Speedup_CI95.csv")
 )
 
 # Manuscript-ready compact table.
@@ -327,7 +327,7 @@ manuscript_table <- summary |>
     repetitions = reps,
     mean_sequential_seconds = round(mean_sequential_sec, 4),
     mean_parallel_seconds = round(mean_parallel_sec, 4),
-    mean_speed_ratio = round(mean_speedup, 3),
+    mean_parallel_speedup = round(mean_speedup, 3),
     mean_parallel_cost_us_per_profile = round(mean_parallel_per_sample_microsec, 4),
     deterministic_equivalence = ifelse(
       all_equivalence_checks_passed,
@@ -453,14 +453,13 @@ p6b <- ggplot2::ggplot(
     expand = ggplot2::expansion(mult = c(0.04, 0.08))
   ) +
   ggplot2::scale_y_continuous(
-    limits = c(0, 1.10),
-    breaks = seq(0, 1.0, by = 0.25),
-    expand = ggplot2::expansion(mult = c(0.00, 0.03))
+    breaks = scales::breaks_pretty(n = 5),
+    expand = ggplot2::expansion(mult = c(0.05, 0.10))
   ) +
   ggplot2::labs(
-    title = "B. Parallel-to-sequential speed ratio",
+    title = "B. Parallel speedup relative to sequential execution",
     x = "Number of biospecimen profiles",
-    y = "Mean speed ratio ± 95% CI"
+    y = "Mean speedup ± 95% CI"
   ) +
   theme_rcs_publication(base_size = 14) +
   ggplot2::theme(

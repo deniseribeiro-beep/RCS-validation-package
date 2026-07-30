@@ -1,0 +1,8 @@
+check,passed,evidence
+Governance failure routes directly to Grade E,TRUE,Profiles tested: 100
+RCS identity equals 100 minus Pbio,TRUE,Maximum absolute deviation: 0
+Pbio remains within 0 to 100,TRUE,Observed range: 1.3066 to 76.8087
+Severity increase is monotonic,TRUE,One-axis increase tested for each matrix
+Identical inputs produce identical outputs,TRUE,Duplicated input profile evaluated twice
+Matrix-specific axes are distinct and correctly defined,TRUE,"Fluid axes: P_pre, P_cent1, P_cent2, P_post, P_store | Solid axes: P_warm, P_cold, P_fix, P_fixTime, P_store"
+Not-scored conditions are not represented as zero severity,TRUE,"An unresolved axis produced governance failure, Grade E, and no numerical Pbio/RCS."

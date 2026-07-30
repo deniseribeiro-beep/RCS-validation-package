@@ -65,7 +65,7 @@ not_scored <- tibble::tibble(
   traceability_ok = TRUE,
   monitoring_ok = TRUE,
   documentation_ok = TRUE,
-  semantic_compatible = TRUE,
+  semantic_compatible = FALSE,
   P_pre_severity = NA_real_,
   P_cent1_severity = 0,
   P_cent2_severity = 0,

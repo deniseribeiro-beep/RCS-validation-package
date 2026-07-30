@@ -1,0 +1,61 @@
+matrix,scenario,assigned_grade,n,proportion,label
+Fluid biospecimens,Optimal,Grade A,499,0.998,99.8%
+Fluid biospecimens,Optimal,Grade B,1,0.002,
+Fluid biospecimens,Optimal,Grade C,0,0,
+Fluid biospecimens,Optimal,Grade D,0,0,
+Fluid biospecimens,Optimal,Grade E,0,0,
+Fluid biospecimens,Mild suboptimal,Grade A,8,0.016,1.6%
+Fluid biospecimens,Mild suboptimal,Grade B,487,0.974,97.4%
+Fluid biospecimens,Mild suboptimal,Grade C,5,0.01,1.0%
+Fluid biospecimens,Mild suboptimal,Grade D,0,0,
+Fluid biospecimens,Mild suboptimal,Grade E,0,0,
+Fluid biospecimens,Moderate suboptimal,Grade A,0,0,
+Fluid biospecimens,Moderate suboptimal,Grade B,6,0.012,1.2%
+Fluid biospecimens,Moderate suboptimal,Grade C,489,0.978,97.8%
+Fluid biospecimens,Moderate suboptimal,Grade D,5,0.01,1.0%
+Fluid biospecimens,Moderate suboptimal,Grade E,0,0,
+Fluid biospecimens,Severe suboptimal,Grade A,0,0,
+Fluid biospecimens,Severe suboptimal,Grade B,0,0,
+Fluid biospecimens,Severe suboptimal,Grade C,7,0.014,1.4%
+Fluid biospecimens,Severe suboptimal,Grade D,489,0.978,97.8%
+Fluid biospecimens,Severe suboptimal,Grade E,4,0.008,0.8%
+Fluid biospecimens,Critical penalty,Grade A,0,0,
+Fluid biospecimens,Critical penalty,Grade B,0,0,
+Fluid biospecimens,Critical penalty,Grade C,0,0,
+Fluid biospecimens,Critical penalty,Grade D,1,0.002,
+Fluid biospecimens,Critical penalty,Grade E,499,0.998,99.8%
+Fluid biospecimens,Governance failure,Grade A,0,0,
+Fluid biospecimens,Governance failure,Grade B,0,0,
+Fluid biospecimens,Governance failure,Grade C,0,0,
+Fluid biospecimens,Governance failure,Grade D,0,0,
+Fluid biospecimens,Governance failure,Grade E,500,1,100.0%
+Solid biospecimens,Optimal,Grade A,498,0.996,99.6%
+Solid biospecimens,Optimal,Grade B,2,0.004,
+Solid biospecimens,Optimal,Grade C,0,0,
+Solid biospecimens,Optimal,Grade D,0,0,
+Solid biospecimens,Optimal,Grade E,0,0,
+Solid biospecimens,Mild suboptimal,Grade A,2,0.004,
+Solid biospecimens,Mild suboptimal,Grade B,496,0.992,99.2%
+Solid biospecimens,Mild suboptimal,Grade C,2,0.004,
+Solid biospecimens,Mild suboptimal,Grade D,0,0,
+Solid biospecimens,Mild suboptimal,Grade E,0,0,
+Solid biospecimens,Moderate suboptimal,Grade A,0,0,
+Solid biospecimens,Moderate suboptimal,Grade B,9,0.018,1.8%
+Solid biospecimens,Moderate suboptimal,Grade C,490,0.98,98.0%
+Solid biospecimens,Moderate suboptimal,Grade D,1,0.002,
+Solid biospecimens,Moderate suboptimal,Grade E,0,0,
+Solid biospecimens,Severe suboptimal,Grade A,0,0,
+Solid biospecimens,Severe suboptimal,Grade B,0,0,
+Solid biospecimens,Severe suboptimal,Grade C,8,0.016,1.6%
+Solid biospecimens,Severe suboptimal,Grade D,489,0.978,97.8%
+Solid biospecimens,Severe suboptimal,Grade E,3,0.006,0.6%
+Solid biospecimens,Critical penalty,Grade A,0,0,
+Solid biospecimens,Critical penalty,Grade B,0,0,
+Solid biospecimens,Critical penalty,Grade C,0,0,
+Solid biospecimens,Critical penalty,Grade D,3,0.006,0.6%
+Solid biospecimens,Critical penalty,Grade E,497,0.994,99.4%
+Solid biospecimens,Governance failure,Grade A,0,0,
+Solid biospecimens,Governance failure,Grade B,0,0,
+Solid biospecimens,Governance failure,Grade C,0,0,
+Solid biospecimens,Governance failure,Grade D,0,0,
+Solid biospecimens,Governance failure,Grade E,500,1,100.0%

@@ -1,0 +1,11 @@
+source_table,matrix,final_grade,n,mean_margin,median_margin,q1_margin,q3_margin,min_margin,max_margin
+Table_Threshold_Margin_Summary,fluid,Grade A,20,2.75,2.5,0,4.0625,0,10
+Table_Threshold_Margin_Summary,fluid,Grade B,104,2.25961538461538,2.5,1.25,3.75,0,5
+Table_Threshold_Margin_Summary,fluid,Grade C,517,3.571083172147,3.75,1.25,5,0,7.5
+Table_Threshold_Margin_Summary,fluid,Grade D,967,3.74482936918304,3.75,1.875,5.625,0,7.5
+Table_Threshold_Margin_Summary,fluid,Grade E,1517,14.0062623599209,12.5,6.25,20,1.25,50
+Table_Threshold_Margin_Summary,solid,Grade A,16,2.8125,2.5,0,4.0625,0,10
+Table_Threshold_Margin_Summary,solid,Grade B,91,2.22527472527473,2.5,1.25,3.75,0,5
+Table_Threshold_Margin_Summary,solid,Grade C,501,3.55788423153693,3.75,1.25,5,0,7.5
+Table_Threshold_Margin_Summary,solid,Grade D,1001,3.74125874125874,3.75,1.25,6.25,0,7.5
+Table_Threshold_Margin_Summary,solid,Grade E,1516,13.4993403693931,11.25,6.25,19.0625,1.25,50
