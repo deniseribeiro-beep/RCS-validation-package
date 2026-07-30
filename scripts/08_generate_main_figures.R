@@ -621,9 +621,9 @@ p2 <- ggplot2::ggplot(
     guide = ggplot2::guide_colorbar(
       title.position = "top",
       title.hjust = 0.5,
-      label.position = "bottom",
-      barwidth = grid::unit(5.2, "cm"),
-      barheight = grid::unit(0.35, "cm")
+      label.position = "right",
+      barwidth = grid::unit(0.38, "cm"),
+      barheight = grid::unit(3.8, "cm")
     )
   ) +
   ggplot2::labs(
@@ -633,23 +633,23 @@ p2 <- ggplot2::ggplot(
   theme_rcs(base_size = 13) +
   ggplot2::theme(
     panel.grid = ggplot2::element_blank(),
-    axis.text.x = ggplot2::element_text(size = 11.5, lineheight = 0.90),
+    axis.text.x = ggplot2::element_text(size = 9.4, lineheight = 0.88),
     axis.text.y = ggplot2::element_text(size = 10.4),
-    axis.title.x = ggplot2::element_text(margin = ggplot2::margin(t = 10)),
+    axis.title.x = ggplot2::element_text(margin = ggplot2::margin(t = 8)),
     axis.title.y = ggplot2::element_text(margin = ggplot2::margin(r = 10)),
-    legend.position = "bottom",
+    legend.position = "right",
     legend.title = ggplot2::element_text(size = 10.2, margin = ggplot2::margin(b = 4)),
     legend.text = ggplot2::element_text(size = 9.8),
-    legend.margin = ggplot2::margin(t = 8, b = 10),
-    legend.box.margin = ggplot2::margin(t = 4, b = 8),
-    plot.margin = ggplot2::margin(t = 18, r = 30, b = 38, l = 30)
+    legend.margin = ggplot2::margin(l = 4),
+    legend.box.margin = ggplot2::margin(l = 6),
+    plot.margin = ggplot2::margin(t = 14, r = 18, b = 20, l = 22)
   )
 
 save_figure(
   p2,
   "Figure_2_Synthetic_Validation_Heatmap",
-  width = 9.0,
-  height = 6.2
+  width = 12.0,
+  height = 5.4
 )
 
 # ==========================================================
