@@ -12,8 +12,7 @@ Saved: /home/denise/RCS-validation-package/outputs/figures/Figure_3_Combinatoria
 Using cached Figure 4 summary source: /home/denise/RCS-validation-package/outputs/tables/figure_source/Figure_4_Source_Threshold_Transition_Summary.csv
 Saved: /home/denise/RCS-validation-package/outputs/figures/Figure_4_Threshold_Stability_Grade_Transitions.pdf
 Saved: /home/denise/RCS-validation-package/outputs/figures/Figure_4_Threshold_Stability_Grade_Transitions.png
-Reading table: Table_Runtime_Benchmark_Summary.csv
-Reading table: Table_Runtime_Benchmark_Raw.csv
+Using cached Figure 5 source tables.
 Saved: /home/denise/RCS-validation-package/outputs/figures/Figure_5_Runtime_Scalability.pdf
 Saved: /home/denise/RCS-validation-package/outputs/figures/Figure_5_Runtime_Scalability.png
 Generated supplementary table: Additional_File_S4_Property_Based_Logical_Checks.csv

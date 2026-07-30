@@ -1,0 +1,8 @@
+profiles,workers,repetitions,mean_sequential_seconds,mean_parallel_seconds,mean_parallel_speedup,mean_parallel_cost_us_per_profile,deterministic_equivalence
+10000,4,5,0.1594,0.1286,1.238,12.86,Passed
+50000,4,5,0.598,0.361,1.661,7.22,Passed
+100000,4,5,1.1854,0.7716,1.544,7.716,Passed
+500000,4,5,5.936,4.1974,1.415,8.3948,Passed
+1000000,4,5,11.6848,7.9776,1.466,7.9776,Passed
+2000000,4,5,22.8786,15.4172,1.484,7.7086,Passed
+5000000,4,5,57.1678,36.6248,1.561,7.325,Passed
