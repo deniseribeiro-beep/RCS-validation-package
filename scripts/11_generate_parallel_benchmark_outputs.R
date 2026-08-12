@@ -390,8 +390,10 @@ p6a <- ggplot2::ggplot(
     labels = profile_label,
     expand = ggplot2::expansion(mult = c(0.04, 0.08))
   ) +
-  ggplot2::scale_y_continuous(
-    expand = ggplot2::expansion(mult = c(0.03, 0.12))
+  ggplot2::scale_y_log10(
+    breaks = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50),
+    labels = scales::label_number(accuracy = 0.1),
+    expand = ggplot2::expansion(mult = c(0.05, 0.10))
   ) +
   ggplot2::scale_colour_manual(
     values = mode_cols,
@@ -406,7 +408,7 @@ p6a <- ggplot2::ggplot(
   ggplot2::labs(
     title = "A. Sequential and parallel elapsed time",
     x = NULL,
-    y = "Mean elapsed time (s)"
+    y = "Mean elapsed time (s; log scale)"
   ) +
   theme_rcs_publication(base_size = 14) +
   ggplot2::theme(
@@ -459,7 +461,7 @@ p6b <- ggplot2::ggplot(
   ggplot2::labs(
     title = "B. Parallel speedup relative to sequential execution",
     x = "Number of biospecimen profiles",
-    y = "Mean speedup ± 95% CI"
+    y = "Mean paired speedup ± 95% CI"
   ) +
   theme_rcs_publication(base_size = 14) +
   ggplot2::theme(
