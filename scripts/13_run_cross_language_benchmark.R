@@ -76,5 +76,29 @@ summary <- raw |> dplyr::group_by(n_records,implementation,threads) |> dplyr::su
   all_equivalence_checks_passed=all(deterministic_equivalence_passed),
   max_abs_pbio_diff=max(max_abs_pbio_diff),max_abs_rcs_diff=max(max_abs_rcs_diff),.groups="drop")
 readr::write_csv(summary,file.path("outputs","tables","Table_Cross_Language_Runtime_Benchmark_Summary.csv"))
+equivalence <- raw |> dplyr::filter(implementation != "r_sequential") |>
+  dplyr::group_by(implementation,threads) |> dplyr::summarise(
+    benchmark_runs=dplyr::n(),min_n_records=min(n_records),max_n_records=max(n_records),
+    all_equivalence_checks_passed=all(deterministic_equivalence_passed),
+    max_abs_pbio_diff=max(max_abs_pbio_diff),max_abs_rcs_diff=max(max_abs_rcs_diff),
+    all_final_grades_identical=all(identical_final_grade),
+    all_grade_routes_identical=all(identical_grade_route),.groups="drop")
+readr::write_csv(equivalence,file.path("outputs","tables","Table_Cross_Language_Equivalence_Check.csv"))
+
+capture_version <- function(command,args=character()) {
+  if(!nzchar(Sys.which(command))) return(paste(command,"not found"))
+  paste(system2(command,args,stdout=TRUE,stderr=TRUE),collapse=" | ")
+}
+environment <- c(paste("Date:",Sys.time()),paste("R version:",R.version.string),
+  paste("Platform:",R.version$platform),paste("OS:",paste(Sys.info(),collapse=" ")),
+  paste("RCS_SEED:",RCS_SEED),paste("BENCH_REPS:",Sys.getenv("BENCH_REPS",unset="5")),
+  paste("PSOCK workers:",Sys.getenv("RCS_PARALLEL_WORKERS",unset="4")),
+  paste("OpenMP threads:",threads),paste("C++ compiler:",capture_version("g++","--version")),
+  paste("CUDA compiler:",capture_version("nvcc","--version")),
+  paste("NVIDIA GPU:",capture_version("nvidia-smi",c("--query-gpu=name,driver_version","--format=csv,noheader"))),
+  "C++ flags: -std=c++17 -O3 -DNDEBUG -march=native",
+  "OpenMP flags: -std=c++17 -O3 -DNDEBUG -march=native -fopenmp",
+  "CUDA flags: -std=c++17 -O3 -Xcompiler -march=native")
+writeLines(environment,file.path("validation","environment","Cross_Language_Computational_Environment.txt"))
 if(!all(raw$deterministic_equivalence_passed)) stop("Cross-language deterministic equivalence failed.")
 log_message("Cross-language benchmark completed")
