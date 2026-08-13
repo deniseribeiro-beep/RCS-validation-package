@@ -14,8 +14,14 @@ source(file.path("scripts", "07_runtime_benchmark.R"))
 source(file.path("scripts", "08_generate_main_figures.R"))
 source(file.path("scripts", "09_export_environment.R"))
 
+run_cross_language <- toupper(Sys.getenv("RUN_CROSS_LANGUAGE_BENCH", unset = "FALSE")) == "TRUE"
 run_parallel <- toupper(Sys.getenv("RUN_PARALLEL_BENCH", unset = "FALSE")) == "TRUE"
-if (run_parallel) {
+if (run_cross_language) {
+  source(file.path("scripts", "12_generate_cross_language_inputs.R"))
+  source(file.path("scripts", "11_generate_parallel_benchmark_outputs.R"))
+  source(file.path("scripts", "13_run_cross_language_benchmark.R"))
+  source(file.path("scripts", "14_generate_cross_language_outputs.R"))
+} else if (run_parallel) {
   source(file.path("scripts", "10_parallel_runtime_benchmark.R"))
   source(file.path("scripts", "11_generate_parallel_benchmark_outputs.R"))
 }

@@ -59,6 +59,26 @@ Runtime values are environment-specific and must be updated in the manuscript
 after the final run. Deterministic scores, grades, and routes must remain
 identical between sequential and parallel execution.
 
+## Reproduce the aligned cross-language benchmark
+
+This full run regenerates the R sequential/PSOCK results and Figure 6, then
+evaluates C++ sequential, C++/OpenMP, and C++/CUDA on the exact same serialized
+profiles. CUDA end-to-end time (allocation, transfers, kernel, and return) is
+the primary GPU metric; kernel-only time is retained as a complementary value.
+
+Requirements: C++17, OpenMP, CUDA Toolkit with `nvcc`, and a
+double-precision-capable NVIDIA GPU. From the repository root:
+
+```bash
+RUN_LARGE_BENCH=TRUE BENCH_REPS=5 RCS_SEED=20260504 \
+RUN_CROSS_LANGUAGE_BENCH=TRUE RCS_PARALLEL_WORKERS=4 \
+RCS_OPENMP_THREADS=4 RUN_CUDA_BENCH=TRUE \
+  Rscript scripts/run_all.R
+```
+
+For a CPU-only verification run, set `RUN_CUDA_BENCH=FALSE`. This omits CUDA
+rows and is not a substitute for the final heterogeneous-computing run.
+
 ## Repository structure
 
 ```text
@@ -67,5 +87,6 @@ outputs/figures/                 Main manuscript figures
 outputs/tables/figure_source/    Machine-readable figure source tables
 outputs/tables/supplementary/    Supplementary validation outputs
 validation/environment/          Session and environment records
+src/                             C++17, OpenMP, and CUDA scoring engines
 docs/                            Crosswalk and validation documentation
 ```
