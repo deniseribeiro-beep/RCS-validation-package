@@ -28,7 +28,11 @@ if (run_cuda) {
 
 read_result <- function(path) {
   con <- file(path, "rb"); on.exit(close(con), add=TRUE)
-  if (!identical(readBin(con, "raw", 8L), charToRaw(paste0("RCSOUT1", "\0")))) stop("Bad result header: ", path)
+  expected_header <- c(charToRaw("RCSOUT1"), as.raw(0L))
+
+if (!identical(readBin(con, "raw", 8L), expected_header)) {
+  stop("Bad result header: ", path)
+}
   n <- readBin(con, "numeric", 1L, size=8L, endian="little")
   pbio <- readBin(con, "numeric", n, size=8L, endian="little")
   rcs <- readBin(con, "numeric", n, size=8L, endian="little")

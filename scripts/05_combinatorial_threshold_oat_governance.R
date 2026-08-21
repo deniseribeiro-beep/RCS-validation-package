@@ -37,6 +37,123 @@ oat <- purrr::map_dfr(c("fluid", "solid"), function(mt) {
 })
 safe_write_csv(oat, "Table_One_Axis_Transition_Analysis.csv")
 
+# Deterministic threshold-transition analysis under five isolated
+# axis-weight perturbation scenarios: -20%, -10%, nominal, +10%, +20%.
+#
+# For each scenario, the selected axis weight is perturbed and the complete
+# matrix-specific weight vector is renormalized to sum to 100. All other
+# severities remain zero. A transition is reachable when the isolated axis
+# can accumulate the required penalty at a severity value in [0, 1].
+
+weight_perturbations <- c(
+  "-20%" = -0.20,
+  "-10%" = -0.10,
+  "Nominal" = 0,
+  "+10%" = 0.10,
+  "+20%" = 0.20
+)
+
+transition_thresholds <- c(
+  "A to B" = 10,
+  "B to C" = 20,
+  "C to D" = 35,
+  "D to E" = 50
+)
+
+axis_labels <- c(
+  P_pre = "Pre-centrifugation",
+  P_cent1 = "First centrifugation",
+  P_cent2 = "Second centrifugation",
+  P_post = "Post-centrifugation",
+  P_store = "Storage",
+  P_warm = "Warm ischemia",
+  P_cold = "Cold ischemia",
+  P_fix = "Fixation",
+  P_fixTime = "Fixation time"
+)
+
+figure4_detail <- purrr::map_dfr(
+  c("fluid", "solid"),
+  function(mt) {
+    base_weights <- axis_weights[[mt]]
+    axes <- names(base_weights)
+
+    purrr::map_dfr(
+      seq_along(axes),
+      function(axis_index) {
+        axis <- axes[[axis_index]]
+
+        purrr::imap_dfr(
+          weight_perturbations,
+          function(perturbation, perturbation_label) {
+            perturbed_weights <- base_weights
+            perturbed_weights[[axis]] <-
+              perturbed_weights[[axis]] * (1 + perturbation)
+
+            normalized_weights <-
+              perturbed_weights / sum(perturbed_weights) * 100
+
+            isolated_axis_weight <- normalized_weights[[axis]]
+
+            purrr::imap_dfr(
+              transition_thresholds,
+              function(threshold, threshold_transition) {
+                severity_required <- threshold / isolated_axis_weight
+                reached <- is.finite(severity_required) &&
+                  severity_required >= 0 &&
+                  severity_required <= 1
+
+                tibble::tibble(
+                  matrix = mt,
+                  axis = axis,
+                  axis_label = unname(axis_labels[[axis]]),
+                  axis_order = axis_index,
+                  perturbation_scenario = perturbation_label,
+                  perturbation_fraction = perturbation,
+                  baseline_weight = unname(base_weights[[axis]]),
+                  normalized_perturbed_weight = isolated_axis_weight,
+                  threshold_transition = threshold_transition,
+                  transition_label = dplyr::recode(
+                    threshold_transition,
+                    "A to B" = "A→B",
+                    "B to C" = "B→C",
+                    "C to D" = "C→D",
+                    "D to E" = "D→E"
+                  ),
+                  penalty_threshold = threshold,
+                  severity_required = severity_required,
+                  severity_plot = pmin(severity_required, 1),
+                  reached = reached
+                )
+              }
+            )
+          }
+        )
+      }
+    )
+  }
+)
+
+figure_source_dir <- file.path(
+  "outputs",
+  "tables",
+  "figure_source"
+)
+
+dir.create(
+  figure_source_dir,
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+readr::write_csv(
+  figure4_detail,
+  file.path(
+    figure_source_dir,
+    "Figure_4_Source_Full_Threshold_Crossing_Matrix.csv"
+  )
+)
+
 failures <- c("metadata_incompleteness", "invalid_terminology", "traceability_failure", "monitoring_failure", "documentation_failure", "semantic_incompatibility")
 gov <- purrr::map_dfr(c("fluid", "solid"), function(mt) {
   axes <- axis_names(mt)

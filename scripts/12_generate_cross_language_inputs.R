@@ -24,7 +24,7 @@ score_psock <- function(df) {
 
 write_profiles_binary <- function(df, path) {
   con <- file(path, "wb"); on.exit(close(con), add = TRUE)
-  writeBin(charToRaw(paste0("RCSBIN1", "\0")), con)
+  writeBin(c(charToRaw("RCSBIN1"), as.raw(0L)), con)
   writeBin(as.numeric(nrow(df)), con, size = 8L, endian = "little")
   writeBin(as.raw(ifelse(df$matrix == "fluid", 0L, 1L)), con)
   writeBin(as.raw(df$G_gov), con)
@@ -41,7 +41,7 @@ write_profiles_binary <- function(df, path) {
 
 write_results_binary <- function(scored, path) {
   con <- file(path, "wb"); on.exit(close(con), add = TRUE)
-  writeBin(charToRaw(paste0("RCSOUT1", "\0")), con)
+  writeBin(c(charToRaw("RCSOUT1"), as.raw(0L)), con)
   writeBin(as.numeric(nrow(scored)), con, size = 8L, endian = "little")
   grade <- match(as.character(scored$final_grade), paste("Grade", LETTERS[1:5])) - 1L
   route <- match(scored$grade_route,

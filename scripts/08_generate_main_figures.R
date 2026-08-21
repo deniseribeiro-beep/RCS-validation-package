@@ -606,7 +606,13 @@ p2 <- ggplot2::ggplot(
   ggplot2::facet_wrap(~matrix, nrow = 1) +
   ggplot2::scale_x_discrete(
     labels = scenario_labels_manual,
-    drop = FALSE
+    drop = FALSE,
+    expand = ggplot2::expansion(
+      mult = c(0.015, 0.015)
+    ),
+    guide = ggplot2::guide_axis(
+      check.overlap = FALSE
+    )
   ) +
   ggplot2::scale_y_discrete(
     limits = rev(grade_levels),
@@ -633,23 +639,42 @@ p2 <- ggplot2::ggplot(
   theme_rcs(base_size = 13) +
   ggplot2::theme(
     panel.grid = ggplot2::element_blank(),
-    axis.text.x = ggplot2::element_text(size = 9.4, lineheight = 0.88),
+    axis.text.x = ggplot2::element_text(
+      size = 8.7,
+      angle = 0,
+      hjust = 0.5,
+      vjust = 1,
+      lineheight = 1.05,
+      margin = ggplot2::margin(t = 7)
+    ),
     axis.text.y = ggplot2::element_text(size = 10.4),
-    axis.title.x = ggplot2::element_text(margin = ggplot2::margin(t = 8)),
-    axis.title.y = ggplot2::element_text(margin = ggplot2::margin(r = 10)),
+    axis.title.x = ggplot2::element_text(
+      size = 12.5,
+      margin = ggplot2::margin(t = 14)
+    ),
+    axis.title.y = ggplot2::element_text(
+      size = 12.5,
+      margin = ggplot2::margin(r = 12)
+    ),
+    strip.text = ggplot2::element_text(
+      size = 14,
+      face = "bold",
+      margin = ggplot2::margin(b = 7)
+    ),
+    panel.spacing.x = grid::unit(1.2, "lines"),
     legend.position = "right",
     legend.title = ggplot2::element_text(size = 10.2, margin = ggplot2::margin(b = 4)),
     legend.text = ggplot2::element_text(size = 9.8),
     legend.margin = ggplot2::margin(l = 4),
     legend.box.margin = ggplot2::margin(l = 6),
-    plot.margin = ggplot2::margin(t = 14, r = 18, b = 20, l = 22)
+    plot.margin = ggplot2::margin(t = 16, r = 24, b = 30, l = 24)
   )
 
 save_figure(
   p2,
   "Figure_2_Synthetic_Validation_Heatmap",
-  width = 12.0,
-  height = 5.4
+  width = 13.2,
+  height = 5.8
 )
 
 # ==========================================================
@@ -758,63 +783,163 @@ readr::write_csv(
   file.path(figure_source_dir, "Figure_3_Source_Combinatorial_Distribution.csv")
 )
 
-p3 <- ggplot2::ggplot(
-  fig3_df,
-  ggplot2::aes(x = grade, y = proportion, colour = grade)
-) +
-  ggplot2::geom_segment(
-    ggplot2::aes(xend = grade, y = 0, yend = proportion),
-    linewidth = 1.8,
-    alpha = 0.9
-  ) +
-  ggplot2::geom_point(size = 4.2, alpha = 0.95) +
-  ggplot2::geom_text(
-    ggplot2::aes(label = label),
-    vjust = -0.55,
-    size = 3.25,
-    colour = "#222222",
-    lineheight = 0.9
-  ) +
-  ggplot2::facet_wrap(~matrix, nrow = 1) +
-  ggplot2::scale_y_continuous(
-    labels = function(x) {
-      dplyr::if_else(
-        x < 0,
-        "",
-        scales::percent(x, accuracy = 1)
+# ==========================================================
+# Figure 3 — Comparative combinatorial distribution
+# ==========================================================
+
+fig3_plot_df <- fig3_df |>
+  dplyr::mutate(
+    matrix = factor(
+      as.character(matrix),
+      levels = c(
+        "Fluid biospecimens",
+        "Solid biospecimens"
       )
-    },
-    breaks = seq(0, 0.60, by = 0.10),
-    limits = c(-0.015, 0.60),
-    expand = ggplot2::expansion(mult = c(0, 0.01))
+    ),
+    grade = factor(
+      as.character(grade),
+      levels = rev(grade_levels)
+    ),
+    percentage_label = scales::percent(
+      proportion,
+      accuracy = 0.1
+    ),
+    count_label = paste0(
+      "n=",
+      scales::comma(
+        n,
+        big.mark = ",",
+        decimal.mark = "."
+      )
+    ),
+    combined_label = paste0(
+      percentage_label,
+      "  (",
+      count_label,
+      ")"
+    )
+  )
+
+matrix_colours <- c(
+  "Fluid biospecimens" = "#0072B2",
+  "Solid biospecimens" = "#D55E00"
+)
+
+p3 <- ggplot2::ggplot(
+  fig3_plot_df,
+  ggplot2::aes(
+    x = proportion,
+    y = grade,
+    fill = matrix
+  )
+) +
+  ggplot2::geom_col(
+    position = ggplot2::position_dodge(
+      width = 0.76,
+      preserve = "single"
+    ),
+    width = 0.68,
+    colour = "white",
+    linewidth = 0.35
   ) +
-  ggplot2::coord_cartesian(
-    ylim = c(-0.015, 0.60),
-    clip = "off"
+  ggplot2::geom_text(
+    ggplot2::aes(
+      label = combined_label
+    ),
+    position = ggplot2::position_dodge(
+      width = 0.76,
+      preserve = "single"
+    ),
+    hjust = -0.08,
+    size = 3.35,
+    colour = "#222222"
   ) +
-  ggplot2::scale_colour_manual(
-    values = grade_cols_strong,
-    breaks = grade_levels,
-    limits = grade_levels,
+  ggplot2::scale_x_continuous(
+    labels = scales::label_percent(
+      accuracy = 1
+    ),
+    breaks = seq(
+      0,
+      0.55,
+      by = 0.10
+    ),
+    limits = c(
+      0,
+      0.57
+    ),
+    expand = ggplot2::expansion(
+      mult = c(0, 0)
+    )
+  ) +
+  ggplot2::scale_y_discrete(
+    drop = FALSE
+  ) +
+  ggplot2::scale_fill_manual(
+    values = matrix_colours,
+    breaks = names(matrix_colours),
     drop = FALSE,
-    guide = "none"
+    name = "Biospecimen matrix"
   ) +
   ggplot2::labs(
-    x = NULL,
-    y = "Proportion of admissible combinatorial profiles"
+    x = "Proportion of admissible combinatorial profiles",
+    y = NULL
   ) +
   theme_rcs(base_size = 13) +
   ggplot2::theme(
-    axis.text.x = ggplot2::element_text(size = 10.5),
+    panel.grid.major.y = ggplot2::element_blank(),
+
     panel.grid.minor = ggplot2::element_blank(),
-    plot.margin = ggplot2::margin(t = 18, r = 26, b = 30, l = 26)
+
+    axis.text.y = ggplot2::element_text(
+      size = 11,
+      face = "bold"
+    ),
+
+    axis.text.x = ggplot2::element_text(
+      size = 10
+    ),
+
+    axis.title.x = ggplot2::element_text(
+      size = 12.5,
+      margin = ggplot2::margin(
+        t = 12
+      )
+    ),
+
+    legend.position = "top",
+
+    legend.direction = "horizontal",
+
+    legend.title = ggplot2::element_text(
+      size = 10.5,
+      face = "bold"
+    ),
+
+    legend.text = ggplot2::element_text(
+      size = 10
+    ),
+
+    legend.key.width = grid::unit(
+      1.2,
+      "cm"
+    ),
+
+    plot.margin = ggplot2::margin(
+      t = 12,
+      r = 72,
+      b = 20,
+      l = 20
+    )
+  ) +
+  ggplot2::coord_cartesian(
+    clip = "off"
   )
 
 save_figure(
   p3,
   "Figure_3_Combinatorial_Distribution_Admissible_Grades",
-  width = 8.8,
-  height = 6.0
+  width = 9.4,
+  height = 5.8
 )
 
 # ==========================================================
@@ -1045,83 +1170,187 @@ readr::write_csv(
   file.path(figure_source_dir, "Figure_4_Source_Threshold_Transition_Summary.csv")
 )
 
+# ==========================================================
+# Figure 4 — RCS threshold-stability heatmap
+# ==========================================================
+
+threshold_display_levels <- c(
+  "Grade B\n(<90)",
+  "Grade C\n(<80)",
+  "Grade D\n(<65)",
+  "Grade E\n(<50)"
+)
+
+fig4_plot_df <- fig4_summary |>
+  dplyr::mutate(
+    transition_character = as.character(transition_label),
+    threshold_display = dplyr::case_when(
+      stringr::str_detect(
+        transition_character,
+        "A.*B|Grade B"
+      ) ~ "Grade B\n(<90)",
+      stringr::str_detect(
+        transition_character,
+        "B.*C|Grade C"
+      ) ~ "Grade C\n(<80)",
+      stringr::str_detect(
+        transition_character,
+        "C.*D|Grade D"
+      ) ~ "Grade D\n(<65)",
+      stringr::str_detect(
+        transition_character,
+        "D.*E|Grade E"
+      ) ~ "Grade E\n(<50)",
+      TRUE ~ NA_character_
+    ),
+    threshold_display = factor(
+      threshold_display,
+      levels = threshold_display_levels
+    ),
+    reached_n = parse_num(reached_n),
+    total_n = parse_num(total_n),
+    reached_label = paste0(
+      reached_n,
+      "/",
+      total_n
+    ),
+    text_colour = dplyr::if_else(
+      reached_n >= 4,
+      "white",
+      "#222222"
+    )
+  ) |>
+  dplyr::filter(
+    !is.na(threshold_display),
+    is.finite(reached_n),
+    is.finite(total_n)
+  )
+
 p4 <- ggplot2::ggplot(
-  fig4_summary,
+  fig4_plot_df,
   ggplot2::aes(
-    x = transition_label,
+    x = threshold_display,
     y = axis_label,
     fill = reached_n
   )
 ) +
   ggplot2::geom_tile(
     colour = "white",
-    linewidth = 1.0
+    linewidth = 1
   ) +
   ggplot2::geom_text(
-    ggplot2::aes(label = reached_label),
-    size = 4.7,
+    ggplot2::aes(
+      label = reached_label,
+      colour = text_colour
+    ),
+    size = 4.3,
     fontface = "bold",
-    colour = "#222222"
+    show.legend = FALSE
   ) +
+  ggplot2::scale_colour_identity() +
   ggplot2::facet_wrap(
     ~matrix,
     nrow = 1,
     scales = "free_y"
   ) +
+  ggplot2::scale_x_discrete(
+    limits = threshold_display_levels,
+    drop = FALSE,
+    guide = ggplot2::guide_axis(
+      check.overlap = FALSE
+    )
+  ) +
   ggplot2::scale_fill_gradient(
-    low = "#F4F4F4",
-    high = "#4589FF",
+    low = "#F2F2F2",
+    high = "#0072B2",
     limits = c(0, 5),
     breaks = 0:5,
-    name = "Perturbation scenarios reached",
+    name = paste0(
+      "Weight configurations reaching threshold\n",
+      "(\u221220%, \u221210%, nominal, +10%, +20%)"
+    ),
     guide = ggplot2::guide_colorbar(
       title.position = "top",
       title.hjust = 0.5,
       label.position = "bottom",
-      barwidth = grid::unit(6.4, "cm"),
-      barheight = grid::unit(0.42, "cm")
+      direction = "horizontal",
+      barwidth = grid::unit(7.2, "cm"),
+      barheight = grid::unit(0.38, "cm")
     )
   ) +
   ggplot2::labs(
-    x = "RCS grade-transition threshold",
+    x = "Resulting RCS grade threshold",
     y = NULL
   ) +
-  theme_rcs(base_size = 14) +
+  theme_rcs(base_size = 13) +
   ggplot2::theme(
     panel.grid = ggplot2::element_blank(),
-    panel.spacing.x = grid::unit(2.2, "lines"),
+
+    panel.spacing.x = grid::unit(
+      2.4,
+      "lines"
+    ),
+
     axis.text.x = ggplot2::element_text(
-      size = 12,
+      size = 9.5,
       face = "bold",
-      colour = "#222222"
+      colour = "#222222",
+      lineheight = 1.1,
+      hjust = 0.5,
+      margin = ggplot2::margin(t = 8)
     ),
+
     axis.text.y = ggplot2::element_text(
-      size = 11.5,
+      size = 10.5,
       colour = "#222222"
     ),
+
     axis.title.x = ggplot2::element_text(
-      size = 13,
-      margin = ggplot2::margin(t = 12)
+      size = 12.5,
+      margin = ggplot2::margin(t = 14)
     ),
+
     strip.text = ggplot2::element_text(
       size = 14,
       face = "bold",
       colour = "#222222",
-      margin = ggplot2::margin(b = 8)
+      margin = ggplot2::margin(b = 9)
     ),
+
     legend.position = "bottom",
-    legend.title = ggplot2::element_text(size = 11.5),
-    legend.text = ggplot2::element_text(size = 10.5),
-    legend.margin = ggplot2::margin(t = 8, b = 8),
-    legend.box.margin = ggplot2::margin(t = 8, b = 8),
-    plot.margin = ggplot2::margin(t = 22, r = 28, b = 26, l = 28)
+
+    legend.title = ggplot2::element_text(
+      size = 10.5,
+      face = "bold"
+    ),
+
+    legend.text = ggplot2::element_text(
+      size = 9.5
+    ),
+
+    legend.margin = ggplot2::margin(
+      t = 8,
+      b = 6
+    ),
+
+    legend.box.margin = ggplot2::margin(
+      t = 6,
+      b = 6
+    ),
+
+    plot.margin = ggplot2::margin(
+      t = 20,
+      r = 28,
+      b = 26,
+      l = 28
+    )
   )
 
 save_figure(
   p4,
   "Figure_4_Threshold_Stability_Grade_Transitions",
-  width = 10.0,
-  height = 6.4
+  width = 11.8,
+  height = 6.5
 )
 
 
