@@ -72,7 +72,9 @@ raw <- purrr::map_dfr(sizes, function(n) purrr::map_dfr(seq_len(REPS), function(
             identical(as.character(scored$final_grade),as.character(scored_psock$final_grade)),
             identical(scored$grade_route,scored_psock$grade_route))
   stem <- sprintf("n%07d_rep%02d", n, rep_id)
-  write_profiles_binary(df, file.path(artifact_dir, paste0(stem, "_input.bin")))
+  # score_profiles() preserves the canonical severities and adds the computed
+  # governance gate required by the binary interchange format.
+  write_profiles_binary(scored, file.path(artifact_dir, paste0(stem, "_input.bin")))
   write_results_binary(scored, file.path(artifact_dir, paste0(stem, "_r_expected.bin")))
   tibble::tibble(n_records=n, rep=rep_id,
                  implementation=c("r_sequential","r_psock"),threads=c(1L,workers),
