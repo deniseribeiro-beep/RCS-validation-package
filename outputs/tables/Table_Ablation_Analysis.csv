@@ -1,0 +1,16 @@
+model,final_grade,n,proportion
+Full governance-aware RCS,Grade A,407,0.16958333333333334
+Full governance-aware RCS,Grade B,392,0.16333333333333333
+Full governance-aware RCS,Grade C,404,0.16833333333333333
+Full governance-aware RCS,Grade D,396,0.165
+Full governance-aware RCS,Grade E,801,0.33375
+Without governance gate,Grade A,806,0.3358333333333333
+Without governance gate,Grade B,393,0.16375
+Without governance gate,Grade C,404,0.16833333333333333
+Without governance gate,Grade D,396,0.165
+Without governance gate,Grade E,401,0.16708333333333333
+Equal axis weights,Grade A,405,0.16875
+Equal axis weights,Grade B,393,0.16375
+Equal axis weights,Grade C,405,0.16875
+Equal axis weights,Grade D,396,0.165
+Equal axis weights,Grade E,801,0.33375

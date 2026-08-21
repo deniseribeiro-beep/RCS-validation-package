@@ -1,0 +1,41 @@
+matrix,axis,axis_label,axis_order,threshold_transition,transition_label,reached_n,total_n,min_severity_reached,reached_label
+Fluid biospecimens,P_cent1,First centrifugation,2,A to B,A→B,5,5,0.5722222222222223,5/5
+Fluid biospecimens,P_cent1,First centrifugation,2,B to C,B→C,0,5,NA,0/5
+Fluid biospecimens,P_cent1,First centrifugation,2,C to D,C→D,0,5,NA,0/5
+Fluid biospecimens,P_cent1,First centrifugation,2,D to E,D→E,0,5,NA,0/5
+Fluid biospecimens,P_cent2,Second centrifugation,3,A to B,A→B,3,5,0.8500000000000001,3/5
+Fluid biospecimens,P_cent2,Second centrifugation,3,B to C,B→C,0,5,NA,0/5
+Fluid biospecimens,P_cent2,Second centrifugation,3,C to D,C→D,0,5,NA,0/5
+Fluid biospecimens,P_cent2,Second centrifugation,3,D to E,D→E,0,5,NA,0/5
+Fluid biospecimens,P_post,Post-centrifugation,4,A to B,A→B,5,5,0.43333333333333335,5/5
+Fluid biospecimens,P_post,Post-centrifugation,4,B to C,B→C,3,5,0.8666666666666667,3/5
+Fluid biospecimens,P_post,Post-centrifugation,4,C to D,C→D,0,5,NA,0/5
+Fluid biospecimens,P_post,Post-centrifugation,4,D to E,D→E,0,5,NA,0/5
+Fluid biospecimens,P_pre,Pre-centrifugation,1,A to B,A→B,5,5,0.29444444444444445,5/5
+Fluid biospecimens,P_pre,Pre-centrifugation,1,B to C,B→C,5,5,0.5888888888888889,5/5
+Fluid biospecimens,P_pre,Pre-centrifugation,1,C to D,C→D,0,5,NA,0/5
+Fluid biospecimens,P_pre,Pre-centrifugation,1,D to E,D→E,0,5,NA,0/5
+Fluid biospecimens,P_store,Storage,5,A to B,A→B,5,5,0.35000000000000003,5/5
+Fluid biospecimens,P_store,Storage,5,B to C,B→C,5,5,0.7000000000000001,5/5
+Fluid biospecimens,P_store,Storage,5,C to D,C→D,0,5,NA,0/5
+Fluid biospecimens,P_store,Storage,5,D to E,D→E,0,5,NA,0/5
+Solid biospecimens,P_cold,Cold ischemia,2,A to B,A→B,5,5,0.35000000000000003,5/5
+Solid biospecimens,P_cold,Cold ischemia,2,B to C,B→C,5,5,0.7000000000000001,5/5
+Solid biospecimens,P_cold,Cold ischemia,2,C to D,C→D,0,5,NA,0/5
+Solid biospecimens,P_cold,Cold ischemia,2,D to E,D→E,0,5,NA,0/5
+Solid biospecimens,P_fix,Fixation,3,A to B,A→B,5,5,0.5722222222222223,5/5
+Solid biospecimens,P_fix,Fixation,3,B to C,B→C,0,5,NA,0/5
+Solid biospecimens,P_fix,Fixation,3,C to D,C→D,0,5,NA,0/5
+Solid biospecimens,P_fix,Fixation,3,D to E,D→E,0,5,NA,0/5
+Solid biospecimens,P_fixTime,Fixation time,4,A to B,A→B,5,5,0.43333333333333335,5/5
+Solid biospecimens,P_fixTime,Fixation time,4,B to C,B→C,3,5,0.8666666666666667,3/5
+Solid biospecimens,P_fixTime,Fixation time,4,C to D,C→D,0,5,NA,0/5
+Solid biospecimens,P_fixTime,Fixation time,4,D to E,D→E,0,5,NA,0/5
+Solid biospecimens,P_store,Storage,5,A to B,A→B,5,5,0.5722222222222223,5/5
+Solid biospecimens,P_store,Storage,5,B to C,B→C,0,5,NA,0/5
+Solid biospecimens,P_store,Storage,5,C to D,C→D,0,5,NA,0/5
+Solid biospecimens,P_store,Storage,5,D to E,D→E,0,5,NA,0/5
+Solid biospecimens,P_warm,Warm ischemia,1,A to B,A→B,5,5,0.35000000000000003,5/5
+Solid biospecimens,P_warm,Warm ischemia,1,B to C,B→C,5,5,0.7000000000000001,5/5
+Solid biospecimens,P_warm,Warm ischemia,1,C to D,C→D,0,5,NA,0/5
+Solid biospecimens,P_warm,Warm ischemia,1,D to E,D→E,0,5,NA,0/5

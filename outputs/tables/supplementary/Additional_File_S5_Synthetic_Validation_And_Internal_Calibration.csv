@@ -1,0 +1,6 @@
+source_table,metric,value,N,internal_calibration_index,matches,mismatches
+Table_Validation_Summary,synthetic_profiles,6000,NA,NA,NA,NA
+Table_Validation_Summary,internal_calibration_index,0.988833333333333,NA,NA,NA,NA
+Table_Validation_Summary,governance_failure_profiles,1000,NA,NA,NA,NA
+Table_Validation_Summary,critical_penalty_profiles,1003,NA,NA,NA,NA
+Table_Internal_Calibration_Index,NA,NA,6000,0.988833333333333,5933,67

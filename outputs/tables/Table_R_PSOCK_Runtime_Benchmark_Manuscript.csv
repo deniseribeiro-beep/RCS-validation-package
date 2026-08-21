@@ -1,0 +1,8 @@
+profiles,workers,repetitions,mean_r_sequential_seconds,mean_r_psock_seconds,mean_paired_psock_speedup,mean_r_psock_microseconds_per_profile,deterministic_equivalence
+10000,8,5,0.0984,0.0954,1.0952,9.54,Passed
+50000,8,5,0.4806,0.1434,3.3665,2.868,Passed
+100000,8,5,0.9568,0.253,3.784,2.53,Passed
+500000,8,5,4.9222,1.3654,3.605,2.7308,Passed
+1000000,8,5,9.6986,2.748,3.5301,2.748,Passed
+2000000,8,5,19.496,5.0848,3.8371,2.5424,Passed
+5000000,8,5,47.982,11.83,4.057,2.366,Passed

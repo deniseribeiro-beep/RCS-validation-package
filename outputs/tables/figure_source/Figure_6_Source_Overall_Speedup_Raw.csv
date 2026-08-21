@@ -1,0 +1,141 @@
+n_records,workload,rep,comparison_id,speedup,comparison
+10000,10000,1,r_psock,0.8474576271188727,R/PSOCK vs R sequential
+10000,10000,1,cpp_sequential,603.569510082766,C++ sequential vs R sequential
+10000,10000,1,cpp_openmp,354.8641225275649,C++/OpenMP vs R sequential
+10000,10000,1,cpp_cuda,0.28541523985810907,C++/CUDA vs R sequential
+10000,10000,2,r_psock,1.400000000000325,R/PSOCK vs R sequential
+10000,10000,2,cpp_sequential,564.4771098772735,C++ sequential vs R sequential
+10000,10000,2,cpp_openmp,351.67422048542954,C++/OpenMP vs R sequential
+10000,10000,2,cpp_cuda,0.635513418450887,C++/CUDA vs R sequential
+10000,10000,3,r_psock,1.3424657534252231,R/PSOCK vs R sequential
+10000,10000,3,cpp_sequential,591.9554462922036,C++ sequential vs R sequential
+10000,10000,3,cpp_openmp,276.1699177690352,C++/OpenMP vs R sequential
+10000,10000,3,cpp_cuda,0.6177929332331459,C++/CUDA vs R sequential
+10000,10000,4,r_psock,0.7596899224809448,R/PSOCK vs R sequential
+10000,10000,4,cpp_sequential,588.7689322255658,C++ sequential vs R sequential
+10000,10000,4,cpp_openmp,351.4220040378144,C++/OpenMP vs R sequential
+10000,10000,4,cpp_cuda,0.6371679574736759,C++/CUDA vs R sequential
+10000,10000,5,r_psock,1.1264367816094885,R/PSOCK vs R sequential
+10000,10000,5,cpp_sequential,591.4088807889467,C++ sequential vs R sequential
+10000,10000,5,cpp_openmp,350.3653810402749,C++/OpenMP vs R sequential
+10000,10000,5,cpp_cuda,0.6236144345183189,C++/CUDA vs R sequential
+50000,50000,1,r_psock,3.1337579617827775,R/PSOCK vs R sequential
+50000,50000,1,cpp_sequential,567.2005884129896,C++ sequential vs R sequential
+50000,50000,1,cpp_openmp,1228.7067861076684,C++/OpenMP vs R sequential
+50000,50000,1,cpp_cuda,3.1584315282956124,C++/CUDA vs R sequential
+50000,50000,2,r_psock,3.0838709677421674,R/PSOCK vs R sequential
+50000,50000,2,cpp_sequential,558.2488271518587,C++ sequential vs R sequential
+50000,50000,2,cpp_openmp,1243.8425888578554,C++/OpenMP vs R sequential
+50000,50000,2,cpp_cuda,3.0809647036752432,C++/CUDA vs R sequential
+50000,50000,3,r_psock,3.5333333333338106,R/PSOCK vs R sequential
+50000,50000,3,cpp_sequential,549.2360782471795,C++ sequential vs R sequential
+50000,50000,3,cpp_openmp,1080.363654483016,C++/OpenMP vs R sequential
+50000,50000,3,cpp_cuda,3.0654174938288694,C++/CUDA vs R sequential
+50000,50000,4,r_psock,3.559701492537168,R/PSOCK vs R sequential
+50000,50000,4,cpp_sequential,551.3176144244478,C++ sequential vs R sequential
+50000,50000,4,cpp_openmp,1220.6950028278982,C++/OpenMP vs R sequential
+50000,50000,4,cpp_cuda,3.054065096379714,C++/CUDA vs R sequential
+50000,50000,5,r_psock,3.5220588235301493,R/PSOCK vs R sequential
+50000,50000,5,cpp_sequential,556.250384672091,C++ sequential vs R sequential
+50000,50000,5,cpp_openmp,1188.3054862997183,C++/OpenMP vs R sequential
+50000,50000,5,cpp_cuda,3.0738946563594016,C++/CUDA vs R sequential
+100000,100000,1,r_psock,3.6315789473687468,R/PSOCK vs R sequential
+100000,100000,1,cpp_sequential,555.9920227231241,C++ sequential vs R sequential
+100000,100000,1,cpp_openmp,1848.7649063846525,C++/OpenMP vs R sequential
+100000,100000,1,cpp_cuda,6.141131634717628,C++/CUDA vs R sequential
+100000,100000,2,r_psock,3.8293650793650604,R/PSOCK vs R sequential
+100000,100000,2,cpp_sequential,545.884876556497,C++ sequential vs R sequential
+100000,100000,2,cpp_openmp,1511.4991408733363,C++/OpenMP vs R sequential
+100000,100000,2,cpp_cuda,6.114048082280869,C++/CUDA vs R sequential
+100000,100000,3,r_psock,3.7738095238094673,R/PSOCK vs R sequential
+100000,100000,3,cpp_sequential,534.8571042915235,C++ sequential vs R sequential
+100000,100000,3,cpp_openmp,1852.288286954752,C++/OpenMP vs R sequential
+100000,100000,3,cpp_cuda,6.016479459891097,C++/CUDA vs R sequential
+100000,100000,4,r_psock,3.857723577236122,R/PSOCK vs R sequential
+100000,100000,4,cpp_sequential,549.7580253665029,C++ sequential vs R sequential
+100000,100000,4,cpp_openmp,1804.391764063917,C++/OpenMP vs R sequential
+100000,100000,4,cpp_cuda,5.949490916042755,C++/CUDA vs R sequential
+100000,100000,5,r_psock,3.827309236947325,R/PSOCK vs R sequential
+100000,100000,5,cpp_sequential,543.9873415914994,C++ sequential vs R sequential
+100000,100000,5,cpp_openmp,1800.433388687638,C++/OpenMP vs R sequential
+100000,100000,5,cpp_cuda,6.011831031136228,C++/CUDA vs R sequential
+500000,500000,1,r_psock,3.804101838755199,R/PSOCK vs R sequential
+500000,500000,1,cpp_sequential,537.9569696430871,C++ sequential vs R sequential
+500000,500000,1,cpp_openmp,3292.3185965505136,C++/OpenMP vs R sequential
+500000,500000,1,cpp_cuda,32.08071051109969,C++/CUDA vs R sequential
+500000,500000,2,r_psock,3.5374907201188672,R/PSOCK vs R sequential
+500000,500000,2,cpp_sequential,467.0627175541914,C++ sequential vs R sequential
+500000,500000,2,cpp_openmp,2782.2445502456685,C++/OpenMP vs R sequential
+500000,500000,2,cpp_cuda,28.200982394390312,C++/CUDA vs R sequential
+500000,500000,3,r_psock,3.4963289280471184,R/PSOCK vs R sequential
+500000,500000,3,cpp_sequential,470.9221401146706,C++ sequential vs R sequential
+500000,500000,3,cpp_openmp,2779.103846975409,C++/OpenMP vs R sequential
+500000,500000,3,cpp_cuda,28.34659282615392,C++/CUDA vs R sequential
+500000,500000,4,r_psock,3.426820475847322,R/PSOCK vs R sequential
+500000,500000,4,cpp_sequential,466.69090618452765,C++ sequential vs R sequential
+500000,500000,4,cpp_openmp,2710.68859931029,C++/OpenMP vs R sequential
+500000,500000,4,cpp_cuda,28.275044643101193,C++/CUDA vs R sequential
+500000,500000,5,r_psock,3.7600607441153917,R/PSOCK vs R sequential
+500000,500000,5,cpp_sequential,486.1502642165818,C++ sequential vs R sequential
+500000,500000,5,cpp_openmp,3006.691588853139,C++/OpenMP vs R sequential
+500000,500000,5,cpp_cuda,29.017924047048755,C++/CUDA vs R sequential
+1000000,1000000,1,r_psock,3.5059373875494604,R/PSOCK vs R sequential
+1000000,1000000,1,cpp_sequential,477.34998102211387,C++ sequential vs R sequential
+1000000,1000000,1,cpp_openmp,3093.9912169137565,C++/OpenMP vs R sequential
+1000000,1000000,1,cpp_cuda,40.59854227106611,C++/CUDA vs R sequential
+1000000,1000000,2,r_psock,3.5917071348524217,R/PSOCK vs R sequential
+1000000,1000000,2,cpp_sequential,481.90505412898943,C++ sequential vs R sequential
+1000000,1000000,2,cpp_openmp,3154.127084258005,C++/OpenMP vs R sequential
+1000000,1000000,2,cpp_cuda,39.51774573450531,C++/CUDA vs R sequential
+1000000,1000000,3,r_psock,3.580406654343733,R/PSOCK vs R sequential
+1000000,1000000,3,cpp_sequential,484.1636736169913,C++ sequential vs R sequential
+1000000,1000000,3,cpp_openmp,3014.8901642982664,C++/OpenMP vs R sequential
+1000000,1000000,3,cpp_cuda,40.227706847420876,C++/CUDA vs R sequential
+1000000,1000000,4,r_psock,3.490498386518486,R/PSOCK vs R sequential
+1000000,1000000,4,cpp_sequential,493.42262821474293,C++ sequential vs R sequential
+1000000,1000000,4,cpp_openmp,2718.4635193924087,C++/OpenMP vs R sequential
+1000000,1000000,4,cpp_cuda,51.77170595381327,C++/CUDA vs R sequential
+1000000,1000000,5,r_psock,3.482078853046652,R/PSOCK vs R sequential
+1000000,1000000,5,cpp_sequential,495.508216740141,C++ sequential vs R sequential
+1000000,1000000,5,cpp_openmp,3129.6772002935522,C++/OpenMP vs R sequential
+1000000,1000000,5,cpp_cuda,53.51340365066199,C++/CUDA vs R sequential
+2000000,2000000,1,r_psock,3.7911501049018095,R/PSOCK vs R sequential
+2000000,2000000,1,cpp_sequential,512.0425176901572,C++ sequential vs R sequential
+2000000,2000000,1,cpp_openmp,3422.6572783081588,C++/OpenMP vs R sequential
+2000000,2000000,1,cpp_cuda,72.5763172271135,C++/CUDA vs R sequential
+2000000,2000000,2,r_psock,3.6572135515797415,R/PSOCK vs R sequential
+2000000,2000000,2,cpp_sequential,493.2805764002155,C++ sequential vs R sequential
+2000000,2000000,2,cpp_openmp,3061.696653182353,C++/OpenMP vs R sequential
+2000000,2000000,2,cpp_cuda,71.20064255847136,C++/CUDA vs R sequential
+2000000,2000000,3,r_psock,3.997960016319825,R/PSOCK vs R sequential
+2000000,2000000,3,cpp_sequential,500.7056326598842,C++ sequential vs R sequential
+2000000,2000000,3,cpp_openmp,3458.1609811168596,C++/OpenMP vs R sequential
+2000000,2000000,3,cpp_cuda,72.45743601646613,C++/CUDA vs R sequential
+2000000,2000000,4,r_psock,3.8952150211992946,R/PSOCK vs R sequential
+2000000,2000000,4,cpp_sequential,498.7680096666843,C++ sequential vs R sequential
+2000000,2000000,4,cpp_openmp,3302.070379129643,C++/OpenMP vs R sequential
+2000000,2000000,4,cpp_cuda,71.76561597559378,C++/CUDA vs R sequential
+2000000,2000000,5,r_psock,3.8440457413249107,R/PSOCK vs R sequential
+2000000,2000000,5,cpp_sequential,498.1014305885925,C++ sequential vs R sequential
+2000000,2000000,5,cpp_openmp,3402.7157850095086,C++/OpenMP vs R sequential
+2000000,2000000,5,cpp_cuda,72.03954120614816,C++/CUDA vs R sequential
+5000000,5000000,1,r_psock,3.9908827186075313,R/PSOCK vs R sequential
+5000000,5000000,1,cpp_sequential,496.28396174736076,C++ sequential vs R sequential
+5000000,5000000,1,cpp_openmp,3311.520625512209,C++/OpenMP vs R sequential
+5000000,5000000,1,cpp_cuda,139.2476463836475,C++/CUDA vs R sequential
+5000000,5000000,2,r_psock,4.019330543933045,R/PSOCK vs R sequential
+5000000,5000000,2,cpp_sequential,493.87953785436446,C++ sequential vs R sequential
+5000000,5000000,2,cpp_openmp,3465.8034496690066,C++/OpenMP vs R sequential
+5000000,5000000,2,cpp_cuda,140.49511894490948,C++/CUDA vs R sequential
+5000000,5000000,3,r_psock,4.169368898186899,R/PSOCK vs R sequential
+5000000,5000000,3,cpp_sequential,490.90391913874095,C++ sequential vs R sequential
+5000000,5000000,3,cpp_openmp,1651.737853997784,C++/OpenMP vs R sequential
+5000000,5000000,3,cpp_cuda,136.98805508036207,C++/CUDA vs R sequential
+5000000,5000000,4,r_psock,4.07361392832996,R/PSOCK vs R sequential
+5000000,5000000,4,cpp_sequential,490.05493202736136,C++ sequential vs R sequential
+5000000,5000000,4,cpp_openmp,3551.939347535004,C++/OpenMP vs R sequential
+5000000,5000000,4,cpp_cuda,140.29681507280608,C++/CUDA vs R sequential
+5000000,5000000,5,r_psock,4.031696390837659,R/PSOCK vs R sequential
+5000000,5000000,5,cpp_sequential,491.49666665021397,C++ sequential vs R sequential
+5000000,5000000,5,cpp_openmp,2919.78246736095,C++/OpenMP vs R sequential
+5000000,5000000,5,cpp_cuda,136.958673456058,C++/CUDA vs R sequential

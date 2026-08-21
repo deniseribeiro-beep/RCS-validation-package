@@ -1,0 +1,281 @@
+n_records,workload,rep,component_id,speedup,component
+10000,10000,1,psock_gain,0.8474576271188727,"R parallelization
+R sequential / R PSOCK"
+10000,10000,1,language_gain,603.569510082766,"Language effect
+R sequential / C++ sequential"
+10000,10000,1,openmp_gain,0.5879424268447612,"OpenMP effect
+C++ sequential / C++ OpenMP"
+10000,10000,1,cuda_gain,4.7287882354920613e-4,"CUDA effect
+C++ sequential / C++ CUDA"
+10000,10000,2,psock_gain,1.400000000000325,"R parallelization
+R sequential / R PSOCK"
+10000,10000,2,language_gain,564.4771098772735,"Language effect
+R sequential / C++ sequential"
+10000,10000,2,openmp_gain,0.6230088241521241,"OpenMP effect
+C++ sequential / C++ OpenMP"
+10000,10000,2,cuda_gain,0.0011258444449395973,"CUDA effect
+C++ sequential / C++ CUDA"
+10000,10000,3,psock_gain,1.3424657534252231,"R parallelization
+R sequential / R PSOCK"
+10000,10000,3,language_gain,591.9554462922036,"Language effect
+R sequential / C++ sequential"
+10000,10000,3,openmp_gain,0.46653835098378493,"OpenMP effect
+C++ sequential / C++ OpenMP"
+10000,10000,3,cuda_gain,0.0010436476885258492,"CUDA effect
+C++ sequential / C++ CUDA"
+10000,10000,4,psock_gain,0.7596899224809448,"R parallelization
+R sequential / R PSOCK"
+10000,10000,4,language_gain,588.7689322255658,"Language effect
+R sequential / C++ sequential"
+10000,10000,4,openmp_gain,0.5968759301028805,"OpenMP effect
+C++ sequential / C++ OpenMP"
+10000,10000,4,cuda_gain,0.0010822037689134857,"CUDA effect
+C++ sequential / C++ CUDA"
+10000,10000,5,psock_gain,1.1264367816094885,"R parallelization
+R sequential / R PSOCK"
+10000,10000,5,language_gain,591.4088807889467,"Language effect
+R sequential / C++ sequential"
+10000,10000,5,openmp_gain,0.5924249574556324,"OpenMP effect
+C++ sequential / C++ OpenMP"
+10000,10000,5,cuda_gain,0.0010544556478191698,"CUDA effect
+C++ sequential / C++ CUDA"
+50000,50000,1,psock_gain,3.1337579617827775,"R parallelization
+R sequential / R PSOCK"
+50000,50000,1,language_gain,567.2005884129896,"Language effect
+R sequential / C++ sequential"
+50000,50000,1,openmp_gain,2.1662650060810997,"OpenMP effect
+C++ sequential / C++ OpenMP"
+50000,50000,1,cuda_gain,0.005568456015063048,"CUDA effect
+C++ sequential / C++ CUDA"
+50000,50000,2,psock_gain,3.0838709677421674,"R parallelization
+R sequential / R PSOCK"
+50000,50000,2,language_gain,558.2488271518587,"Language effect
+R sequential / C++ sequential"
+50000,50000,2,openmp_gain,2.2281150059980277,"OpenMP effect
+C++ sequential / C++ OpenMP"
+50000,50000,2,cuda_gain,0.005518981059743702,"CUDA effect
+C++ sequential / C++ CUDA"
+50000,50000,3,psock_gain,3.5333333333338106,"R parallelization
+R sequential / R PSOCK"
+50000,50000,3,language_gain,549.2360782471795,"Language effect
+R sequential / C++ sequential"
+50000,50000,3,openmp_gain,1.9670296567750352,"OpenMP effect
+C++ sequential / C++ OpenMP"
+50000,50000,3,cuda_gain,0.0055812384059178675,"CUDA effect
+C++ sequential / C++ CUDA"
+50000,50000,4,psock_gain,3.559701492537168,"R parallelization
+R sequential / R PSOCK"
+50000,50000,4,language_gain,551.3176144244478,"Language effect
+R sequential / C++ sequential"
+50000,50000,4,openmp_gain,2.21414112462605,"OpenMP effect
+C++ sequential / C++ OpenMP"
+50000,50000,4,cuda_gain,0.00553957467796132,"CUDA effect
+C++ sequential / C++ CUDA"
+50000,50000,5,psock_gain,3.5220588235301493,"R parallelization
+R sequential / R PSOCK"
+50000,50000,5,language_gain,556.250384672091,"Language effect
+R sequential / C++ sequential"
+50000,50000,5,openmp_gain,2.136278048598965,"OpenMP effect
+C++ sequential / C++ OpenMP"
+50000,50000,5,cuda_gain,0.005526098931457745,"CUDA effect
+C++ sequential / C++ CUDA"
+100000,100000,1,psock_gain,3.6315789473687468,"R parallelization
+R sequential / R PSOCK"
+100000,100000,1,language_gain,555.9920227231241,"Language effect
+R sequential / C++ sequential"
+100000,100000,1,openmp_gain,3.325164446298738,"OpenMP effect
+C++ sequential / C++ OpenMP"
+100000,100000,1,cuda_gain,0.01104535925648671,"CUDA effect
+C++ sequential / C++ CUDA"
+100000,100000,2,psock_gain,3.8293650793650604,"R parallelization
+R sequential / R PSOCK"
+100000,100000,2,language_gain,545.884876556497,"Language effect
+R sequential / C++ sequential"
+100000,100000,2,openmp_gain,2.7688972634817106,"OpenMP effect
+C++ sequential / C++ OpenMP"
+100000,100000,2,cuda_gain,0.011200251820217057,"CUDA effect
+C++ sequential / C++ CUDA"
+100000,100000,3,psock_gain,3.7738095238094673,"R parallelization
+R sequential / R PSOCK"
+100000,100000,3,language_gain,534.8571042915235,"Language effect
+R sequential / C++ sequential"
+100000,100000,3,openmp_gain,3.4631460853610796,"OpenMP effect
+C++ sequential / C++ OpenMP"
+100000,100000,3,cuda_gain,0.011248760485028203,"CUDA effect
+C++ sequential / C++ CUDA"
+100000,100000,4,psock_gain,3.857723577236122,"R parallelization
+R sequential / R PSOCK"
+100000,100000,4,language_gain,549.7580253665029,"Language effect
+R sequential / C++ sequential"
+100000,100000,4,openmp_gain,3.282156295692086,"OpenMP effect
+C++ sequential / C++ OpenMP"
+100000,100000,4,cuda_gain,0.01082201739952128,"CUDA effect
+C++ sequential / C++ CUDA"
+100000,100000,5,psock_gain,3.827309236947325,"R parallelization
+R sequential / R PSOCK"
+100000,100000,5,language_gain,543.9873415914994,"Language effect
+R sequential / C++ sequential"
+100000,100000,5,openmp_gain,3.3096972135790086,"OpenMP effect
+C++ sequential / C++ OpenMP"
+100000,100000,5,cuda_gain,0.011051417140604602,"CUDA effect
+C++ sequential / C++ CUDA"
+500000,500000,1,psock_gain,3.804101838755199,"R parallelization
+R sequential / R PSOCK"
+500000,500000,1,language_gain,537.9569696430871,"Language effect
+R sequential / C++ sequential"
+500000,500000,1,openmp_gain,6.120040788271291,"OpenMP effect
+C++ sequential / C++ OpenMP"
+500000,500000,1,cuda_gain,0.05963434311927208,"CUDA effect
+C++ sequential / C++ CUDA"
+500000,500000,2,psock_gain,3.5374907201188672,"R parallelization
+R sequential / R PSOCK"
+500000,500000,2,language_gain,467.0627175541914,"Language effect
+R sequential / C++ sequential"
+500000,500000,2,openmp_gain,5.956897105414662,"OpenMP effect
+C++ sequential / C++ OpenMP"
+500000,500000,2,cuda_gain,0.06037943371302863,"CUDA effect
+C++ sequential / C++ CUDA"
+500000,500000,3,psock_gain,3.4963289280471184,"R parallelization
+R sequential / R PSOCK"
+500000,500000,3,language_gain,470.9221401146706,"Language effect
+R sequential / C++ sequential"
+500000,500000,3,openmp_gain,5.901408343847862,"OpenMP effect
+C++ sequential / C++ OpenMP"
+500000,500000,3,cuda_gain,0.060193799381043044,"CUDA effect
+C++ sequential / C++ CUDA"
+500000,500000,4,psock_gain,3.426820475847322,"R parallelization
+R sequential / R PSOCK"
+500000,500000,4,language_gain,466.69090618452765,"Language effect
+R sequential / C++ sequential"
+500000,500000,4,openmp_gain,5.808316732528093,"OpenMP effect
+C++ sequential / C++ OpenMP"
+500000,500000,4,cuda_gain,0.06058623441854973,"CUDA effect
+C++ sequential / C++ CUDA"
+500000,500000,5,psock_gain,3.7600607441153917,"R parallelization
+R sequential / R PSOCK"
+500000,500000,5,language_gain,486.1502642165818,"Language effect
+R sequential / C++ sequential"
+500000,500000,5,openmp_gain,6.184695988386107,"OpenMP effect
+C++ sequential / C++ OpenMP"
+500000,500000,5,cuda_gain,0.059689207602942204,"CUDA effect
+C++ sequential / C++ CUDA"
+1000000,1000000,1,psock_gain,3.5059373875494604,"R parallelization
+R sequential / R PSOCK"
+1000000,1000000,1,language_gain,477.34998102211387,"Language effect
+R sequential / C++ sequential"
+1000000,1000000,1,openmp_gain,6.4815991199765515,"OpenMP effect
+C++ sequential / C++ OpenMP"
+1000000,1000000,1,cuda_gain,0.08504984578429328,"CUDA effect
+C++ sequential / C++ CUDA"
+1000000,1000000,2,psock_gain,3.5917071348524217,"R parallelization
+R sequential / R PSOCK"
+1000000,1000000,2,language_gain,481.90505412898943,"Language effect
+R sequential / C++ sequential"
+1000000,1000000,2,openmp_gain,6.545121403548827,"OpenMP effect
+C++ sequential / C++ OpenMP"
+1000000,1000000,2,cuda_gain,0.08200317758843792,"CUDA effect
+C++ sequential / C++ CUDA"
+1000000,1000000,3,psock_gain,3.580406654343733,"R parallelization
+R sequential / R PSOCK"
+1000000,1000000,3,language_gain,484.1636736169913,"Language effect
+R sequential / C++ sequential"
+1000000,1000000,3,openmp_gain,6.227006131573729,"OpenMP effect
+C++ sequential / C++ OpenMP"
+1000000,1000000,3,cuda_gain,0.08308699937543007,"CUDA effect
+C++ sequential / C++ CUDA"
+1000000,1000000,4,psock_gain,3.490498386518486,"R parallelization
+R sequential / R PSOCK"
+1000000,1000000,4,language_gain,493.42262821474293,"Language effect
+R sequential / C++ sequential"
+1000000,1000000,4,openmp_gain,5.509401806779934,"OpenMP effect
+C++ sequential / C++ OpenMP"
+1000000,1000000,4,cuda_gain,0.10492365569274552,"CUDA effect
+C++ sequential / C++ CUDA"
+1000000,1000000,5,psock_gain,3.482078853046652,"R parallelization
+R sequential / R PSOCK"
+1000000,1000000,5,language_gain,495.508216740141,"Language effect
+R sequential / C++ sequential"
+1000000,1000000,5,openmp_gain,6.316095464335855,"OpenMP effect
+C++ sequential / C++ OpenMP"
+1000000,1000000,5,cuda_gain,0.10799700558492652,"CUDA effect
+C++ sequential / C++ CUDA"
+2000000,2000000,1,psock_gain,3.7911501049018095,"R parallelization
+R sequential / R PSOCK"
+2000000,2000000,1,language_gain,512.0425176901572,"Language effect
+R sequential / C++ sequential"
+2000000,2000000,1,openmp_gain,6.684322414763315,"OpenMP effect
+C++ sequential / C++ OpenMP"
+2000000,2000000,1,cuda_gain,0.14173884925515165,"CUDA effect
+C++ sequential / C++ CUDA"
+2000000,2000000,2,psock_gain,3.6572135515797415,"R parallelization
+R sequential / R PSOCK"
+2000000,2000000,2,language_gain,493.2805764002155,"Language effect
+R sequential / C++ sequential"
+2000000,2000000,2,openmp_gain,6.206805618671458,"OpenMP effect
+C++ sequential / C++ OpenMP"
+2000000,2000000,2,cuda_gain,0.14434106260187268,"CUDA effect
+C++ sequential / C++ CUDA"
+2000000,2000000,3,psock_gain,3.997960016319825,"R parallelization
+R sequential / R PSOCK"
+2000000,2000000,3,language_gain,500.7056326598842,"Language effect
+R sequential / C++ sequential"
+2000000,2000000,3,openmp_gain,6.906574952524839,"OpenMP effect
+C++ sequential / C++ OpenMP"
+2000000,2000000,3,cuda_gain,0.14471064691553912,"CUDA effect
+C++ sequential / C++ CUDA"
+2000000,2000000,4,psock_gain,3.8952150211992946,"R parallelization
+R sequential / R PSOCK"
+2000000,2000000,4,language_gain,498.7680096666843,"Language effect
+R sequential / C++ sequential"
+2000000,2000000,4,openmp_gain,6.620453427509001,"OpenMP effect
+C++ sequential / C++ OpenMP"
+2000000,2000000,4,cuda_gain,0.143885763691126,"CUDA effect
+C++ sequential / C++ CUDA"
+2000000,2000000,5,psock_gain,3.8440457413249107,"R parallelization
+R sequential / R PSOCK"
+2000000,2000000,5,language_gain,498.1014305885925,"Language effect
+R sequential / C++ sequential"
+2000000,2000000,5,openmp_gain,6.831371234948301,"OpenMP effect
+C++ sequential / C++ OpenMP"
+2000000,2000000,5,cuda_gain,0.1446282559779462,"CUDA effect
+C++ sequential / C++ CUDA"
+5000000,5000000,1,psock_gain,3.9908827186075313,"R parallelization
+R sequential / R PSOCK"
+5000000,5000000,1,language_gain,496.28396174736076,"Language effect
+R sequential / C++ sequential"
+5000000,5000000,1,openmp_gain,6.672632768249677,"OpenMP effect
+C++ sequential / C++ OpenMP"
+5000000,5000000,1,cuda_gain,0.2805805891719168,"CUDA effect
+C++ sequential / C++ CUDA"
+5000000,5000000,2,psock_gain,4.019330543933045,"R parallelization
+R sequential / R PSOCK"
+5000000,5000000,2,language_gain,493.87953785436446,"Language effect
+R sequential / C++ sequential"
+5000000,5000000,2,openmp_gain,7.017507679556882,"OpenMP effect
+C++ sequential / C++ OpenMP"
+5000000,5000000,2,cuda_gain,0.28447244353407247,"CUDA effect
+C++ sequential / C++ CUDA"
+5000000,5000000,3,psock_gain,4.169368898186899,"R parallelization
+R sequential / R PSOCK"
+5000000,5000000,3,language_gain,490.90391913874095,"Language effect
+R sequential / C++ sequential"
+5000000,5000000,3,openmp_gain,3.364686631338472,"OpenMP effect
+C++ sequential / C++ OpenMP"
+5000000,5000000,3,cuda_gain,0.2790526816748555,"CUDA effect
+C++ sequential / C++ CUDA"
+5000000,5000000,4,psock_gain,4.07361392832996,"R parallelization
+R sequential / R PSOCK"
+5000000,5000000,4,language_gain,490.05493202736136,"Language effect
+R sequential / C++ sequential"
+5000000,5000000,4,openmp_gain,7.248043260865881,"OpenMP effect
+C++ sequential / C++ OpenMP"
+5000000,5000000,4,cuda_gain,0.2862879361144208,"CUDA effect
+C++ sequential / C++ CUDA"
+5000000,5000000,5,psock_gain,4.031696390837659,"R parallelization
+R sequential / R PSOCK"
+5000000,5000000,5,language_gain,491.49666665021397,"Language effect
+R sequential / C++ sequential"
+5000000,5000000,5,openmp_gain,5.940594647895927,"OpenMP effect
+C++ sequential / C++ OpenMP"
+5000000,5000000,5,cuda_gain,0.27865636279793554,"CUDA effect
+C++ sequential / C++ CUDA"
