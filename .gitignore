@@ -1,0 +1,38 @@
+# Generated validation artifacts
+outputs/*
+!outputs/cross_language/
+outputs/cross_language/*
+!outputs/cross_language/.gitkeep
+!outputs/figures/
+outputs/figures/*
+!outputs/figures/.gitkeep
+!outputs/tables/
+outputs/tables/*
+!outputs/tables/.gitkeep
+!outputs/tables/figure_source/
+outputs/tables/figure_source/*
+!outputs/tables/figure_source/.gitkeep
+!outputs/tables/supplementary/
+outputs/tables/supplementary/*
+!outputs/tables/supplementary/.gitkeep
+
+# Generated environment records and local logs
+validation/environment/Computational_Environment.txt
+validation/environment/Cross_Language_Computational_Environment.txt
+validation/environment/SessionInfo_RCS_validation.txt
+*.log
+
+# Compiled native artifacts
+*.o
+*.so
+*.a
+*.bin
+rcs_sequential
+rcs_openmp
+rcs_cuda
+
+# R and editor state
+.Rhistory
+.RData
+.Rproj.user/
+.vscode/

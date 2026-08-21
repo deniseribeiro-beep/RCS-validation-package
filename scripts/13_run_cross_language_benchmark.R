@@ -9,6 +9,12 @@ if (!file.exists(raw_r_path)) stop("Run scripts/12_generate_cross_language_input
 
 threads <- as.integer(Sys.getenv("RCS_OPENMP_THREADS", unset = "4"))
 run_cuda <- toupper(Sys.getenv("RUN_CUDA_BENCH", unset = "TRUE")) == "TRUE"
+if (is.na(threads) || threads < 1L) {
+  stop("RCS_OPENMP_THREADS must be a positive integer.")
+}
+if (!nzchar(Sys.which("g++"))) {
+  stop("A C++17 compiler (g++) is required for the native benchmark.")
+}
 dir.create(file.path(artifact_dir, "bin"), recursive = TRUE, showWarnings = FALSE)
 
 compile <- function(command, args) {

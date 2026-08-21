@@ -1,6 +1,0 @@
-Date: 2026-08-21 12:20:40.843047
-R version: R version 4.3.3 (2024-02-29)
-Working directory: /home/denis/RCS-validation-package
-RUN_LARGE_BENCH: FALSE
-BENCH_REPS: 1
-RCS_SEED: 20260504

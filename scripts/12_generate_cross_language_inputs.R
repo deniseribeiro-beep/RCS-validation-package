@@ -10,6 +10,10 @@ sizes <- if (RUN_LARGE) c(1e4, 5e4, 1e5, 5e5, 1e6, 2e6, 5e6) else c(1e4, 5e4, 1e
 artifact_dir <- file.path("outputs", "cross_language")
 dir.create(artifact_dir, recursive = TRUE, showWarnings = FALSE)
 workers <- as.integer(Sys.getenv("RCS_PARALLEL_WORKERS", unset = "4"))
+if (is.na(REPS) || REPS < 1L) stop("BENCH_REPS must be a positive integer.")
+if (is.na(workers) || workers < 1L) {
+  stop("RCS_PARALLEL_WORKERS must be a positive integer.")
+}
 
 cl <- parallel::makeCluster(workers)
 parallel::clusterEvalQ(cl, {
@@ -68,6 +72,8 @@ raw <- purrr::map_dfr(sizes, function(n) purrr::map_dfr(seq_len(REPS), function(
             identical(as.character(scored$final_grade),as.character(scored_psock$final_grade)),
             identical(scored$grade_route,scored_psock$grade_route))
   stem <- sprintf("n%07d_rep%02d", n, rep_id)
+  # score_profiles() preserves the canonical severities and adds the computed
+  # governance gate required by the binary interchange format.
   write_profiles_binary(scored, file.path(artifact_dir, paste0(stem, "_input.bin")))
   write_results_binary(scored, file.path(artifact_dir, paste0(stem, "_r_expected.bin")))
   tibble::tibble(n_records=n, rep=rep_id,
@@ -76,6 +82,7 @@ raw <- purrr::map_dfr(sizes, function(n) purrr::map_dfr(seq_len(REPS), function(
                  input_file=paste0(stem, "_input.bin"), expected_file=paste0(stem, "_r_expected.bin"))
 }))
 parallel::stopCluster(cl)
+cl <- NULL
 readr::write_csv(raw, file.path(artifact_dir, "R_Canonical_Runtime_Raw.csv"))
 
 # Rebuild Figure 6 tables from the same profiles used by all implementations.
