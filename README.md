@@ -1,99 +1,115 @@
 # Ribeiro Classification Score (RCS) validation package
 
-This repository contains the reproducibility package for the governance-aware,
-rule-based Ribeiro Classification Score (RCS) described in the manuscript
-*A Governance-Aware Rule-Based Computational Framework for Biospecimen
-Qualification in Biobank Information Systems*.
+Reproducibility package for the governance-aware, rule-based Ribeiro
+Classification Score (RCS) described in *A Governance-Aware Rule-Based
+Computational Framework for Biospecimen Qualification in Biobank Information
+Systems*.
 
-## What the pipeline validates
+The scientific validation remains canonical in R. Independent C++17,
+OpenMP and CUDA implementations reproduce the same scoring kernel and are used
+only for equivalence-controlled computational-performance experiments.
+
+## Validation scope
+
+The pipeline evaluates:
 
 - non-compensable governance admissibility;
 - matrix-specific SPREC-derived weighted penalties;
 - the identity `RCS = 100 - P_bio`;
-- deterministic A-E grade thresholds;
+- deterministic A-E grade thresholds and routing;
 - property-based logical behaviour;
 - synthetic internal validation and threshold margins;
 - governance-failure sensitivity;
 - combinatorial coverage and one-axis transitions;
-- global sensitivity, weight perturbation, and ablation;
+- global sensitivity, weight perturbation and ablation;
 - sequential runtime scalability;
-- deterministic equivalence between sequential R and persistent PSOCK;
-- independent C++17 reproduction of the RCS scoring kernel;
-- shared-memory CPU parallelism with OpenMP;
-- heterogeneous GPU execution with CUDA;
-- cross-language numerical, grade, and route equivalence;
-- paired runtime, speedup, and 95% confidence-interval analysis.
+- deterministic equivalence between R sequential and persistent R/PSOCK;
+- independent C++17 sequential reproduction;
+- multicore CPU execution with OpenMP;
+- NVIDIA GPU execution with CUDA;
+- paired runtime, speedup and 95% confidence-interval analysis.
 
-Unknown, missing, invalid, incompatible, or `Not scored` conditions are never
+Unknown, missing, invalid, incompatible or `Not scored` conditions are never
 converted to zero severity. They invalidate governance/context admissibility.
+
+## Computational question
+
+The performance experiment asks:
+
+> What is the impact of implementation language and parallelization model on
+> RCS computational performance when R and C++ are compared under sequential,
+> multicore CPU and GPU-accelerated execution using identical workloads and
+> deterministic output-equivalence requirements?
+
+This is not a generic R-versus-C++ language contest. It compares implementation
+strategies for this specific validated RCS workload. Python is relevant context
+for the broader data-analysis ecosystem but is not tested in this experiment.
 
 ## Requirements
 
 - R 4.2.2 or newer;
-- packages: `dplyr`, `tidyr`, `purrr`, `ggplot2`, `readr`, `stringr`,
-  `scales`, `tibble`, `forcats`, `broom`, and `patchwork`;
+- R packages: `dplyr`, `tidyr`, `purrr`, `ggplot2`, `readr`,
+  `stringr`, `scales`, `tibble`, `forcats`, `broom`, `patchwork`;
 - a C++17 compiler (`g++`);
 - OpenMP support (`-fopenmp`);
-- NVIDIA CUDA Toolkit with `nvcc` and a double-precision-capable NVIDIA GPU
-  for the final CUDA benchmark.
+- NVIDIA CUDA Toolkit with `nvcc` and a compatible NVIDIA GPU for CUDA.
 
-Check the environment before execution:
+Check the R environment:
 
 ```bash
 Rscript validation/environment/00_check_environment.R
 ```
 
-## Complete aligned validation
+## Experimental design
 
-The final experiment uses seed `20260504`, five repetitions, and the workloads
-10,000; 50,000; 100,000; 500,000; 1,000,000; 2,000,000; and 5,000,000 profiles.
-Each repetition is generated once in R, serialized, and reused unchanged by:
+The controlled final run uses:
 
-1. sequential R;
-2. persistent four-worker R/PSOCK;
-3. sequential C++17;
-4. four-thread C++/OpenMP with static scheduling;
-5. C++/CUDA using double precision.
+- seed `20260504`;
+- five paired repetitions;
+- workloads of 10,000; 50,000; 100,000; 500,000; 1,000,000; 2,000,000;
+  and 5,000,000 profiles;
+- four persistent PSOCK workers;
+- four OpenMP threads;
+- double precision in R, C++ and CUDA;
+- the same canonical input for every implementation within each
+  workload/repetition pair.
 
-From the repository root, run:
+Each canonical input is generated once in R and reused unchanged by:
 
-```bash
-RUN_LARGE_BENCH=TRUE BENCH_REPS=5 RCS_SEED=20260504 \
-RUN_CROSS_LANGUAGE_BENCH=TRUE RCS_PARALLEL_WORKERS=4 \
-RCS_OPENMP_THREADS=4 RUN_CUDA_BENCH=TRUE \
-  Rscript scripts/run_all.R
-```
+1. R sequential;
+2. persistent R/PSOCK;
+3. C++17 sequential;
+4. C++17 with OpenMP and static scheduling;
+5. C++17 with CUDA.
 
-This command regenerates the complete validation, all tables, all supplementary
-outputs, Figures 2-7, figure-source tables, and computational-environment logs.
-Figures are exported as vector PDF and 600-dpi PNG files.
+Compilation, data generation and serialization are excluded from the timed
+scoring region. For CUDA, the primary device metric includes allocation,
+host-to-device transfer, kernel execution, synchronization and device-to-host
+transfer. Kernel-only time is retained as a complementary metric.
 
-For CPU-only development checks, set `RUN_CUDA_BENCH=FALSE`. Results from that
-reduced run must not replace the final heterogeneous-computing results.
+## RCS calculation
 
-## RCS calculation reproduced by every implementation
-
-For matrix `k`, the axis penalty and accumulated biological-operational penalty
-are:
+For matrix `k`:
 
 ```text
-p_i^(k) = W_i^(k) * s_i(x_i)
+p_i^(k)   = W_i^(k) * s_i(x_i)
 P_bio^(k) = sum_i p_i^(k)
-RCS^(k) = 100 - P_bio^(k)
+RCS^(k)   = 100 - P_bio^(k)
 ```
 
-Fluid weights are `(30, 15, 10, 20, 25)` for `P_pre`, `P_cent1`, `P_cent2`,
-`P_post`, and `P_store`. Solid weights are `(25, 25, 15, 20, 15)` for
-`P_warm`, `P_cold`, `P_fix`, `P_fixTime`, and `P_store`.
+Fluid weights are `(30, 15, 10, 20, 25)` for `P_pre`, `P_cent1`,
+`P_cent2`, `P_post` and `P_store`. Solid weights are
+`(25, 25, 15, 20, 15)` for `P_warm`, `P_cold`, `P_fix`,
+`P_fixTime` and `P_store`.
 
 Score-based grades are A for `RCS >= 90`, B for `80 <= RCS < 90`, C for
-`65 <= RCS < 80`, D for `50 <= RCS < 65`, and E for `RCS < 50`. A failed
-governance gate is non-compensable and routes the profile directly to Grade E.
+`65 <= RCS < 80`, D for `50 <= RCS < 65`, and E for `RCS < 50`.
+A failed governance gate is non-compensable and routes directly to Grade E.
 
 ## Equivalence criteria
 
-Every native output is compared with the R canonical output for the same record
-order. A run passes only when all conditions hold:
+R is the canonical output. Every native result must preserve record order and
+pass all criteria:
 
 ```text
 same number and order of profiles
@@ -103,58 +119,96 @@ identical final_grade
 identical grade_route
 ```
 
-The pipeline stops if any equivalence check fails.
+The pipeline stops on any equivalence failure.
 
-## Runtime and speedup calculations
+## Performance calculations
 
-All primary speedups are calculated separately within each paired repetition
-and then summarized. They are not calculated as ratios of unpaired means.
-
-```text
-S_PSOCK        = T_R,sequential / T_R,PSOCK
-S_language     = T_R,sequential / T_C++,sequential
-S_OpenMP       = T_C++,sequential / T_C++,OpenMP
-S_GPU          = T_C++,sequential / T_C++,CUDA,total
-S_PSOCK/OpenMP = T_R,PSOCK / T_C++,OpenMP
-S_PSOCK/GPU    = T_R,PSOCK / T_C++,CUDA,total
-```
-
-Arithmetic means and 95% confidence intervals use five repetitions per
-workload. Figure 6 reports sequential R versus persistent PSOCK. Figure 7
-separates language gain, OpenMP gain, GPU gain, and direct PSOCK comparisons.
-
-For CUDA, the primary operational metric is end-to-end device time:
+All ratios are computed inside each paired workload/repetition before summary.
+Ratios of unpaired means are not used.
 
 ```text
-T_CUDA,total = allocation + host-to-device transfer + kernel
-             + device-to-host transfer + synchronization
+PSOCK effect        = T_R,sequential / T_R,PSOCK
+language effect     = T_R,sequential / T_C++,sequential
+OpenMP effect       = T_C++,sequential / T_C++,OpenMP
+CUDA effect         = T_C++,sequential / T_C++,CUDA,total
+
+overall PSOCK       = T_R,sequential / T_R,PSOCK
+overall C++ seq.    = T_R,sequential / T_C++,sequential
+overall OpenMP      = T_R,sequential / T_C++,OpenMP
+overall CUDA        = T_R,sequential / T_C++,CUDA,total
+
+direct PSOCK/OpenMP = T_R,PSOCK / T_C++,OpenMP
+direct PSOCK/CUDA   = T_R,PSOCK / T_C++,CUDA,total
 ```
 
-Kernel-only CUDA time is retained as a complementary metric and is not used as
-the primary denominator for operational speedup.
+Figure 6 is the single computational comparison:
 
-## Expected generated artifacts
+- Panel A: elapsed time for every implementation;
+- Panel B: overall speedup relative to canonical R sequential;
+- Panel C: decomposed PSOCK, language, OpenMP and CUDA effects.
 
-- Figures 2-7 in PDF and 600-dpi PNG;
-- validation, sensitivity, ablation, runtime, and equivalence tables;
-- Figure 6 and Figure 7 machine-readable source tables;
-- supplementary output tables;
-- canonical binary inputs and outputs under `outputs/cross_language/`;
-- R session information and cross-language compiler/GPU environment logs.
+Individual repetitions are displayed. Arithmetic means and 95% confidence
+intervals are added when at least two repetitions exist. Direct PSOCK/OpenMP
+and PSOCK/CUDA comparisons are exported as supplementary audit tables.
 
-The repository intentionally keeps `outputs/` empty until a complete final run
-is executed. Runtime values are environment-specific and must only be reported
-after that controlled run.
+## Run locally
+
+CPU-only smoke test:
+
+```bash
+RUN_LARGE_BENCH=FALSE \
+BENCH_REPS=1 \
+RCS_SEED=20260504 \
+RUN_CROSS_LANGUAGE_BENCH=TRUE \
+RCS_PARALLEL_WORKERS=2 \
+RCS_OPENMP_THREADS=2 \
+RUN_CUDA_BENCH=FALSE \
+Rscript scripts/run_all.R 2>&1 | tee local_smoke_test.log
+```
+
+This run validates the full R workflow, R/PSOCK, C++ sequential, OpenMP,
+equivalence checks, tables and Figures 2-6. CUDA is omitted dynamically.
+
+## Run the controlled GCP experiment
+
+```bash
+RUN_LARGE_BENCH=TRUE \
+BENCH_REPS=5 \
+RCS_SEED=20260504 \
+RUN_CROSS_LANGUAGE_BENCH=TRUE \
+RCS_PARALLEL_WORKERS=4 \
+RCS_OPENMP_THREADS=4 \
+RUN_CUDA_BENCH=TRUE \
+Rscript scripts/run_all.R 2>&1 | tee gcp_final_benchmark.log
+```
+
+Before the final run, verify `nvidia-smi` and `nvcc --version`. CUDA series
+appear automatically when CUDA observations are present.
+
+## Generated artifacts
+
+- Figures 2-6 as vector PDF and 600-dpi PNG;
+- validation, sensitivity, ablation, runtime and equivalence tables;
+- machine-readable figure-source tables;
+- supplementary audit tables, including direct optimized-path speedups;
+- temporary canonical binary inputs/native outputs under
+  `outputs/cross_language/`;
+- R session and compiler/GPU environment records under
+  `validation/environment/`.
+
+Generated results, binaries, logs and environment snapshots are ignored by
+Git. The repository intentionally keeps output directories empty except for
+`.gitkeep` markers; every controlled run starts from regenerated artifacts.
 
 ## Repository structure
 
 ```text
-scripts/                         Validation and figure-generation scripts
-outputs/figures/                 Main manuscript figures
-outputs/tables/figure_source/    Machine-readable figure source tables
-outputs/tables/supplementary/    Supplementary validation outputs
-outputs/cross_language/          Canonical binary inputs and native results
-validation/environment/          Session and environment records
-src/                             C++17, OpenMP, and CUDA scoring engines
-docs/                            Crosswalk and validation documentation
+scripts/                         validation, benchmarking and figure scripts
+src/                             C++17, OpenMP and CUDA scoring engines
+outputs/figures/                 generated main manuscript figures
+outputs/tables/figure_source/    generated machine-readable figure sources
+outputs/tables/supplementary/    generated supplementary audit tables
+outputs/cross_language/          generated canonical/native binary artifacts
+validation/environment/          checks and generated environment records
+.github/workflows/               CPU smoke validation
 ```

@@ -1,0 +1,55 @@
+name: CPU smoke validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  cpu-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Install R dependencies
+        run: |
+          Rscript -e 'install.packages(c(
+            "dplyr", "tidyr", "purrr", "ggplot2", "readr", "stringr",
+            "scales", "tibble", "forcats", "broom", "patchwork"
+          ))'
+
+      - name: Check environment
+        run: Rscript validation/environment/00_check_environment.R
+
+      - name: Run aligned CPU smoke test
+        env:
+          RUN_LARGE_BENCH: "FALSE"
+          BENCH_REPS: "1"
+          RCS_SEED: "20260504"
+          RUN_CROSS_LANGUAGE_BENCH: "TRUE"
+          RCS_PARALLEL_WORKERS: "2"
+          RCS_OPENMP_THREADS: "2"
+          RUN_CUDA_BENCH: "FALSE"
+        run: Rscript scripts/run_all.R
+
+      - name: Verify required artifacts
+        run: |
+          test -f outputs/figures/Figure_2_Synthetic_Validation_Heatmap.pdf
+          test -f outputs/figures/Figure_3_Combinatorial_Distribution_Admissible_Grades.pdf
+          test -f outputs/figures/Figure_4_Threshold_Stability_Grade_Transitions.pdf
+          test -f outputs/figures/Figure_5_Runtime_Scalability.pdf
+          test -f outputs/figures/Figure_6_Implementation_Performance_Benchmark.pdf
+          test -f outputs/tables/Table_Cross_Language_Equivalence_Check.csv
+          test -f outputs/tables/figure_source/Figure_6_Source_Overall_Speedup_Raw.csv
