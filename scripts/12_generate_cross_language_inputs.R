@@ -16,7 +16,6 @@ if (is.na(workers) || workers < 1L) {
 }
 
 cl <- parallel::makeCluster(workers)
-on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
 parallel::clusterEvalQ(cl, {
   suppressPackageStartupMessages({library(dplyr);library(tidyr);library(purrr);library(tibble);library(stringr);library(scales);library(forcats);library(broom)})
   NULL
