@@ -10,7 +10,9 @@ workers <- as.integer(args$workers)
 warmups <- as.integer(args$warmups)
 minimum_seconds <- as.numeric(args[["min-sec"]])
 maximum_loops <- as.integer(args[["max-loops"]])
+read_start <- proc.time()[["elapsed"]]
 profiles <- v2_read_profiles(args$input)
+read_sec <- proc.time()[["elapsed"]] - read_start
 
 score_chunk <- function(x) {
   fluid_w <- c(30, 15, 10, 20, 25)
@@ -28,6 +30,7 @@ score_chunk <- function(x) {
 }
 
 cluster <- NULL
+init_start <- proc.time()[["elapsed"]]
 if (args$implementation == "r_psock") {
   cluster <- parallel::makePSOCKcluster(workers)
   on.exit(parallel::stopCluster(cluster), add = TRUE)
@@ -44,10 +47,18 @@ if (args$implementation == "r_psock") {
 } else if (args$implementation == "r_sequential") {
   score_once <- function() v2_score_core(profiles)
 } else stop("Unknown R implementation: ", args$implementation)
+init_sec <- proc.time()[["elapsed"]] - init_start
 
 if (args$mode == "e2e") {
+  compute_start <- proc.time()[["elapsed"]]
   result <- score_once()
+  compute_sec <- proc.time()[["elapsed"]] - compute_start
+  write_start <- proc.time()[["elapsed"]]
   v2_write_results(result, args$output)
+  write_sec <- proc.time()[["elapsed"]] - write_start
+  internal_sec <- read_sec + init_sec + compute_sec + write_sec
+  cat(sprintf("V2PHASES,%.12g,%.12g,%.12g,%.12g,%.12g\n",
+              read_sec, init_sec, compute_sec, write_sec, internal_sec))
   cat(sprintf("V2RESULT,%s,%d,%d,1,NA\n", args$implementation, profiles$n, workers))
   quit(status = 0L)
 }
@@ -60,4 +71,3 @@ for (i in seq_len(inner_loops)) result <- score_once()
 elapsed <- (proc.time()[["elapsed"]] - start) / inner_loops
 v2_write_results(result, args$output)
 cat(sprintf("V2RESULT,%s,%d,%d,%d,%.12g\n", args$implementation, profiles$n, workers, inner_loops, elapsed))
-

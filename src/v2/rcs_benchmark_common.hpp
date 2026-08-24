@@ -61,6 +61,12 @@ inline void print_result(const Arguments& args, std::size_t n, int loops, double
   std::cout << '\n';
 }
 
+inline void print_phases(double read_seconds, double init_seconds, double compute_seconds,
+                         double write_seconds) {
+  std::cout << std::setprecision(12) << "V2PHASES," << read_seconds << ',' << init_seconds << ','
+            << compute_seconds << ',' << write_seconds << ','
+            << (read_seconds + init_seconds + compute_seconds + write_seconds) << '\n';
+}
+
 }  // namespace rcs_v2
 #endif
-

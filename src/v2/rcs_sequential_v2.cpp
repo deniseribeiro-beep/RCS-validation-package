@@ -3,15 +3,19 @@
 int main(int argc, char** argv) {
   try {
     const auto args = rcs_v2::parse_arguments(argc, argv);
-    const auto profiles = rcs::read_profiles(args.input);
+    std::vector<rcs::Profile> profiles;
+    const double read_seconds = rcs_v2::elapsed([&]() { profiles = rcs::read_profiles(args.input); });
+    const auto init_start = std::chrono::steady_clock::now();
     std::vector<rcs::Result> results(profiles.size());
     const auto operation = [&]() {
       for (std::size_t i = 0; i < profiles.size(); ++i) results[i] = rcs::score_one(profiles[i]);
       std::atomic_signal_fence(std::memory_order_seq_cst);
     };
     if (args.mode == "e2e") {
-      operation();
-      rcs::write_results(args.output, results);
+      const double init_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - init_start).count();
+      const double compute_seconds = rcs_v2::elapsed(operation);
+      const double write_seconds = rcs_v2::elapsed([&]() { rcs::write_results(args.output, results); });
+      rcs_v2::print_phases(read_seconds, init_seconds, compute_seconds, write_seconds);
       rcs_v2::print_result(args, profiles.size(), 1, NAN);
       return 0;
     }
@@ -23,4 +27,3 @@ int main(int argc, char** argv) {
     return 0;
   } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }
-

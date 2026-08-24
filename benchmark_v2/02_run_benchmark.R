@@ -29,23 +29,33 @@ compile_native <- function() {
   list(cpp_sequential = seq_bin, cpp_openmp = omp_bin, cpp_cuda = cuda_bin)
 }
 
+compile_cython <- function() {
+  if (!V2_RUN_PYTHON) return(invisible(NULL))
+  check <- system2("python3", c("-c", shQuote("import numpy, Cython, setuptools; print(Cython.__version__)")), stdout = TRUE, stderr = TRUE)
+  if (!status_ok(check)) stop("Python NumPy, Cython, and setuptools are required. Install with: python3 -m pip install numpy cython setuptools")
+  run_command("python3", c(file.path("benchmark_v2", "setup_cython.py"), "build_ext",
+                           "--build-lib", file.path("benchmark_v2"),
+                           "--build-temp", file.path(V2_BIN, "cython_build")))
+}
+
 if (V2_RUN_PYTHON) {
   if (!nzchar(Sys.which("python3"))) stop("python3 is required when V2_RUN_PYTHON=TRUE.")
   check <- system2("python3", c("-c", shQuote("import numpy; print(numpy.__version__)")), stdout = TRUE, stderr = TRUE)
-  if (!status_ok(check)) stop("Python NumPy is required. Install it with: python3 -m pip install numpy")
+  if (!status_ok(check)) stop("Python NumPy is required. Install it with: python3 -m pip install numpy cython setuptools")
 }
 
 source(file.path("benchmark_v2", "01_prepare_inputs.R"))
 bins <- compile_native()
+compile_cython()
 manifest <- read.csv(file.path(V2_ROOT, "Input_Manifest.csv"), stringsAsFactors = FALSE)
 
-engines <- data.frame(implementation = c("r_sequential", "cpp_sequential"), workers = c(1L, 1L), family = c("r", "native"), stringsAsFactors = FALSE)
+engines <- data.frame(implementation = c("r_sequential", "cpp_sequential"), workers = c(1L, 1L), family = c("r", "cpp"), stringsAsFactors = FALSE)
 engines <- rbind(engines,
   data.frame(implementation = "r_psock", workers = V2_PROCESS_WORKERS, family = "r"),
-  data.frame(implementation = "cpp_openmp", workers = V2_OPENMP_THREADS, family = "native"))
+  data.frame(implementation = "cpp_openmp", workers = V2_OPENMP_THREADS, family = "cpp"))
 if (V2_RUN_PYTHON) engines <- rbind(engines,
-  data.frame(implementation = "python_numpy", workers = 1L, family = "python"),
-  data.frame(implementation = "python_process", workers = V2_PROCESS_WORKERS, family = "python"))
+  data.frame(implementation = "cython_sequential", workers = 1L, family = "python_cython"),
+  data.frame(implementation = "cython_openmp", workers = V2_OPENMP_THREADS, family = "python_cython"))
 if (V2_RUN_CUDA) engines <- rbind(engines, data.frame(implementation = "cpp_cuda", workers = 1L, family = "cuda"))
 rownames(engines) <- NULL
 
@@ -57,6 +67,10 @@ write.csv(schedule, file.path(V2_ROOT, "Randomized_Execution_Schedule.csv"), row
 
 raw_path <- file.path(V2_TABLES, "Table_V2_Runtime_Benchmark_Raw.csv")
 raw <- if (V2_RESUME && file.exists(raw_path)) read.csv(raw_path, stringsAsFactors = FALSE) else data.frame()
+required_raw_columns <- c("protocol_version", "read_sec", "initialization_sec", "classification_sec",
+                          "write_sec", "internal_total_sec", "process_overhead_sec")
+if (nrow(raw) && (!all(required_raw_columns %in% names(raw)) || any(raw$protocol_version != V2_PROTOCOL_VERSION)))
+  stop("V2_RESUME cannot reuse results from a different protocol/schema. Run with V2_RESUME=FALSE.")
 completed_key <- function(implementation, workers, n_records, repetition, timing_region) {
   if (!nrow(raw)) return(FALSE)
   any(raw$implementation == implementation & raw$workers == workers & raw$n_records == n_records &
@@ -65,8 +79,16 @@ completed_key <- function(implementation, workers, n_records, repetition, timing
 
 engine_command <- function(implementation) {
   if (implementation %in% c("r_sequential", "r_psock")) return(c("Rscript", file.path("benchmark_v2", "r_engine.R")))
-  if (implementation %in% c("python_numpy", "python_process")) return(c("python3", file.path("benchmark_v2", "python_engine.py")))
+  if (implementation %in% c("cython_sequential", "cython_openmp")) return(c("python3", file.path("benchmark_v2", "python_engine.py")))
   c(unname(bins[[implementation]]))
+}
+
+parse_phases <- function(text) {
+  line <- tail(grep("^V2PHASES,", text, value = TRUE), 1L)
+  if (!length(line)) stop("Engine did not emit a V2PHASES record:\n", paste(text, collapse = "\n"))
+  fields <- as.numeric(strsplit(line, ",", fixed = TRUE)[[1]][-1L])
+  names(fields) <- c("read_sec", "initialization_sec", "classification_sec", "write_sec", "internal_total_sec")
+  as.list(fields)
 }
 
 parse_compute <- function(text) {
@@ -88,9 +110,9 @@ for (i in seq_len(nrow(schedule))) {
   command_spec <- engine_command(item$implementation)
   command <- command_spec[[1]]
   prefix_args <- command_spec[-1]
-  warmups <- if (item$implementation == "cpp_cuda") V2_WARMUP_CUDA else if (item$workers > 1L || item$implementation %in% c("r_psock", "python_process", "cpp_openmp")) V2_WARMUP_PARALLEL else V2_WARMUP_CPU
+  warmups <- if (item$implementation == "cpp_cuda") V2_WARMUP_CUDA else if (item$workers > 1L || item$implementation %in% c("r_psock", "cython_openmp", "cpp_openmp")) V2_WARMUP_PARALLEL else V2_WARMUP_CPU
   base_args <- c(prefix_args, "--input", files$input_file, "--implementation", item$implementation,
-                 if (item$family == "native") "--threads" else "--workers", item$workers,
+                 if (item$family %in% c("cpp", "python_cython")) "--threads" else "--workers", item$workers,
                  "--warmups", warmups, "--min-sec", V2_MIN_SAMPLE_SEC, "--max-loops", V2_MAX_INNER_LOOPS)
   message(sprintf("V2 block rep=%d n=%d implementation=%s workers=%d", item$repetition, item$n_records, item$implementation, item$workers))
 
@@ -104,6 +126,8 @@ for (i in seq_len(nrow(schedule))) {
       repetition = item$repetition, random_order = item$random_order, implementation = item$implementation,
       workers = item$workers, timing_region = "compute", inner_loops = parsed$inner_loops,
       elapsed_sec = parsed$elapsed, throughput_profiles_sec = item$n_records / parsed$elapsed,
+      read_sec = NA_real_, initialization_sec = NA_real_, classification_sec = parsed$elapsed,
+      write_sec = NA_real_, internal_total_sec = NA_real_, process_overhead_sec = NA_real_,
       equivalence_passed = comparison$pass, max_abs_pbio_diff = comparison$max_abs_pbio_diff,
       max_abs_rcs_diff = comparison$max_abs_rcs_diff, identical_final_grade = comparison$identical_grade,
       identical_grade_route = comparison$identical_route, stringsAsFactors = FALSE))
@@ -112,12 +136,17 @@ for (i in seq_len(nrow(schedule))) {
   if (!completed_key(item$implementation, item$workers, item$n_records, item$repetition, "end_to_end")) {
     output <- file.path(V2_RESULTS, sprintf("e2e_%s_w%02d_n%08d_rep%02d.bin", item$implementation, item$workers, item$n_records, item$repetition))
     execution <- run_command(command, c(base_args, "--output", output, "--mode", "e2e"), timed = TRUE)
+    phases <- parse_phases(execution$text)
     comparison <- v2_compare_results(expected, v2_read_results(output))
     if (!comparison$pass) stop("Equivalence failed for ", output)
     append_row(data.frame(protocol_version = V2_PROTOCOL_VERSION, n_records = item$n_records,
       repetition = item$repetition, random_order = item$random_order, implementation = item$implementation,
       workers = item$workers, timing_region = "end_to_end", inner_loops = 1L,
       elapsed_sec = execution$elapsed, throughput_profiles_sec = item$n_records / execution$elapsed,
+      read_sec = phases$read_sec, initialization_sec = phases$initialization_sec,
+      classification_sec = phases$classification_sec, write_sec = phases$write_sec,
+      internal_total_sec = phases$internal_total_sec,
+      process_overhead_sec = max(0, execution$elapsed - phases$internal_total_sec),
       equivalence_passed = comparison$pass, max_abs_pbio_diff = comparison$max_abs_pbio_diff,
       max_abs_rcs_diff = comparison$max_abs_rcs_diff, identical_final_grade = comparison$identical_grade,
       identical_grade_route = comparison$identical_route, stringsAsFactors = FALSE))
@@ -132,12 +161,13 @@ environment <- c(
   paste("Protocol version:", V2_PROTOCOL_VERSION), paste("Date:", Sys.time()),
   paste("Git commit:", capture("git", c("rev-parse", "HEAD"))), paste("R:", R.version.string),
   paste("Python:", capture("python3", "--version")), paste("NumPy:", capture("python3", c("-c", shQuote("import numpy; print(numpy.__version__)")))),
+  paste("Cython:", capture("python3", c("-c", shQuote("import Cython; print(Cython.__version__)")))),
   paste("C++:", capture("g++", "--version")), paste("CUDA:", capture("nvcc", "--version")),
   paste("GPU:", capture("nvidia-smi", c("--query-gpu=name,driver_version,memory.total", "--format=csv,noheader"))),
   paste("OS:", paste(Sys.info(), collapse = " ")), paste("Data seed:", V2_DATA_SEED),
   paste("Order seed:", V2_ORDER_SEED), paste("Repetitions:", V2_REPS),
   paste("Minimum calibrated sample seconds:", V2_MIN_SAMPLE_SEC),
-  paste("Process workers:", paste(V2_PROCESS_WORKERS, collapse = ",")),
+  paste("R PSOCK workers:", paste(V2_PROCESS_WORKERS, collapse = ",")),
   paste("OpenMP threads:", paste(V2_OPENMP_THREADS, collapse = ",")),
   "C++ flags: -std=c++17 -O3 -DNDEBUG -march=native",
   "OpenMP flags: -std=c++17 -O3 -DNDEBUG -march=native -fopenmp",
@@ -147,4 +177,3 @@ environment <- c(
   paste("OPENBLAS_NUM_THREADS:", Sys.getenv("OPENBLAS_NUM_THREADS", unset = "not set")))
 writeLines(environment, file.path(V2_LOGS, "Computational_Environment_V2.txt"))
 cat("Benchmark V2 raw execution completed successfully.\n")
-
