@@ -61,6 +61,31 @@ sg <- split(speedup_raw, interaction(speedup_raw$language_family, speedup_raw$n_
 speedup_summary <- do.call(rbind, lapply(sg, summarize_speedup)); rownames(speedup_summary) <- NULL
 write.csv(speedup_summary, file.path(V2_TABLES, "Table_V2_Within_Language_Speedup_Summary.csv"), row.names=FALSE)
 
+# CUDA is an accelerator of the C++ kernel, so its only reference is C++ sequential.
+cuda_raw <- raw[raw$implementation == "cpp_cuda", ]
+if (nrow(cuda_raw)) {
+  cpp_reference <- raw[raw$implementation == "cpp_sequential",
+    c("n_records","repetition","timing_region","elapsed_sec")]
+  names(cpp_reference)[4] <- "cpp_sequential_elapsed_sec"
+  cuda_speedup_raw <- merge(cuda_raw, cpp_reference,
+    by=c("n_records","repetition","timing_region"), all.x=TRUE)
+  cuda_speedup_raw$cuda_speedup_vs_cpp_sequential <-
+    cuda_speedup_raw$cpp_sequential_elapsed_sec / cuda_speedup_raw$elapsed_sec
+  write.csv(cuda_speedup_raw, file.path(V2_TABLES, "Table_V2_CUDA_Speedup_Raw.csv"), row.names=FALSE)
+  cuda_groups <- split(cuda_speedup_raw, interaction(cuda_speedup_raw$n_records,
+    cuda_speedup_raw$timing_region, drop=TRUE))
+  cuda_summary <- do.call(rbind, lapply(cuda_groups, function(x) {
+    ci <- bootstrap_ci(x$cuda_speedup_vs_cpp_sequential, geomean)
+    data.frame(n_records=x$n_records[1], timing_region=x$timing_region[1], repetitions=nrow(x),
+      geometric_mean_speedup=geomean(x$cuda_speedup_vs_cpp_sequential),
+      speedup_ci95_low=ci[1], speedup_ci95_high=ci[2],
+      median_speedup=median(x$cuda_speedup_vs_cpp_sequential),
+      iqr_speedup=stats::IQR(x$cuda_speedup_vs_cpp_sequential))
+  }))
+  rownames(cuda_summary) <- NULL
+  write.csv(cuda_summary, file.path(V2_TABLES, "Table_V2_CUDA_Speedup_Summary.csv"), row.names=FALSE)
+}
+
 equivalence <- aggregate(cbind(max_abs_pbio_diff,max_abs_rcs_diff) ~ language_family+implementation+workers, raw, max)
 equivalence$all_equivalence_checks_passed <- TRUE
 write.csv(equivalence, file.path(V2_TABLES, "Table_V2_Equivalence_Check.csv"), row.names=FALSE)
@@ -118,6 +143,32 @@ ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S15_V2_Within_Language_Scaling.pdf"
 ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S15_V2_Within_Language_Scaling.png"),p_speed,width=13,height=7,dpi=600,bg="white")
 write.csv(compute_speed,file.path(V2_TABLES,"Figure_S15_V2_Source_Scaling.csv"),row.names=FALSE)
 
+if (exists("cuda_summary")) {
+  cuda_summary$region_label <- factor(cuda_summary$timing_region,
+    levels=c("compute","end_to_end"), labels=c("Kernel only","End to end"))
+  p_cuda <- ggplot2::ggplot(cuda_summary, ggplot2::aes(n_records, geometric_mean_speedup,
+      color=region_label, fill=region_label, group=region_label)) +
+    ggplot2::geom_hline(yintercept=1, linetype=2, color="#666666") +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin=speedup_ci95_low,ymax=speedup_ci95_high),
+                         alpha=.12,color=NA) +
+    ggplot2::geom_line(linewidth=.85) + ggplot2::geom_point(size=2.4) +
+    ggplot2::scale_x_log10(breaks=sort(unique(cuda_summary$n_records)), labels=scales::label_comma()) +
+    ggplot2::scale_y_log10(labels=function(x) paste0(scales::label_number()(x),"×")) +
+    ggplot2::scale_color_manual(values=c("Kernel only"="#D55E00","End to end"="#0072B2")) +
+    ggplot2::scale_fill_manual(values=c("Kernel only"="#D55E00","End to end"="#0072B2")) +
+    ggplot2::labs(title="CUDA acceleration relative to C++ sequential",
+      x="Number of biospecimen profiles", y="Paired geometric-mean speedup (log scale)",
+      color=NULL,fill=NULL) +
+    ggplot2::theme_minimal(base_size=11) + ggplot2::theme(legend.position="bottom",
+      panel.grid.minor=ggplot2::element_blank(),plot.title=ggplot2::element_text(face="bold"),
+      plot.margin=ggplot2::margin(10,16,10,16))
+  ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S16_V2_CUDA_Acceleration.pdf"),p_cuda,
+    width=9,height=5.8,device=if(capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf,bg="white")
+  ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S16_V2_CUDA_Acceleration.png"),p_cuda,
+    width=9,height=5.8,dpi=600,bg="white")
+  write.csv(cuda_summary,file.path(V2_TABLES,"Figure_S16_V2_Source_CUDA.csv"),row.names=FALSE)
+}
+
 phase_cols <- c("read_sec","initialization_sec","classification_sec","write_sec","process_overhead_sec")
 phase_raw <- raw[raw$timing_region=="end_to_end",c("language_family","n_records","repetition","implementation","workers",phase_cols)]
 phase_long <- reshape(phase_raw,varying=phase_cols,v.names="elapsed_sec",timevar="phase",times=phase_cols,direction="long")
@@ -126,4 +177,17 @@ phase_summary$share_percent <- ave(phase_summary$elapsed_sec,interaction(phase_s
   phase_summary$implementation,phase_summary$workers),FUN=function(x) 100*x/sum(x))
 write.csv(phase_summary,file.path(V2_TABLES,"Table_V2_End_to_End_Phase_Decomposition.csv"),row.names=FALSE)
 
-cat("Benchmark V2 tables and figures generated without cross-language speedup comparisons.\n")
+cuda_phase_cols <- c("cuda_host_prepare_sec","cuda_device_setup_sec","cuda_h2d_sec","cuda_kernel_sec",
+                     "cuda_d2h_sec","cuda_device_teardown_sec","cuda_host_finalize_sec","cuda_disk_write_sec")
+cuda_phases <- raw[raw$implementation=="cpp_cuda" & raw$timing_region=="end_to_end",
+                   c("n_records","repetition",cuda_phase_cols)]
+if (nrow(cuda_phases)) {
+  cuda_phase_long <- reshape(cuda_phases,varying=cuda_phase_cols,v.names="elapsed_sec",
+    timevar="phase",times=cuda_phase_cols,direction="long")
+  cuda_phase_summary <- aggregate(elapsed_sec ~ n_records+phase,cuda_phase_long,median)
+  cuda_phase_summary$share_percent <- ave(cuda_phase_summary$elapsed_sec,cuda_phase_summary$n_records,
+    FUN=function(x) 100*x/sum(x))
+  write.csv(cuda_phase_summary,file.path(V2_TABLES,"Table_V2_CUDA_Phase_Decomposition.csv"),row.names=FALSE)
+}
+
+cat("Benchmark V2 tables and figures generated without cross-language speedup comparisons; CUDA uses C++ sequential only.\n")

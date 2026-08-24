@@ -68,7 +68,9 @@ write.csv(schedule, file.path(V2_ROOT, "Randomized_Execution_Schedule.csv"), row
 raw_path <- file.path(V2_TABLES, "Table_V2_Runtime_Benchmark_Raw.csv")
 raw <- if (V2_RESUME && file.exists(raw_path)) read.csv(raw_path, stringsAsFactors = FALSE) else data.frame()
 required_raw_columns <- c("protocol_version", "read_sec", "initialization_sec", "classification_sec",
-                          "write_sec", "internal_total_sec", "process_overhead_sec")
+                          "write_sec", "internal_total_sec", "process_overhead_sec", "cuda_h2d_sec", "cuda_d2h_sec",
+                          "cuda_host_prepare_sec", "cuda_device_setup_sec", "cuda_kernel_sec",
+                          "cuda_device_teardown_sec", "cuda_host_finalize_sec", "cuda_disk_write_sec")
 if (nrow(raw) && (!all(required_raw_columns %in% names(raw)) || any(raw$protocol_version != V2_PROTOCOL_VERSION)))
   stop("V2_RESUME cannot reuse results from a different protocol/schema. Run with V2_RESUME=FALSE.")
 completed_key <- function(implementation, workers, n_records, repetition, timing_region) {
@@ -89,6 +91,16 @@ parse_phases <- function(text) {
   fields <- as.numeric(strsplit(line, ",", fixed = TRUE)[[1]][-1L])
   names(fields) <- c("read_sec", "initialization_sec", "classification_sec", "write_sec", "internal_total_sec")
   as.list(fields)
+}
+
+parse_cuda <- function(text) {
+  values <- setNames(as.list(rep(NA_real_, 8L)), c("host_prepare_sec", "device_setup_sec", "h2d_sec",
+    "kernel_sec", "d2h_sec", "device_teardown_sec", "host_finalize_sec", "disk_write_sec"))
+  line <- tail(grep("^V2CUDA,", text, value = TRUE), 1L)
+  if (!length(line)) return(values)
+  fields <- as.numeric(strsplit(line, ",", fixed = TRUE)[[1]][-1L])
+  if (length(fields) != 8L || any(!is.finite(fields))) stop("Invalid V2CUDA record: ", line)
+  as.list(setNames(fields, names(values)))
 }
 
 parse_compute <- function(text) {
@@ -128,6 +140,10 @@ for (i in seq_len(nrow(schedule))) {
       elapsed_sec = parsed$elapsed, throughput_profiles_sec = item$n_records / parsed$elapsed,
       read_sec = NA_real_, initialization_sec = NA_real_, classification_sec = parsed$elapsed,
       write_sec = NA_real_, internal_total_sec = NA_real_, process_overhead_sec = NA_real_,
+      cuda_host_prepare_sec = NA_real_, cuda_device_setup_sec = NA_real_, cuda_h2d_sec = NA_real_,
+      cuda_kernel_sec = if (item$implementation == "cpp_cuda") parsed$elapsed else NA_real_,
+      cuda_d2h_sec = NA_real_, cuda_device_teardown_sec = NA_real_, cuda_host_finalize_sec = NA_real_,
+      cuda_disk_write_sec = NA_real_,
       equivalence_passed = comparison$pass, max_abs_pbio_diff = comparison$max_abs_pbio_diff,
       max_abs_rcs_diff = comparison$max_abs_rcs_diff, identical_final_grade = comparison$identical_grade,
       identical_grade_route = comparison$identical_route, stringsAsFactors = FALSE))
@@ -137,6 +153,8 @@ for (i in seq_len(nrow(schedule))) {
     output <- file.path(V2_RESULTS, sprintf("e2e_%s_w%02d_n%08d_rep%02d.bin", item$implementation, item$workers, item$n_records, item$repetition))
     execution <- run_command(command, c(base_args, "--output", output, "--mode", "e2e"), timed = TRUE)
     phases <- parse_phases(execution$text)
+    cuda <- parse_cuda(execution$text)
+    if (item$implementation == "cpp_cuda" && is.na(cuda$kernel_sec)) stop("CUDA engine did not emit phase details.")
     comparison <- v2_compare_results(expected, v2_read_results(output))
     if (!comparison$pass) stop("Equivalence failed for ", output)
     append_row(data.frame(protocol_version = V2_PROTOCOL_VERSION, n_records = item$n_records,
@@ -147,6 +165,10 @@ for (i in seq_len(nrow(schedule))) {
       classification_sec = phases$classification_sec, write_sec = phases$write_sec,
       internal_total_sec = phases$internal_total_sec,
       process_overhead_sec = max(0, execution$elapsed - phases$internal_total_sec),
+      cuda_host_prepare_sec = cuda$host_prepare_sec, cuda_device_setup_sec = cuda$device_setup_sec,
+      cuda_h2d_sec = cuda$h2d_sec, cuda_kernel_sec = cuda$kernel_sec, cuda_d2h_sec = cuda$d2h_sec,
+      cuda_device_teardown_sec = cuda$device_teardown_sec, cuda_host_finalize_sec = cuda$host_finalize_sec,
+      cuda_disk_write_sec = cuda$disk_write_sec,
       equivalence_passed = comparison$pass, max_abs_pbio_diff = comparison$max_abs_pbio_diff,
       max_abs_rcs_diff = comparison$max_abs_rcs_diff, identical_final_grade = comparison$identical_grade,
       identical_grade_route = comparison$identical_route, stringsAsFactors = FALSE))

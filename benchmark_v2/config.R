@@ -27,7 +27,7 @@ v2_int_list <- function(name, default) {
 }
 
 V2_SMOKE <- v2_bool("V2_SMOKE", TRUE)
-V2_PROTOCOL_VERSION <- "2.1.0"
+V2_PROTOCOL_VERSION <- "2.2.0"
 V2_DATA_SEED <- v2_int("V2_DATA_SEED", 20260504L, 0L)
 V2_ORDER_SEED <- v2_int("V2_ORDER_SEED", 20260824L, 0L)
 V2_REPS <- v2_int("V2_REPS", if (V2_SMOKE) 2L else 20L)
@@ -47,7 +47,6 @@ V2_RESUME <- v2_bool("V2_RESUME", FALSE)
 
 if (!1L %in% V2_PROCESS_WORKERS) stop("V2_PROCESS_WORKERS must include 1 for strong-scaling baselines.")
 if (!1L %in% V2_OPENMP_THREADS) stop("V2_OPENMP_THREADS must include 1 for strong-scaling baselines.")
-if (V2_RUN_CUDA) stop("CUDA is outside protocol 2.1, which is restricted to R, Python/Cython, and C++ CPU scenarios.")
 
 V2_ROOT <- file.path("outputs", "benchmark_v2")
 V2_INPUTS <- file.path(V2_ROOT, "inputs")

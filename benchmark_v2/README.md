@@ -1,9 +1,10 @@
-# RCS classification benchmark V2.1
+# RCS classification benchmark V2.2
 
 This protocol evaluates sequential and parallel execution **within** three CPU
 language families: R, Python/Cython, and C++. It does not use one language as
 the performance reference for another and does not report cross-language
-speedups. CUDA is outside this version of the protocol.
+speedups. CUDA is retained as an optional accelerator of the C++ kernel and is
+compared only with C++ sequential.
 
 ## Experimental matrix
 
@@ -12,6 +13,11 @@ speedups. CUDA is outside this version of the protocol.
 | R | native R scoring core | PSOCK processes |
 | Python/Cython | compiled Cython loop, one thread | same Cython loop with OpenMP threads |
 | C++ | C++17 loop | same C++ kernel with OpenMP threads |
+
+When `V2_RUN_CUDA=TRUE`, the same classification rule is also executed by a
+CUDA kernel. CUDA is not treated as a fourth language. Two acceleration
+measures are reported: kernel-only and end-to-end speedup relative to C++
+sequential.
 
 Every condition emits `P_bio`, RCS score, final grade, and route; these outputs
 must match the canonical expected binary before a timing is accepted.
@@ -31,6 +37,7 @@ phase table and scaling curves, not inferred from a linear runtime regression.
 - R plus `ggplot2`, `patchwork`, and `scales`;
 - Python 3 plus `numpy`, `cython`, and `setuptools`;
 - `g++` with C++17 and OpenMP support.
+- `nvcc` and an NVIDIA GPU when CUDA is enabled.
 
 ```bash
 python3 -m pip install numpy cython setuptools
@@ -72,7 +79,7 @@ V2_PROCESS_WORKERS=1,2,4,8,16 \
 V2_OPENMP_THREADS=1,2,4,8,16 \
 V2_PRIMARY_WORKERS=8 \
 V2_RUN_PYTHON=TRUE \
-V2_RUN_CUDA=FALSE \
+V2_RUN_CUDA=TRUE \
 Rscript scripts/run_benchmark_v2.R 2>&1 | tee benchmark_v2_full.log
 ```
 
@@ -87,6 +94,9 @@ Files are written under `outputs/benchmark_v2/`:
 - paired within-language sequential-to-parallel speedups and efficiencies;
 - equivalence and measurement-stability tables;
 - end-to-end phase decomposition;
+- CUDA kernel, allocation, host-to-device, device-to-host, host-finalization,
+  and disk-write phase tables when enabled;
+- CUDA kernel-only and end-to-end speedup relative to C++ sequential;
 - runtime figure with separate scale per language family;
 - within-language scaling figure and their source CSV files.
 
