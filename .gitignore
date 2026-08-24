@@ -36,3 +36,8 @@ rcs_cuda
 .RData
 .Rproj.user/
 .vscode/
+
+# Python state
+__pycache__/
+*.py[cod]
+.venv/

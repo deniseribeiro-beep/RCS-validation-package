@@ -1,5 +1,11 @@
 # Ribeiro Classification Score (RCS) validation package
 
+> A publication-oriented second-generation implementation benchmark is
+> available in [`benchmark_v2/README.md`](benchmark_v2/README.md). It is
+> isolated from V1 and adds Python/NumPy, standardized compute/end-to-end
+> timing, calibrated samples, randomized repetitions, equivalence gates,
+> uncertainty tables, and revised figures.
+
 Reproducibility package for the governance-aware, rule-based Ribeiro
 Classification Score (RCS) described in *A Governance-Aware Rule-Based
 Computational Framework for Biospecimen Qualification in Biobank Information
