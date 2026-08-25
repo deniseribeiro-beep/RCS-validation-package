@@ -132,7 +132,8 @@ p_speed <- ggplot2::ggplot(compute_speed,ggplot2::aes(workers,geometric_mean_spe
                                                        group=interaction(language_family,n_records))) +
   ggplot2::geom_abline(slope=1,intercept=0,linetype=2,color="#777777") +
   ggplot2::geom_line() + ggplot2::geom_point(size=2.1) +
-  ggplot2::facet_grid(language_family~n_records,labeller=ggplot2::labeller(n_records=scales::label_comma())) +
+  ggplot2::facet_grid(language_family~n_records,
+    labeller=ggplot2::labeller(n_records=function(x) scales::label_comma()(as.numeric(x)))) +
   ggplot2::scale_x_continuous(breaks=sort(unique(compute_speed$workers))) +
   ggplot2::labs(title="Within-language sequential-to-parallel speedup",x="Workers/threads",
                 y="Paired geometric-mean speedup",color=NULL) +
