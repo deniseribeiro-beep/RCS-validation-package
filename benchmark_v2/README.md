@@ -1,4 +1,4 @@
-# RCS classification benchmark V2.3
+# RCS classification benchmark V2.4
 
 This protocol evaluates sequential and parallel execution **within** three CPU
 language families: R, Python/Cython, and C++. It does not use one language as
@@ -32,11 +32,12 @@ Two timing regions are recorded:
 Consequently, compute-bound or I/O-bound behavior must be assessed from the
 phase table and scaling curves, not inferred from a linear runtime regression.
 
-Compute timing uses iterative calibration. The engine repeatedly increases the
-number of inner loops until the **observed** calibration block reaches the
-configured duration floor, with a 10% safety factor. This avoids relying on a
-single pilot measurement contaminated by first-use runtime or worker-pool
-overhead.
+Compute timing uses an accepted-measurement calibration loop. The engine
+repeatedly measures and increases the number of inner loops until the **same
+block retained as the observation** reaches the configured duration floor.
+The raw table records its total duration, accepted floor, number of loops,
+pass/fail status, and calibration attempts. This prevents a successful pilot
+from being followed by an unacceptably short retained measurement.
 
 ## Dependencies
 
@@ -74,7 +75,6 @@ V2_RUN_CUDA=FALSE \
 V2_PROCESS_WORKERS=1,2 \
 V2_OPENMP_THREADS=1,2 \
 V2_PRIMARY_WORKERS=2 \
-V2_MIN_STABILITY_RATE=0.80 \
 V2_RESUME=FALSE \
 Rscript scripts/run_benchmark_v2.R 2>&1 | tee benchmark_v2_smoke.log
 ```
@@ -92,21 +92,39 @@ V2_PROCESS_WORKERS=1,2,4,8,16 \
 V2_OPENMP_THREADS=1,2,4,8,16 \
 V2_PRIMARY_WORKERS=8 \
 V2_MIN_STABILITY_RATE=0.90 \
+V2_MAX_RELATIVE_CI_PERCENT=10 \
+V2_ENFORCE_QUALITY_GATES=TRUE \
+V2_ENFORCE_E2E_STABILITY=FALSE \
 V2_RUN_PYTHON=TRUE \
 V2_RUN_CUDA=TRUE \
 V2_RESUME=FALSE \
 Rscript scripts/run_benchmark_v2.R 2>&1 | tee benchmark_v2_full.log
 ```
 
-Protocol 2.3 results are not compatible with earlier V2 raw tables because the
-calibration method changed. Use `V2_RESUME=TRUE` only with results produced by
+Protocol 2.4 results are not compatible with earlier V2 raw tables because the
+calibration schema and quality gates changed. Use `V2_RESUME=TRUE` only with results produced by
 the same protocol version, commit, inputs, and configuration. The runner rejects
 incompatible raw tables.
 
-Each condition is considered stable when the bootstrap 95% confidence interval
-has relative half-width at most 10%. The run writes
-`Table_V2_Quality_Gates.csv` and exits with an error after generating the audit
-outputs when the observed stability rate is below the configured threshold.
+The smoke test is diagnostic: its CV target (30% by default) is reported but
+does not pretend that five repetitions support publication inference. Mandatory
+equivalence and calibrated-duration failures still stop it. In publication
+mode, compute conditions are considered stable when the bootstrap 95%
+confidence interval for the median has relative half-width at most 10%, and the
+configured stability-rate gate is enforced. End-to-end stability is reported
+separately and remains diagnostic by default because fresh-process startup is
+an intentionally different, noisier estimand; set
+`V2_ENFORCE_E2E_STABILITY=TRUE` to enforce it as well.
+
+Gross timing anomalies are flagged on the log scale using a robust MAD rule and
+written to `Table_V2_Outlier_Diagnostics.csv`. They are never silently removed
+from estimates or figures.
+
+Publication measurements should be collected on a dedicated native Linux VM
+with fixed machine type, CPU affinity settings, minimal background load, and a
+documented storage class. WSL2 is appropriate for smoke validation only. CUDA
+must be collected on the designated NVIDIA GPU VM with both `nvcc` and
+`nvidia-smi` available; local CPU-only runs intentionally omit Figure S17.
 
 ## Main outputs
 
@@ -114,7 +132,8 @@ Files are written under `outputs/benchmark_v2/`:
 
 - raw and summarized elapsed times;
 - paired within-language sequential-to-parallel speedups and efficiencies;
-- equivalence, measurement-stability, and quality-gate tables;
+- equivalence, calibrated-duration, measurement-stability, outlier-diagnostic,
+  and quality-gate tables;
 - end-to-end phase decomposition;
 - CUDA kernel, allocation, host-to-device, device-to-host, host-finalization,
   and disk-write phase tables when enabled;

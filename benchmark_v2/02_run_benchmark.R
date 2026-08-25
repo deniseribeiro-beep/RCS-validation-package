@@ -70,7 +70,9 @@ raw <- if (V2_RESUME && file.exists(raw_path)) read.csv(raw_path, stringsAsFacto
 required_raw_columns <- c("protocol_version", "read_sec", "initialization_sec", "classification_sec",
                           "write_sec", "internal_total_sec", "process_overhead_sec", "cuda_h2d_sec", "cuda_d2h_sec",
                           "cuda_host_prepare_sec", "cuda_device_setup_sec", "cuda_kernel_sec",
-                          "cuda_device_teardown_sec", "cuda_host_finalize_sec", "cuda_disk_write_sec")
+                          "cuda_device_teardown_sec", "cuda_host_finalize_sec", "cuda_disk_write_sec",
+                          "measurement_block_sec", "minimum_block_sec", "calibration_floor_passed",
+                          "calibration_attempts")
 if (nrow(raw) && (!all(required_raw_columns %in% names(raw)) || any(raw$protocol_version != V2_PROTOCOL_VERSION)))
   stop("V2_RESUME cannot reuse results from a different protocol/schema. Run with V2_RESUME=FALSE.")
 completed_key <- function(implementation, workers, n_records, repetition, timing_region) {
@@ -107,7 +109,14 @@ parse_compute <- function(text) {
   line <- tail(grep("^V2RESULT,", text, value = TRUE), 1L)
   if (!length(line)) stop("Engine did not emit a V2RESULT record:\n", paste(text, collapse = "\n"))
   fields <- strsplit(line, ",", fixed = TRUE)[[1]]
-  list(inner_loops = as.integer(fields[[5]]), elapsed = as.numeric(fields[[6]]))
+  if (length(fields) != 9L) stop("Invalid V2RESULT compute record: ", line)
+  parsed <- list(inner_loops=as.integer(fields[[5]]), elapsed=as.numeric(fields[[6]]),
+    block_seconds=as.numeric(fields[[7]]), floor_passed=identical(fields[[8]], "TRUE"),
+    calibration_attempts=as.integer(fields[[9]]))
+  if (any(!is.finite(unlist(parsed[c("inner_loops","elapsed","block_seconds","calibration_attempts")]))) ||
+      parsed$inner_loops < 1L || parsed$elapsed <= 0 || parsed$block_seconds <= 0)
+    stop("Invalid calibrated measurement: ", line)
+  parsed
 }
 
 append_row <- function(row) {
@@ -138,6 +147,9 @@ for (i in seq_len(nrow(schedule))) {
       repetition = item$repetition, random_order = item$random_order, implementation = item$implementation,
       workers = item$workers, timing_region = "compute", inner_loops = parsed$inner_loops,
       elapsed_sec = parsed$elapsed, throughput_profiles_sec = item$n_records / parsed$elapsed,
+      measurement_block_sec=parsed$block_seconds, minimum_block_sec=V2_MIN_SAMPLE_SEC,
+      calibration_floor_passed=parsed$floor_passed,
+      calibration_attempts=parsed$calibration_attempts,
       read_sec = NA_real_, initialization_sec = NA_real_, classification_sec = parsed$elapsed,
       write_sec = NA_real_, internal_total_sec = NA_real_, process_overhead_sec = NA_real_,
       cuda_host_prepare_sec = NA_real_, cuda_device_setup_sec = NA_real_, cuda_h2d_sec = NA_real_,
@@ -161,6 +173,8 @@ for (i in seq_len(nrow(schedule))) {
       repetition = item$repetition, random_order = item$random_order, implementation = item$implementation,
       workers = item$workers, timing_region = "end_to_end", inner_loops = 1L,
       elapsed_sec = execution$elapsed, throughput_profiles_sec = item$n_records / execution$elapsed,
+      measurement_block_sec=NA_real_, minimum_block_sec=NA_real_,
+      calibration_floor_passed=NA, calibration_attempts=NA_integer_,
       read_sec = phases$read_sec, initialization_sec = phases$initialization_sec,
       classification_sec = phases$classification_sec, write_sec = phases$write_sec,
       internal_total_sec = phases$internal_total_sec,
@@ -192,6 +206,10 @@ environment <- c(
   paste("Maximum inner loops:", V2_MAX_INNER_LOOPS),
   "Calibration method: iterative observed-duration gate with 10% safety factor",
   paste("Minimum accepted stability rate:", V2_MIN_STABILITY_RATE),
+  paste("Maximum smoke-test CV percent:", V2_MAX_CV_PERCENT_SMOKE),
+  paste("Maximum publication relative CI half-width percent:", V2_MAX_RELATIVE_CI_PERCENT),
+  paste("Quality gates enforced:", V2_ENFORCE_QUALITY_GATES),
+  paste("End-to-end stability enforced:", V2_ENFORCE_E2E_STABILITY),
   paste("R PSOCK workers:", paste(V2_PROCESS_WORKERS, collapse = ",")),
   paste("OpenMP threads:", paste(V2_OPENMP_THREADS, collapse = ",")),
   "C++ flags: -std=c++17 -O3 -DNDEBUG -march=native",

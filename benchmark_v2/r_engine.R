@@ -67,9 +67,9 @@ if (args$mode == "e2e") {
 if (args$mode != "compute") stop("mode must be compute or e2e")
 
 if (warmups > 0L) for (i in seq_len(warmups)) invisible(score_once())
-inner_loops <- v2_calibrate_loops(score_once, minimum_seconds, maximum_loops)
-start <- proc.time()[["elapsed"]]
-for (i in seq_len(inner_loops)) result <- score_once()
-elapsed <- (proc.time()[["elapsed"]] - start) / inner_loops
-v2_write_results(result, args$output)
-cat(sprintf("V2RESULT,%s,%d,%d,%d,%.12g\n", args$implementation, profiles$n, workers, inner_loops, elapsed))
+measurement <- v2_measure_calibrated(score_once, minimum_seconds, maximum_loops)
+v2_write_results(measurement$result, args$output)
+cat(sprintf("V2RESULT,%s,%d,%d,%d,%.12g,%.12g,%s,%d\n",
+            args$implementation, profiles$n, workers, measurement$loops,
+            measurement$seconds_per_call, measurement$block_seconds,
+            if (measurement$floor_passed) "TRUE" else "FALSE", measurement$attempts))

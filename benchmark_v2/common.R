@@ -83,20 +83,30 @@ v2_compare_results <- function(expected, observed, tolerance = 1e-9) {
        identical_grade = same_grade, identical_route = same_route)
 }
 
-v2_calibrate_loops <- function(fun, minimum_seconds, maximum_loops) {
+v2_measure_calibrated <- function(fun, minimum_seconds, maximum_loops) {
   loops <- 1L
+  attempts <- 0L
   repeat {
+    attempts <- attempts + 1L
     start <- proc.time()[["elapsed"]]
-    for (i in seq_len(loops)) invisible(fun())
-    elapsed <- proc.time()[["elapsed"]] - start
-    if (is.finite(elapsed) && elapsed >= minimum_seconds) return(loops)
-    if (loops >= maximum_loops) return(as.integer(maximum_loops))
+    for (i in seq_len(loops)) result <- fun()
+    block_seconds <- proc.time()[["elapsed"]] - start
+    if (is.finite(block_seconds) && block_seconds >= minimum_seconds) {
+      return(list(result=result, loops=loops, block_seconds=block_seconds,
+                  seconds_per_call=block_seconds/loops, floor_passed=TRUE,
+                  attempts=attempts))
+    }
+    if (loops >= maximum_loops) {
+      return(list(result=result, loops=as.integer(maximum_loops),
+                  block_seconds=block_seconds, seconds_per_call=block_seconds/loops,
+                  floor_passed=FALSE, attempts=attempts))
+    }
 
     # A single pilot can include runtime or worker-pool initialization and
     # severely underestimate the required loop count. Grow iteratively and
     # require an actually observed block duration above the configured floor.
-    estimate <- if (is.finite(elapsed) && elapsed > 0) {
-      ceiling(1.10 * loops * minimum_seconds / elapsed)
+    estimate <- if (is.finite(block_seconds) && block_seconds > 0) {
+      ceiling(1.10 * loops * minimum_seconds / block_seconds)
     } else {
       loops * 2
     }

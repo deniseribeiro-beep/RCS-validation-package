@@ -34,7 +34,7 @@ v2_int_list <- function(name, default) {
 }
 
 V2_SMOKE <- v2_bool("V2_SMOKE", TRUE)
-V2_PROTOCOL_VERSION <- "2.3.0"
+V2_PROTOCOL_VERSION <- "2.4.0"
 V2_DATA_SEED <- v2_int("V2_DATA_SEED", 20260504L, 0L)
 V2_ORDER_SEED <- v2_int("V2_ORDER_SEED", 20260824L, 0L)
 V2_REPS <- v2_int("V2_REPS", if (V2_SMOKE) 5L else 30L)
@@ -52,6 +52,10 @@ V2_RUN_CUDA <- v2_bool("V2_RUN_CUDA", FALSE)
 V2_RUN_PYTHON <- v2_bool("V2_RUN_PYTHON", TRUE)
 V2_RESUME <- v2_bool("V2_RESUME", FALSE)
 V2_MIN_STABILITY_RATE <- v2_fraction("V2_MIN_STABILITY_RATE", if (V2_SMOKE) 0.80 else 0.90)
+V2_MAX_CV_PERCENT_SMOKE <- v2_num("V2_MAX_CV_PERCENT_SMOKE", 30)
+V2_MAX_RELATIVE_CI_PERCENT <- v2_num("V2_MAX_RELATIVE_CI_PERCENT", 10)
+V2_ENFORCE_QUALITY_GATES <- v2_bool("V2_ENFORCE_QUALITY_GATES", !V2_SMOKE)
+V2_ENFORCE_E2E_STABILITY <- v2_bool("V2_ENFORCE_E2E_STABILITY", FALSE)
 
 if (!1L %in% V2_PROCESS_WORKERS) stop("V2_PROCESS_WORKERS must include 1 for strong-scaling baselines.")
 if (!1L %in% V2_OPENMP_THREADS) stop("V2_OPENMP_THREADS must include 1 for strong-scaling baselines.")

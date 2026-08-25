@@ -63,14 +63,33 @@ int main(int argc, char** argv) {
     };
 
     int loops = 1;
+    int calibration_attempts = 0;
+    bool calibration_floor_passed = false;
+    double measurement_block_seconds = NAN;
     double kernel_seconds = NAN;
     if (args.mode == "compute") {
       for (int i = 0; i < args.warmups; ++i) launch();
       CUDA_OK(cudaDeviceSynchronize()); CUDA_OK(cudaGetLastError());
-      const double pilot = cuda_event_seconds(launch);
-      loops = pilot > 0.0 ? std::max(1, std::min(args.max_loops,
-        static_cast<int>(std::ceil(args.min_seconds / pilot)))) : args.max_loops;
-      kernel_seconds = cuda_event_seconds([&]() { for (int i = 0; i < loops; ++i) launch(); }) / loops;
+      while (true) {
+        ++calibration_attempts;
+        measurement_block_seconds = cuda_event_seconds([&]() {
+          for (int i = 0; i < loops; ++i) launch();
+        });
+        if (std::isfinite(measurement_block_seconds) &&
+            measurement_block_seconds >= args.min_seconds) {
+          calibration_floor_passed = true;
+          break;
+        }
+        if (loops >= args.max_loops) break;
+        long long estimate = static_cast<long long>(loops) * 2LL;
+        if (std::isfinite(measurement_block_seconds) && measurement_block_seconds > 0.0)
+          estimate = static_cast<long long>(std::ceil(
+            1.10 * loops * args.min_seconds / measurement_block_seconds));
+        loops = static_cast<int>(std::min(static_cast<long long>(args.max_loops),
+          std::max({static_cast<long long>(loops) + 1LL,
+                    static_cast<long long>(loops) * 2LL, estimate})));
+      }
+      kernel_seconds = measurement_block_seconds / loops;
     } else {
       kernel_seconds = cuda_event_seconds(launch);
     }
@@ -100,7 +119,10 @@ int main(int argc, char** argv) {
                 << d2h_seconds << ',' << device_teardown_seconds << ',' << host_finalize_seconds << ','
                 << disk_write_seconds << '\n';
     }
-    rcs_v2::print_result(args, host.size(), loops, args.mode == "compute" ? kernel_seconds : NAN);
+    rcs_v2::print_result(args, host.size(), loops,
+      args.mode == "compute" ? kernel_seconds : NAN,
+      args.mode == "compute" ? measurement_block_seconds : NAN,
+      calibration_floor_passed, calibration_attempts);
     return 0;
   } catch (const std::exception& e) {
     if (d_input) cudaFree(d_input);

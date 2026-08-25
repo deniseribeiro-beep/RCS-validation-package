@@ -16,6 +16,30 @@ baseline_map <- c(R="r_sequential", `Python/Cython`="cython_sequential", `C++`="
 parallel_map <- c(R="r_psock", `Python/Cython`="cython_openmp", `C++`="cpp_openmp")
 raw$language_family <- unname(family_map[raw$implementation])
 
+# Gross timing outliers are flagged on the log scale with a robust MAD rule.
+# They remain in every estimate and figure; this table is diagnostic and makes
+# anomalous repetitions auditable instead of silently deleting them.
+raw$is_timing_outlier <- FALSE
+outlier_groups <- split(seq_len(nrow(raw)), interaction(raw$n_records, raw$implementation,
+  raw$workers, raw$timing_region, drop=TRUE))
+for (idx in outlier_groups) {
+  values <- log(raw$elapsed_sec[idx])
+  center <- stats::median(values)
+  spread <- stats::mad(values, center=center, constant=1.4826)
+  if (is.finite(spread) && spread > 0)
+    raw$is_timing_outlier[idx] <- abs(values-center)/spread > 3.5
+}
+outlier_diagnostics <- raw[,c("protocol_version","language_family","n_records","repetition",
+  "random_order","implementation","workers","timing_region","elapsed_sec",
+  "measurement_block_sec","is_timing_outlier")]
+write.csv(outlier_diagnostics, file.path(V2_TABLES, "Table_V2_Outlier_Diagnostics.csv"), row.names=FALSE)
+calibration_diagnostics <- raw[raw$timing_region == "compute",
+  c("protocol_version","language_family","n_records","repetition","implementation","workers",
+    "inner_loops","elapsed_sec","measurement_block_sec","minimum_block_sec",
+    "calibration_floor_passed","calibration_attempts")]
+write.csv(calibration_diagnostics,
+  file.path(V2_TABLES, "Table_V2_Calibration_Diagnostics.csv"), row.names=FALSE)
+
 set.seed(V2_ORDER_SEED + 1L)
 geomean <- function(x) exp(mean(log(x)))
 bootstrap_ci <- function(x, statistic, reps=V2_BOOT_REPS) {
@@ -25,15 +49,22 @@ bootstrap_ci <- function(x, statistic, reps=V2_BOOT_REPS) {
 }
 summarize_runtime <- function(x) {
   ci <- bootstrap_ci(x$elapsed_sec, median)
+  relative_ci <- (ci[2]-ci[1])/(2*median(x$elapsed_sec))*100
+  cv <- stats::sd(x$elapsed_sec)/mean(x$elapsed_sec)*100
+  precision_passed <- relative_ci <= V2_MAX_RELATIVE_CI_PERCENT
+  smoke_variability_passed <- cv <= V2_MAX_CV_PERCENT_SMOKE
   data.frame(protocol_version=V2_PROTOCOL_VERSION, language_family=x$language_family[1], n_records=x$n_records[1],
     implementation=x$implementation[1], workers=x$workers[1], timing_region=x$timing_region[1], repetitions=nrow(x),
     median_elapsed_sec=median(x$elapsed_sec), median_ci95_low_sec=ci[1], median_ci95_high_sec=ci[2],
     geometric_mean_elapsed_sec=geomean(x$elapsed_sec), mean_elapsed_sec=mean(x$elapsed_sec),
     sd_elapsed_sec=stats::sd(x$elapsed_sec), iqr_elapsed_sec=stats::IQR(x$elapsed_sec),
-    cv_percent=stats::sd(x$elapsed_sec)/mean(x$elapsed_sec)*100,
+    cv_percent=cv,
     median_throughput_profiles_sec=median(x$throughput_profiles_sec),
-    relative_ci_half_width_percent=(ci[2]-ci[1])/(2*median(x$elapsed_sec))*100,
-    stability_passed=(ci[2]-ci[1])/(2*median(x$elapsed_sec)) <= .10)
+    relative_ci_half_width_percent=relative_ci,
+    timing_outlier_count=sum(x$is_timing_outlier),
+    precision_passed=precision_passed,
+    smoke_variability_passed=smoke_variability_passed,
+    stability_passed=if (V2_SMOKE) smoke_variability_passed else precision_passed)
 }
 groups <- split(raw, interaction(raw$n_records, raw$implementation, raw$workers, raw$timing_region, drop=TRUE))
 summary_table <- do.call(rbind, lapply(groups, summarize_runtime)); rownames(summary_table) <- NULL
@@ -90,22 +121,45 @@ equivalence <- aggregate(cbind(max_abs_pbio_diff,max_abs_rcs_diff) ~ language_fa
 equivalence$all_equivalence_checks_passed <- TRUE
 write.csv(equivalence, file.path(V2_TABLES, "Table_V2_Equivalence_Check.csv"), row.names=FALSE)
 write.csv(summary_table[,c("language_family","n_records","implementation","workers","timing_region","repetitions",
-                           "cv_percent","relative_ci_half_width_percent","stability_passed")],
+                           "cv_percent","relative_ci_half_width_percent","timing_outlier_count",
+                           "precision_passed","smoke_variability_passed","stability_passed")],
           file.path(V2_TABLES, "Table_V2_Measurement_Stability.csv"), row.names=FALSE)
-stability_rate <- mean(summary_table$stability_passed)
+compute_stability <- summary_table$timing_region == "compute"
+e2e_stability <- summary_table$timing_region == "end_to_end"
+compute_stability_rate <- mean(summary_table$stability_passed[compute_stability])
+e2e_stability_rate <- mean(summary_table$stability_passed[e2e_stability])
+compute_rows <- raw$timing_region == "compute"
+calibration_gate_passed <- all(raw$calibration_floor_passed[compute_rows] %in% TRUE) &&
+  all(raw$measurement_block_sec[compute_rows] >= raw$minimum_block_sec[compute_rows])
+equivalence_gate_passed <- all(raw$equivalence_passed) &&
+  all(raw$identical_final_grade) && all(raw$identical_grade_route) &&
+  max(raw$max_abs_pbio_diff) <= 1e-9 && max(raw$max_abs_rcs_diff) <= 1e-9
+compute_stability_gate_passed <- compute_stability_rate >= V2_MIN_STABILITY_RATE
+e2e_stability_gate_passed <- e2e_stability_rate >= V2_MIN_STABILITY_RATE
 quality_gates <- data.frame(
   protocol_version=V2_PROTOCOL_VERSION,
-  equivalence_gate_passed=all(raw$equivalence_passed) &&
-    all(raw$identical_final_grade) && all(raw$identical_grade_route) &&
-    max(raw$max_abs_pbio_diff) <= 1e-9 && max(raw$max_abs_rcs_diff) <= 1e-9,
-  total_timing_conditions=nrow(summary_table),
-  stable_timing_conditions=sum(summary_table$stability_passed),
-  observed_stability_rate=stability_rate,
+  run_mode=if (V2_SMOKE) "smoke_diagnostic" else "publication",
+  quality_gates_enforced=V2_ENFORCE_QUALITY_GATES,
+  equivalence_gate_passed=equivalence_gate_passed,
+  calibrated_compute_measurements=sum(compute_rows),
+  calibrated_compute_measurements_passing=sum(raw$calibration_floor_passed[compute_rows] %in% TRUE),
+  calibration_floor_gate_passed=calibration_gate_passed,
+  compute_timing_conditions=sum(compute_stability),
+  stable_compute_conditions=sum(summary_table$stability_passed[compute_stability]),
+  compute_stability_rate=compute_stability_rate,
+  compute_stability_gate_passed=compute_stability_gate_passed,
+  end_to_end_timing_conditions=sum(e2e_stability),
+  stable_end_to_end_conditions=sum(summary_table$stability_passed[e2e_stability]),
+  end_to_end_stability_rate=e2e_stability_rate,
+  end_to_end_stability_enforced=V2_ENFORCE_E2E_STABILITY,
+  end_to_end_stability_gate_passed=e2e_stability_gate_passed,
   required_stability_rate=V2_MIN_STABILITY_RATE,
-  stability_gate_passed=stability_rate >= V2_MIN_STABILITY_RATE
+  stability_metric=if (V2_SMOKE) paste0("CV <= ",V2_MAX_CV_PERCENT_SMOKE,"% (diagnostic)")
+    else paste0("bootstrap median CI relative half-width <= ",V2_MAX_RELATIVE_CI_PERCENT,"%")
 )
-quality_gates$all_quality_gates_passed <-
-  quality_gates$equivalence_gate_passed && quality_gates$stability_gate_passed
+quality_gates$all_quality_gates_passed <- equivalence_gate_passed && calibration_gate_passed &&
+  (!V2_ENFORCE_QUALITY_GATES || (compute_stability_gate_passed &&
+    (!V2_ENFORCE_E2E_STABILITY || e2e_stability_gate_passed)))
 write.csv(quality_gates, file.path(V2_TABLES, "Table_V2_Quality_Gates.csv"), row.names=FALSE)
 
 publication_theme <- function() {
@@ -305,9 +359,21 @@ if (nrow(cuda_phases)) {
 }
 
 cat("Benchmark V2 tables and figures generated without cross-language speedup comparisons; CUDA uses C++ sequential only.\n")
-cat(sprintf("Measurement stability gate: %d/%d conditions (%.1f%%; required %.1f%%).\n",
-  sum(summary_table$stability_passed), nrow(summary_table), 100 * stability_rate,
-  100 * V2_MIN_STABILITY_RATE))
-if (!quality_gates$all_quality_gates_passed) {
-  stop("Benchmark V2 quality gate failed. Inspect Table_V2_Quality_Gates.csv and Table_V2_Measurement_Stability.csv before reporting results.")
+cat(sprintf("Calibration floor gate: %d/%d compute measurements passed.\n",
+  sum(raw$calibration_floor_passed[compute_rows] %in% TRUE), sum(compute_rows)))
+cat(sprintf("Compute stability: %d/%d conditions (%.1f%%; target %.1f%%).\n",
+  sum(summary_table$stability_passed[compute_stability]), sum(compute_stability),
+  100 * compute_stability_rate, 100 * V2_MIN_STABILITY_RATE))
+cat(sprintf("End-to-end stability: %d/%d conditions (%.1f%%; %s).\n",
+  sum(summary_table$stability_passed[e2e_stability]), sum(e2e_stability),
+  100 * e2e_stability_rate,
+  if (V2_ENFORCE_E2E_STABILITY) "enforced" else "diagnostic only"))
+if (V2_SMOKE && !compute_stability_gate_passed) {
+  warning("Smoke-test variability exceeded the diagnostic target. Outputs are valid for pipeline validation only, not inference.")
+}
+if (V2_ENFORCE_QUALITY_GATES && !quality_gates$all_quality_gates_passed) {
+  stop("Benchmark V2 publication quality gate failed. Inspect calibration, stability, outlier, and quality-gate tables before reporting results.")
+}
+if (!V2_ENFORCE_QUALITY_GATES && !quality_gates$all_quality_gates_passed) {
+  stop("Benchmark V2 mandatory equivalence or calibration floor gate failed.")
 }

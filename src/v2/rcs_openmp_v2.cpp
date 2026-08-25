@@ -25,10 +25,11 @@ int main(int argc, char** argv) {
       return 0;
     }
     for (int i = 0; i < args.warmups; ++i) operation();
-    const int loops = rcs_v2::calibrate(operation, args.min_seconds, args.max_loops);
-    const double seconds = rcs_v2::elapsed([&]() { for (int i = 0; i < loops; ++i) operation(); }) / loops;
+    const auto measurement = rcs_v2::measure_calibrated(operation, args.min_seconds, args.max_loops);
     rcs::write_results(args.output, results);
-    rcs_v2::print_result(args, profiles.size(), loops, seconds);
+    rcs_v2::print_result(args, profiles.size(), measurement.loops,
+                         measurement.seconds_per_call(), measurement.block_seconds,
+                         measurement.floor_passed, measurement.attempts);
     return 0;
   } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

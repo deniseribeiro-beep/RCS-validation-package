@@ -38,19 +38,21 @@ def measured(function):
     start = time.perf_counter_ns(); value = function()
     return value, (time.perf_counter_ns() - start) / 1e9
 
-def calibrate(function, minimum_seconds, maximum_loops):
+def measure_calibrated(function, minimum_seconds, maximum_loops):
     loops = 1
+    attempts = 0
     while True:
+        attempts += 1
         start = time.perf_counter_ns()
         for _ in range(loops):
-            function()
-        elapsed = (time.perf_counter_ns() - start) / 1e9
-        if np.isfinite(elapsed) and elapsed >= minimum_seconds:
-            return loops
+            result = function()
+        block_seconds = (time.perf_counter_ns() - start) / 1e9
+        if np.isfinite(block_seconds) and block_seconds >= minimum_seconds:
+            return result, loops, block_seconds, True, attempts
         if loops >= maximum_loops:
-            return maximum_loops
-        if np.isfinite(elapsed) and elapsed > 0:
-            estimate = int(np.ceil(1.10 * loops * minimum_seconds / elapsed))
+            return result, maximum_loops, block_seconds, False, attempts
+        if np.isfinite(block_seconds) and block_seconds > 0:
+            estimate = int(np.ceil(1.10 * loops * minimum_seconds / block_seconds))
         else:
             estimate = loops * 2
         loops = min(maximum_loops, max(loops + 1, loops * 2, estimate))
@@ -77,11 +79,12 @@ def main():
         print(f"V2RESULT,{args.implementation},{data[0].size},{threads},1,NA")
         return
     for _ in range(args.warmups): score_once()
-    inner_loops = calibrate(score_once, args.min_sec, args.max_loops)
-    start = time.perf_counter_ns()
-    for _ in range(inner_loops): result = score_once()
-    elapsed = (time.perf_counter_ns() - start) / 1e9 / inner_loops
+    result, inner_loops, block_seconds, floor_passed, attempts = measure_calibrated(
+        score_once, args.min_sec, args.max_loops
+    )
+    elapsed = block_seconds / inner_loops
     write_results(result, args.output)
-    print(f"V2RESULT,{args.implementation},{data[0].size},{threads},{inner_loops},{elapsed:.12g}")
+    print(f"V2RESULT,{args.implementation},{data[0].size},{threads},{inner_loops},"
+          f"{elapsed:.12g},{block_seconds:.12g},{str(floor_passed).upper()},{attempts}")
 
 if __name__ == "__main__": main()

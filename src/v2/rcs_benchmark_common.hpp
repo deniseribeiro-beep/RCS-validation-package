@@ -47,14 +47,26 @@ inline double elapsed(const std::function<void()>& operation) {
   return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
 }
 
-inline int calibrate(const std::function<void()>& operation, double minimum, int maximum) {
+struct CalibratedMeasurement {
   int loops = 1;
+  int attempts = 0;
+  double block_seconds = NAN;
+  bool floor_passed = false;
+  double seconds_per_call() const { return block_seconds / loops; }
+};
+
+inline CalibratedMeasurement measure_calibrated(
+    const std::function<void()>& operation, double minimum, int maximum) {
+  int loops = 1;
+  int attempts = 0;
   while (true) {
+    ++attempts;
     const double observed = elapsed([&]() {
       for (int i = 0; i < loops; ++i) operation();
     });
-    if (std::isfinite(observed) && observed >= minimum) return loops;
-    if (loops >= maximum) return maximum;
+    if (std::isfinite(observed) && observed >= minimum)
+      return {loops, attempts, observed, true};
+    if (loops >= maximum) return {maximum, attempts, observed, false};
 
     long long estimate = static_cast<long long>(loops) * 2LL;
     if (std::isfinite(observed) && observed > 0.0) {
@@ -66,11 +78,17 @@ inline int calibrate(const std::function<void()>& operation, double minimum, int
   }
 }
 
-inline void print_result(const Arguments& args, std::size_t n, int loops, double seconds) {
+inline void print_result(const Arguments& args, std::size_t n, int loops, double seconds,
+                         double block_seconds = NAN, bool floor_passed = false,
+                         int attempts = 0) {
   std::cout << std::setprecision(12) << "V2RESULT," << args.implementation << ',' << n << ','
             << args.threads << ',' << loops << ',';
   if (std::isfinite(seconds)) std::cout << seconds;
   else std::cout << "NA";
+  std::cout << ',';
+  if (std::isfinite(block_seconds)) std::cout << block_seconds;
+  else std::cout << "NA";
+  std::cout << ',' << (floor_passed ? "TRUE" : "FALSE") << ',' << attempts;
   std::cout << '\n';
 }
 
