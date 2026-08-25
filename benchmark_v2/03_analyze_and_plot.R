@@ -92,6 +92,21 @@ write.csv(equivalence, file.path(V2_TABLES, "Table_V2_Equivalence_Check.csv"), r
 write.csv(summary_table[,c("language_family","n_records","implementation","workers","timing_region","repetitions",
                            "cv_percent","relative_ci_half_width_percent","stability_passed")],
           file.path(V2_TABLES, "Table_V2_Measurement_Stability.csv"), row.names=FALSE)
+stability_rate <- mean(summary_table$stability_passed)
+quality_gates <- data.frame(
+  protocol_version=V2_PROTOCOL_VERSION,
+  equivalence_gate_passed=all(raw$equivalence_passed) &&
+    all(raw$identical_final_grade) && all(raw$identical_grade_route) &&
+    max(raw$max_abs_pbio_diff) <= 1e-9 && max(raw$max_abs_rcs_diff) <= 1e-9,
+  total_timing_conditions=nrow(summary_table),
+  stable_timing_conditions=sum(summary_table$stability_passed),
+  observed_stability_rate=stability_rate,
+  required_stability_rate=V2_MIN_STABILITY_RATE,
+  stability_gate_passed=stability_rate >= V2_MIN_STABILITY_RATE
+)
+quality_gates$all_quality_gates_passed <-
+  quality_gates$equivalence_gate_passed && quality_gates$stability_gate_passed
+write.csv(quality_gates, file.path(V2_TABLES, "Table_V2_Quality_Gates.csv"), row.names=FALSE)
 
 publication_theme <- function() {
   ggplot2::theme_minimal(base_size=11) +
@@ -103,8 +118,9 @@ publication_theme <- function() {
       plot.subtitle=ggplot2::element_text(color="#444444", size=9.5),
       legend.position="bottom",
       legend.box="vertical",
+      legend.box.just="left",
       legend.title=ggplot2::element_text(face="bold"),
-      plot.margin=ggplot2::margin(10,18,10,18)
+      plot.margin=ggplot2::margin(10,22,10,28)
     )
 }
 
@@ -117,6 +133,10 @@ obsolete_figure_stems <- c(
 )
 unlink(unlist(lapply(obsolete_figure_stems, function(x)
   file.path(V2_FIGURES, paste0(x, c(".pdf", ".png"))))), force=TRUE)
+unlink(file.path(V2_TABLES, c(
+  "Figure_6_V2_Source_Runtime.csv",
+  "Figure_S15_V2_Source_Scaling.csv"
+)), force=TRUE)
 
 save_language_figure <- function(language_family, sequential_impl, parallel_impl,
                                  sequential_label, parallel_label, worker_noun,
@@ -159,6 +179,11 @@ save_language_figure <- function(language_family, sequential_impl, parallel_impl
         y="Median elapsed time (seconds; log scale)",
         color="Execution configuration", fill="Execution configuration",
         shape="Execution configuration") +
+      ggplot2::guides(
+        color=ggplot2::guide_legend(nrow=2, byrow=TRUE),
+        fill=ggplot2::guide_legend(nrow=2, byrow=TRUE),
+        shape=ggplot2::guide_legend(nrow=2, byrow=TRUE)
+      ) +
       publication_theme() +
       ggplot2::theme(legend.position=if (show_legend) "bottom" else "none")
   }
@@ -208,9 +233,9 @@ save_language_figure <- function(language_family, sequential_impl, parallel_impl
     )
   pdf_device <- if (capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf
   ggplot2::ggsave(file.path(V2_FIGURES, paste0(figure_stem, ".pdf")), combined,
-    width=9.5, height=12.8, device=pdf_device, bg="white")
+    width=10.5, height=12.8, device=pdf_device, bg="white")
   ggplot2::ggsave(file.path(V2_FIGURES, paste0(figure_stem, ".png")), combined,
-    width=9.5, height=12.8, dpi=600, bg="white")
+    width=10.5, height=12.8, dpi=600, bg="white")
   write.csv(runtime, file.path(V2_TABLES, paste0(figure_stem, "_Source_Runtime.csv")), row.names=FALSE)
   write.csv(speed, file.path(V2_TABLES, paste0(figure_stem, "_Source_Speedup.csv")), row.names=FALSE)
 }
@@ -280,3 +305,9 @@ if (nrow(cuda_phases)) {
 }
 
 cat("Benchmark V2 tables and figures generated without cross-language speedup comparisons; CUDA uses C++ sequential only.\n")
+cat(sprintf("Measurement stability gate: %d/%d conditions (%.1f%%; required %.1f%%).\n",
+  sum(summary_table$stability_passed), nrow(summary_table), 100 * stability_rate,
+  100 * V2_MIN_STABILITY_RATE))
+if (!quality_gates$all_quality_gates_passed) {
+  stop("Benchmark V2 quality gate failed. Inspect Table_V2_Quality_Gates.csv and Table_V2_Measurement_Stability.csv before reporting results.")
+}

@@ -39,8 +39,21 @@ def measured(function):
     return value, (time.perf_counter_ns() - start) / 1e9
 
 def calibrate(function, minimum_seconds, maximum_loops):
-    _, pilot = measured(function)
-    return maximum_loops if pilot <= 0 else max(1, min(maximum_loops, int(np.ceil(minimum_seconds / pilot))))
+    loops = 1
+    while True:
+        start = time.perf_counter_ns()
+        for _ in range(loops):
+            function()
+        elapsed = (time.perf_counter_ns() - start) / 1e9
+        if np.isfinite(elapsed) and elapsed >= minimum_seconds:
+            return loops
+        if loops >= maximum_loops:
+            return maximum_loops
+        if np.isfinite(elapsed) and elapsed > 0:
+            estimate = int(np.ceil(1.10 * loops * minimum_seconds / elapsed))
+        else:
+            estimate = loops * 2
+        loops = min(maximum_loops, max(loops + 1, loops * 2, estimate))
 
 def main():
     parser = argparse.ArgumentParser()

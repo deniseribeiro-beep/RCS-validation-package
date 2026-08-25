@@ -18,6 +18,13 @@ v2_num <- function(name, default, minimum = 0) {
   value
 }
 
+v2_fraction <- function(name, default) {
+  value <- suppressWarnings(as.numeric(Sys.getenv(name, unset = as.character(default))))
+  if (is.na(value) || value <= 0 || value > 1)
+    stop(name, " must be a number in the interval (0, 1].")
+  value
+}
+
 v2_int_list <- function(name, default) {
   text <- Sys.getenv(name, unset = paste(default, collapse = ","))
   values <- suppressWarnings(as.integer(strsplit(text, ",", fixed = TRUE)[[1]]))
@@ -27,23 +34,24 @@ v2_int_list <- function(name, default) {
 }
 
 V2_SMOKE <- v2_bool("V2_SMOKE", TRUE)
-V2_PROTOCOL_VERSION <- "2.2.0"
+V2_PROTOCOL_VERSION <- "2.3.0"
 V2_DATA_SEED <- v2_int("V2_DATA_SEED", 20260504L, 0L)
 V2_ORDER_SEED <- v2_int("V2_ORDER_SEED", 20260824L, 0L)
-V2_REPS <- v2_int("V2_REPS", if (V2_SMOKE) 2L else 20L)
-V2_BOOT_REPS <- v2_int("V2_BOOT_REPS", if (V2_SMOKE) 200L else 2000L)
-V2_MIN_SAMPLE_SEC <- v2_num("V2_MIN_SAMPLE_SEC", if (V2_SMOKE) 0.05 else 0.25)
-V2_MAX_INNER_LOOPS <- v2_int("V2_MAX_INNER_LOOPS", if (V2_SMOKE) 1000L else 1000000L)
+V2_REPS <- v2_int("V2_REPS", if (V2_SMOKE) 5L else 30L)
+V2_BOOT_REPS <- v2_int("V2_BOOT_REPS", if (V2_SMOKE) 1000L else 5000L)
+V2_MIN_SAMPLE_SEC <- v2_num("V2_MIN_SAMPLE_SEC", 0.50)
+V2_MAX_INNER_LOOPS <- v2_int("V2_MAX_INNER_LOOPS", 1000000L)
 V2_WARMUP_CPU <- v2_int("V2_WARMUP_CPU", if (V2_SMOKE) 1L else 3L, 0L)
 V2_WARMUP_PARALLEL <- v2_int("V2_WARMUP_PARALLEL", if (V2_SMOKE) 1L else 2L, 0L)
 V2_WARMUP_CUDA <- v2_int("V2_WARMUP_CUDA", if (V2_SMOKE) 1L else 5L, 0L)
-V2_WORKLOADS <- v2_int_list("V2_WORKLOADS", if (V2_SMOKE) c(10000L, 50000L) else c(10000L, 50000L, 100000L, 500000L, 1000000L, 2000000L, 5000000L))
+V2_WORKLOADS <- v2_int_list("V2_WORKLOADS", if (V2_SMOKE) c(10000L, 50000L, 100000L) else c(10000L, 50000L, 100000L, 500000L, 1000000L, 2000000L, 5000000L))
 V2_PROCESS_WORKERS <- v2_int_list("V2_PROCESS_WORKERS", if (V2_SMOKE) c(1L, 2L) else c(1L, 2L, 4L, 8L))
 V2_OPENMP_THREADS <- v2_int_list("V2_OPENMP_THREADS", if (V2_SMOKE) c(1L, 2L) else c(1L, 2L, 4L, 8L, 16L))
 V2_PRIMARY_WORKERS <- v2_int("V2_PRIMARY_WORKERS", if (V2_SMOKE) 2L else 8L)
 V2_RUN_CUDA <- v2_bool("V2_RUN_CUDA", FALSE)
 V2_RUN_PYTHON <- v2_bool("V2_RUN_PYTHON", TRUE)
 V2_RESUME <- v2_bool("V2_RESUME", FALSE)
+V2_MIN_STABILITY_RATE <- v2_fraction("V2_MIN_STABILITY_RATE", if (V2_SMOKE) 0.80 else 0.90)
 
 if (!1L %in% V2_PROCESS_WORKERS) stop("V2_PROCESS_WORKERS must include 1 for strong-scaling baselines.")
 if (!1L %in% V2_OPENMP_THREADS) stop("V2_OPENMP_THREADS must include 1 for strong-scaling baselines.")

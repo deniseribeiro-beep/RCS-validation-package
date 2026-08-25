@@ -48,9 +48,22 @@ inline double elapsed(const std::function<void()>& operation) {
 }
 
 inline int calibrate(const std::function<void()>& operation, double minimum, int maximum) {
-  const double pilot = elapsed(operation);
-  if (!(pilot > 0.0)) return maximum;
-  return std::max(1, std::min(maximum, static_cast<int>(std::ceil(minimum / pilot))));
+  int loops = 1;
+  while (true) {
+    const double observed = elapsed([&]() {
+      for (int i = 0; i < loops; ++i) operation();
+    });
+    if (std::isfinite(observed) && observed >= minimum) return loops;
+    if (loops >= maximum) return maximum;
+
+    long long estimate = static_cast<long long>(loops) * 2LL;
+    if (std::isfinite(observed) && observed > 0.0) {
+      estimate = static_cast<long long>(std::ceil(1.10 * loops * minimum / observed));
+    }
+    const long long doubled = static_cast<long long>(loops) * 2LL;
+    const long long next = std::max({static_cast<long long>(loops) + 1LL, doubled, estimate});
+    loops = static_cast<int>(std::min(static_cast<long long>(maximum), next));
+  }
 }
 
 inline void print_result(const Arguments& args, std::size_t n, int loops, double seconds) {

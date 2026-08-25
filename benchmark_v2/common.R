@@ -84,7 +84,22 @@ v2_compare_results <- function(expected, observed, tolerance = 1e-9) {
 }
 
 v2_calibrate_loops <- function(fun, minimum_seconds, maximum_loops) {
-  pilot <- system.time(fun())[["elapsed"]]
-  if (!is.finite(pilot) || pilot <= 0) return(as.integer(maximum_loops))
-  as.integer(max(1, min(maximum_loops, ceiling(minimum_seconds / pilot))))
+  loops <- 1L
+  repeat {
+    start <- proc.time()[["elapsed"]]
+    for (i in seq_len(loops)) invisible(fun())
+    elapsed <- proc.time()[["elapsed"]] - start
+    if (is.finite(elapsed) && elapsed >= minimum_seconds) return(loops)
+    if (loops >= maximum_loops) return(as.integer(maximum_loops))
+
+    # A single pilot can include runtime or worker-pool initialization and
+    # severely underestimate the required loop count. Grow iteratively and
+    # require an actually observed block duration above the configured floor.
+    estimate <- if (is.finite(elapsed) && elapsed > 0) {
+      ceiling(1.10 * loops * minimum_seconds / elapsed)
+    } else {
+      loops * 2
+    }
+    loops <- as.integer(min(maximum_loops, max(loops + 1, loops * 2, estimate)))
+  }
 }

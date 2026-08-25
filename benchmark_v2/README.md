@@ -1,4 +1,4 @@
-# RCS classification benchmark V2.2
+# RCS classification benchmark V2.3
 
 This protocol evaluates sequential and parallel execution **within** three CPU
 language families: R, Python/Cython, and C++. It does not use one language as
@@ -32,6 +32,12 @@ Two timing regions are recorded:
 Consequently, compute-bound or I/O-bound behavior must be assessed from the
 phase table and scaling curves, not inferred from a linear runtime regression.
 
+Compute timing uses iterative calibration. The engine repeatedly increases the
+number of inner loops until the **observed** calibration block reaches the
+configured duration floor, with a 10% safety factor. This avoids relying on a
+single pilot measurement contaminated by first-use runtime or worker-pool
+overhead.
+
 ## Dependencies
 
 - R plus `ggplot2`, `patchwork`, and `scales`;
@@ -58,11 +64,18 @@ export BLIS_NUM_THREADS=1
 export NUMEXPR_NUM_THREADS=1
 
 V2_SMOKE=TRUE \
+V2_REPS=5 \
+V2_BOOT_REPS=1000 \
+V2_MIN_SAMPLE_SEC=0.50 \
+V2_MAX_INNER_LOOPS=1000000 \
+V2_WORKLOADS=10000,50000,100000 \
 V2_RUN_PYTHON=TRUE \
 V2_RUN_CUDA=FALSE \
 V2_PROCESS_WORKERS=1,2 \
 V2_OPENMP_THREADS=1,2 \
 V2_PRIMARY_WORKERS=2 \
+V2_MIN_STABILITY_RATE=0.80 \
+V2_RESUME=FALSE \
 Rscript scripts/run_benchmark_v2.R 2>&1 | tee benchmark_v2_smoke.log
 ```
 
@@ -78,13 +91,22 @@ V2_MIN_SAMPLE_SEC=0.50 \
 V2_PROCESS_WORKERS=1,2,4,8,16 \
 V2_OPENMP_THREADS=1,2,4,8,16 \
 V2_PRIMARY_WORKERS=8 \
+V2_MIN_STABILITY_RATE=0.90 \
 V2_RUN_PYTHON=TRUE \
 V2_RUN_CUDA=TRUE \
+V2_RESUME=FALSE \
 Rscript scripts/run_benchmark_v2.R 2>&1 | tee benchmark_v2_full.log
 ```
 
-Use `V2_RESUME=TRUE` only with results produced by the same protocol version,
-commit, inputs, and configuration. The runner rejects incompatible raw tables.
+Protocol 2.3 results are not compatible with earlier V2 raw tables because the
+calibration method changed. Use `V2_RESUME=TRUE` only with results produced by
+the same protocol version, commit, inputs, and configuration. The runner rejects
+incompatible raw tables.
+
+Each condition is considered stable when the bootstrap 95% confidence interval
+has relative half-width at most 10%. The run writes
+`Table_V2_Quality_Gates.csv` and exits with an error after generating the audit
+outputs when the observed stability rate is below the configured threshold.
 
 ## Main outputs
 
@@ -92,7 +114,7 @@ Files are written under `outputs/benchmark_v2/`:
 
 - raw and summarized elapsed times;
 - paired within-language sequential-to-parallel speedups and efficiencies;
-- equivalence and measurement-stability tables;
+- equivalence, measurement-stability, and quality-gate tables;
 - end-to-end phase decomposition;
 - CUDA kernel, allocation, host-to-device, device-to-host, host-finalization,
   and disk-write phase tables when enabled;
@@ -110,7 +132,7 @@ Files are written under `outputs/benchmark_v2/`:
 The dashed horizontal line in each speedup panel marks `1×` (no acceleration).
 No diagonal “ideal scaling” line is drawn because the reported estimand is a
 paired sequential-to-parallel ratio, not strong scaling of the parallel
-implementation from one to `p` workers. Smoke-test figures are labelled as
-layout/pipeline validation outputs and must not be used for inferential claims.
+implementation from one to `p` workers. Smoke-test results must not be used for
+inferential claims.
 
 The V1 pipeline and its published artifacts are not modified.
