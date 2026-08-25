@@ -194,18 +194,16 @@ save_language_figure <- function(language_family, sequential_impl, parallel_impl
       color=paste0("Number of ", worker_noun), fill=paste0("Number of ", worker_noun)
     ) + publication_theme()
 
-  run_note <- if (identical(V2_SMOKE, TRUE))
-    "Smoke-test output: layout and pipeline validation only; not for inferential reporting." else
-    "Medians and paired geometric-mean speedups with bootstrap 95% confidence intervals."
   combined <- plot_runtime_panel("compute", "A. Steady-state classification", TRUE) /
     plot_runtime_panel("end_to_end", "B. End-to-end execution", FALSE) /
     p_speed +
     patchwork::plot_layout(heights=c(1, 1, 1.15)) +
     patchwork::plot_annotation(
       title=paste0(figure_number, ". ", figure_title),
-      subtitle=run_note,
-      theme=ggplot2::theme(plot.title=ggplot2::element_text(face="bold", size=14),
-                           plot.subtitle=ggplot2::element_text(size=9.5, color="#444444"))
+      theme=ggplot2::theme(
+        plot.title=ggplot2::element_text(face="bold", size=14, margin=ggplot2::margin(b=12)),
+        plot.margin=ggplot2::margin(t=16, r=16, b=10, l=16)
+      )
     )
   pdf_device <- if (capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf
   ggplot2::ggsave(file.path(V2_FIGURES, paste0(figure_stem, ".pdf")), combined,
