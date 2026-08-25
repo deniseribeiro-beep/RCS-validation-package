@@ -99,7 +99,7 @@ publication_theme <- function() {
       panel.grid.minor=ggplot2::element_blank(),
       panel.grid.major=ggplot2::element_line(color="#E2E2E2", linewidth=.35),
       axis.title=ggplot2::element_text(face="bold"),
-      plot.title=ggplot2::element_text(face="bold", size=12),
+      plot.title=ggplot2::element_text(face="bold", size=12, margin=ggplot2::margin(b=10)),
       plot.subtitle=ggplot2::element_text(color="#444444", size=9.5),
       legend.position="bottom",
       legend.box="vertical",
@@ -194,22 +194,23 @@ save_language_figure <- function(language_family, sequential_impl, parallel_impl
       color=paste0("Number of ", worker_noun), fill=paste0("Number of ", worker_noun)
     ) + publication_theme()
 
-  combined <- plot_runtime_panel("compute", "A. Steady-state classification", TRUE) /
+  combined <- patchwork::plot_spacer() /
+    plot_runtime_panel("compute", "A. Steady-state classification", TRUE) /
     plot_runtime_panel("end_to_end", "B. End-to-end execution", FALSE) /
     p_speed +
-    patchwork::plot_layout(heights=c(1, 1, 1.15)) +
+    patchwork::plot_layout(heights=c(.10, 1, 1, 1.15)) +
     patchwork::plot_annotation(
       title=paste0(figure_number, ". ", figure_title),
       theme=ggplot2::theme(
-        plot.title=ggplot2::element_text(face="bold", size=14, margin=ggplot2::margin(b=12)),
+        plot.title=ggplot2::element_text(face="bold", size=14, margin=ggplot2::margin(b=20)),
         plot.margin=ggplot2::margin(t=16, r=16, b=10, l=16)
       )
     )
   pdf_device <- if (capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf
   ggplot2::ggsave(file.path(V2_FIGURES, paste0(figure_stem, ".pdf")), combined,
-    width=9.5, height=12.5, device=pdf_device, bg="white")
+    width=9.5, height=12.8, device=pdf_device, bg="white")
   ggplot2::ggsave(file.path(V2_FIGURES, paste0(figure_stem, ".png")), combined,
-    width=9.5, height=12.5, dpi=600, bg="white")
+    width=9.5, height=12.8, dpi=600, bg="white")
   write.csv(runtime, file.path(V2_TABLES, paste0(figure_stem, "_Source_Runtime.csv")), row.names=FALSE)
   write.csv(speed, file.path(V2_TABLES, paste0(figure_stem, "_Source_Speedup.csv")), row.names=FALSE)
 }
