@@ -35,7 +35,9 @@ if (args$implementation == "r_psock") {
   cluster <- parallel::makePSOCKcluster(workers)
   on.exit(parallel::stopCluster(cluster), add = TRUE)
   parallel::clusterExport(cluster, "score_chunk", envir = environment())
-  bounds <- split(seq_len(profiles$n), cut(seq_len(profiles$n), breaks = workers, labels = FALSE))
+  starts <- floor((seq_len(workers) - 1L) * profiles$n / workers) + 1L
+  ends <- floor(seq_len(workers) * profiles$n / workers)
+  bounds <- Map(function(first, last) seq.int(first, last), starts, ends)
   chunks <- lapply(bounds, function(i) list(matrix = profiles$matrix[i], governance = profiles$governance[i], severity = profiles$severity[i, , drop = FALSE]))
   score_once <- function() {
     parts <- parallel::parLapply(cluster, chunks, score_chunk)
