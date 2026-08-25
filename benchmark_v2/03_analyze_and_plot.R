@@ -93,56 +93,147 @@ write.csv(summary_table[,c("language_family","n_records","implementation","worke
                            "cv_percent","relative_ci_half_width_percent","stability_passed")],
           file.path(V2_TABLES, "Table_V2_Measurement_Stability.csv"), row.names=FALSE)
 
-labels <- c(r_sequential="Sequential", r_psock="PSOCK parallel", cython_sequential="Sequential Cython",
-            cython_openmp="Cython/OpenMP", cpp_sequential="Sequential", cpp_openmp="OpenMP")
-palette <- c(r_sequential="#000000", r_psock="#CC79A7", cython_sequential="#E69F00",
-             cython_openmp="#0072B2", cpp_sequential="#009E73", cpp_openmp="#56B4E9")
-primary <- summary_table[summary_table$language_family %in% names(baseline_map) &
-                         ((summary_table$implementation == unname(baseline_map[summary_table$language_family])) |
-                         (summary_table$implementation == unname(parallel_map[summary_table$language_family]) &
-                          summary_table$workers == V2_PRIMARY_WORKERS)), ]
-primary$series <- ifelse(primary$workers == 1 & grepl("sequential", primary$implementation),
-                         labels[primary$implementation], paste0(labels[primary$implementation], " (", primary$workers, ")"))
-
-plot_runtime <- function(region, title) {
-  d <- primary[primary$timing_region == region,]
-  ggplot2::ggplot(d, ggplot2::aes(n_records, median_elapsed_sec, color=implementation, group=implementation)) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin=median_ci95_low_sec,ymax=median_ci95_high_sec,fill=implementation),
-                         alpha=.12,color=NA,show.legend=FALSE) +
-    ggplot2::geom_line(linewidth=.8) + ggplot2::geom_point(size=2.2) +
-    ggplot2::facet_wrap(~language_family, ncol=1, scales="free_y") +
-    ggplot2::scale_x_log10(breaks=sort(unique(d$n_records)),labels=scales::label_comma()) +
-    ggplot2::scale_y_log10(labels=scales::label_number()) +
-    ggplot2::scale_color_manual(values=palette,labels=labels) + ggplot2::scale_fill_manual(values=palette) +
-    ggplot2::labs(title=title,x="Number of biospecimen profiles",y="Median elapsed time (s; log scale)",color=NULL) +
-    ggplot2::theme_minimal(base_size=11) + ggplot2::theme(legend.position="bottom",panel.grid.minor=ggplot2::element_blank(),
-      plot.title=ggplot2::element_text(face="bold"),plot.margin=ggplot2::margin(10,16,10,16))
+publication_theme <- function() {
+  ggplot2::theme_minimal(base_size=11) +
+    ggplot2::theme(
+      panel.grid.minor=ggplot2::element_blank(),
+      panel.grid.major=ggplot2::element_line(color="#E2E2E2", linewidth=.35),
+      axis.title=ggplot2::element_text(face="bold"),
+      plot.title=ggplot2::element_text(face="bold", size=12),
+      plot.subtitle=ggplot2::element_text(color="#444444", size=9.5),
+      legend.position="bottom",
+      legend.box="vertical",
+      legend.title=ggplot2::element_text(face="bold"),
+      plot.margin=ggplot2::margin(10,18,10,18)
+    )
 }
-runtime_figure <- plot_runtime("compute", "A. Steady-state classification (separate scale per language)") /
-                  plot_runtime("end_to_end", "B. End-to-end execution (separate scale per language)") +
-                  patchwork::plot_layout(guides="collect")
-ggplot2::ggsave(file.path(V2_FIGURES,"Figure_6_V2_Sequential_Parallel_Runtime.pdf"),runtime_figure,
-  width=10.5,height=14,device=if(capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf,bg="white")
-ggplot2::ggsave(file.path(V2_FIGURES,"Figure_6_V2_Sequential_Parallel_Runtime.png"),runtime_figure,
-  width=10.5,height=14,dpi=600,bg="white")
-write.csv(primary,file.path(V2_TABLES,"Figure_6_V2_Source_Runtime.csv"),row.names=FALSE)
 
-compute_speed <- speedup_summary[speedup_summary$timing_region == "compute",]
-p_speed <- ggplot2::ggplot(compute_speed,ggplot2::aes(workers,geometric_mean_speedup,color=language_family,
-                                                       group=interaction(language_family,n_records))) +
-  ggplot2::geom_abline(slope=1,intercept=0,linetype=2,color="#777777") +
-  ggplot2::geom_line() + ggplot2::geom_point(size=2.1) +
-  ggplot2::facet_grid(language_family~n_records,
-    labeller=ggplot2::labeller(n_records=function(x) scales::label_comma()(as.numeric(x)))) +
-  ggplot2::scale_x_continuous(breaks=sort(unique(compute_speed$workers))) +
-  ggplot2::labs(title="Within-language sequential-to-parallel speedup",x="Workers/threads",
-                y="Paired geometric-mean speedup",color=NULL) +
-  ggplot2::theme_minimal(base_size=10) + ggplot2::theme(legend.position="none",panel.grid.minor=ggplot2::element_blank(),
-                                                        plot.title=ggplot2::element_text(face="bold"))
-ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S15_V2_Within_Language_Scaling.pdf"),p_speed,
-  width=13,height=7,device=if(capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf,bg="white")
-ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S15_V2_Within_Language_Scaling.png"),p_speed,width=13,height=7,dpi=600,bg="white")
-write.csv(compute_speed,file.path(V2_TABLES,"Figure_S15_V2_Source_Scaling.csv"),row.names=FALSE)
+# Remove superseded mixed-language figures so a rerun cannot leave ambiguous
+# artifacts beside the language-specific V2 outputs.
+obsolete_figure_stems <- c(
+  "Figure_6_V2_Sequential_Parallel_Runtime",
+  "Figure_S15_V2_Within_Language_Scaling",
+  "Figure_S16_V2_CUDA_Acceleration"
+)
+unlink(unlist(lapply(obsolete_figure_stems, function(x)
+  file.path(V2_FIGURES, paste0(x, c(".pdf", ".png"))))), force=TRUE)
+
+save_language_figure <- function(language_family, sequential_impl, parallel_impl,
+                                 sequential_label, parallel_label, worker_noun,
+                                 figure_number, figure_stem, figure_title) {
+  selected_workers <- sort(unique(c(1L, V2_PRIMARY_WORKERS)))
+  runtime <- summary_table[
+    summary_table$language_family == language_family &
+      (summary_table$implementation == sequential_impl |
+       (summary_table$implementation == parallel_impl & summary_table$workers %in% selected_workers)), ]
+  runtime$configuration <- ifelse(
+    runtime$implementation == sequential_impl,
+    sequential_label,
+    paste0(parallel_label, " (", runtime$workers, " ",
+           ifelse(runtime$workers == 1L, sub("s$", "", worker_noun), worker_noun), ")")
+  )
+  runtime$configuration <- factor(runtime$configuration, levels=unique(c(
+    sequential_label,
+    paste0(parallel_label, " (", selected_workers, " ",
+           ifelse(selected_workers == 1L, sub("s$", "", worker_noun), worker_noun), ")")
+  )))
+  runtime_colors <- setNames(c("#333333", "#56B4E9", "#0072B2")[seq_along(levels(runtime$configuration))],
+                             levels(runtime$configuration))
+  runtime_shapes <- setNames(c(16, 15, 17)[seq_along(levels(runtime$configuration))],
+                             levels(runtime$configuration))
+
+  plot_runtime_panel <- function(region, panel_title, show_legend=TRUE) {
+    d <- runtime[runtime$timing_region == region, ]
+    ggplot2::ggplot(d, ggplot2::aes(n_records, median_elapsed_sec,
+      color=configuration, fill=configuration, shape=configuration, group=configuration)) +
+      ggplot2::geom_ribbon(ggplot2::aes(ymin=median_ci95_low_sec, ymax=median_ci95_high_sec),
+                           alpha=.10, color=NA, show.legend=FALSE) +
+      ggplot2::geom_line(linewidth=.85) +
+      ggplot2::geom_point(size=2.4, stroke=.3) +
+      ggplot2::scale_x_log10(breaks=sort(unique(d$n_records)), labels=scales::label_comma()) +
+      ggplot2::scale_y_log10(labels=scales::label_number()) +
+      ggplot2::scale_color_manual(values=runtime_colors, drop=FALSE) +
+      ggplot2::scale_fill_manual(values=runtime_colors, drop=FALSE) +
+      ggplot2::scale_shape_manual(values=runtime_shapes, drop=FALSE) +
+      ggplot2::labs(title=panel_title, x="Number of biospecimen profiles",
+        y="Median elapsed time (seconds; log scale)",
+        color="Execution configuration", fill="Execution configuration",
+        shape="Execution configuration") +
+      publication_theme() +
+      ggplot2::theme(legend.position=if (show_legend) "bottom" else "none")
+  }
+
+  speed <- speedup_summary[
+    speedup_summary$language_family == language_family &
+      speedup_summary$implementation == parallel_impl &
+      speedup_summary$timing_region == "compute", ]
+  speed$worker_label <- factor(
+    paste0(speed$workers, " ", ifelse(speed$workers == 1L, sub("s$", "", worker_noun), worker_noun)),
+    levels=paste0(sort(unique(speed$workers)), " ",
+      ifelse(sort(unique(speed$workers)) == 1L, sub("s$", "", worker_noun), worker_noun))
+  )
+  speed_colors <- setNames(grDevices::hcl.colors(length(levels(speed$worker_label)), "Dark 3"),
+                           levels(speed$worker_label))
+  p_speed <- ggplot2::ggplot(speed, ggplot2::aes(n_records, geometric_mean_speedup,
+      color=worker_label, fill=worker_label, group=worker_label)) +
+    ggplot2::geom_hline(yintercept=1, linetype=2, color="#666666", linewidth=.55) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin=speedup_ci95_low, ymax=speedup_ci95_high),
+                         alpha=.10, color=NA, show.legend=FALSE) +
+    ggplot2::geom_line(linewidth=.85) +
+    ggplot2::geom_point(size=2.4) +
+    ggplot2::scale_x_log10(breaks=sort(unique(speed$n_records)), labels=scales::label_comma()) +
+    ggplot2::scale_y_log10(labels=function(x) paste0(scales::label_number()(x), "×")) +
+    ggplot2::scale_color_manual(values=speed_colors, drop=FALSE) +
+    ggplot2::scale_fill_manual(values=speed_colors, drop=FALSE) +
+    ggplot2::labs(
+      title="C. Parallel speedup within the same language",
+      subtitle=paste0("Paired ratio: ", sequential_label, " time / ", parallel_label,
+                      " time. The dashed 1× line denotes no acceleration."),
+      x="Number of biospecimen profiles",
+      y="Geometric-mean speedup (log scale)",
+      color=paste0("Number of ", worker_noun), fill=paste0("Number of ", worker_noun)
+    ) + publication_theme()
+
+  run_note <- if (identical(V2_SMOKE, TRUE))
+    "Smoke-test output: layout and pipeline validation only; not for inferential reporting." else
+    "Medians and paired geometric-mean speedups with bootstrap 95% confidence intervals."
+  combined <- plot_runtime_panel("compute", "A. Steady-state classification", TRUE) /
+    plot_runtime_panel("end_to_end", "B. End-to-end execution", FALSE) /
+    p_speed +
+    patchwork::plot_layout(heights=c(1, 1, 1.15)) +
+    patchwork::plot_annotation(
+      title=paste0(figure_number, ". ", figure_title),
+      subtitle=run_note,
+      theme=ggplot2::theme(plot.title=ggplot2::element_text(face="bold", size=14),
+                           plot.subtitle=ggplot2::element_text(size=9.5, color="#444444"))
+    )
+  pdf_device <- if (capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf
+  ggplot2::ggsave(file.path(V2_FIGURES, paste0(figure_stem, ".pdf")), combined,
+    width=9.5, height=12.5, device=pdf_device, bg="white")
+  ggplot2::ggsave(file.path(V2_FIGURES, paste0(figure_stem, ".png")), combined,
+    width=9.5, height=12.5, dpi=600, bg="white")
+  write.csv(runtime, file.path(V2_TABLES, paste0(figure_stem, "_Source_Runtime.csv")), row.names=FALSE)
+  write.csv(speed, file.path(V2_TABLES, paste0(figure_stem, "_Source_Speedup.csv")), row.names=FALSE)
+}
+
+# Each figure is intentionally restricted to one language family. No cross-language
+# runtime or speedup panel is produced by the V2 analysis.
+save_language_figure("R", "r_sequential", "r_psock",
+  "R sequential (single process)", "R/PSOCK", "workers",
+  "Figure 6", "Figure_6_V2_R_Sequential_Parallel_Performance",
+  "R classification performance: sequential and PSOCK execution")
+if (any(summary_table$language_family == "Python/Cython")) {
+  save_language_figure("Python/Cython", "cython_sequential", "cython_openmp",
+    "Cython sequential (1 thread)", "Cython/OpenMP", "threads",
+    "Figure S15", "Figure_S15_V2_Cython_Sequential_Parallel_Performance",
+    "Cython classification performance: sequential and OpenMP execution")
+} else {
+  warning("Python/Cython rows are absent; Figure S15 was not generated. Run with V2_RUN_PYTHON=TRUE.")
+}
+save_language_figure("C++", "cpp_sequential", "cpp_openmp",
+  "C++ sequential (1 thread)", "C++/OpenMP", "threads",
+  "Figure S16", "Figure_S16_V2_CPP_OpenMP_Performance",
+  "C++ classification performance: sequential and OpenMP execution")
 
 if (exists("cuda_summary")) {
   cuda_summary$region_label <- factor(cuda_summary$timing_region,
@@ -157,17 +248,15 @@ if (exists("cuda_summary")) {
     ggplot2::scale_y_log10(labels=function(x) paste0(scales::label_number()(x),"×")) +
     ggplot2::scale_color_manual(values=c("Kernel only"="#D55E00","End to end"="#0072B2")) +
     ggplot2::scale_fill_manual(values=c("Kernel only"="#D55E00","End to end"="#0072B2")) +
-    ggplot2::labs(title="CUDA acceleration relative to C++ sequential",
+    ggplot2::labs(title="Figure S17. CUDA acceleration relative to C++ sequential",
+      subtitle="CUDA is treated as an accelerator of the C++ kernel; no R or Cython denominator is used.",
       x="Number of biospecimen profiles", y="Paired geometric-mean speedup (log scale)",
-      color=NULL,fill=NULL) +
-    ggplot2::theme_minimal(base_size=11) + ggplot2::theme(legend.position="bottom",
-      panel.grid.minor=ggplot2::element_blank(),plot.title=ggplot2::element_text(face="bold"),
-      plot.margin=ggplot2::margin(10,16,10,16))
-  ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S16_V2_CUDA_Acceleration.pdf"),p_cuda,
+      color="Timing region",fill="Timing region") + publication_theme()
+  ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S17_V2_CUDA_Acceleration.pdf"),p_cuda,
     width=9,height=5.8,device=if(capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf,bg="white")
-  ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S16_V2_CUDA_Acceleration.png"),p_cuda,
+  ggplot2::ggsave(file.path(V2_FIGURES,"Figure_S17_V2_CUDA_Acceleration.png"),p_cuda,
     width=9,height=5.8,dpi=600,bg="white")
-  write.csv(cuda_summary,file.path(V2_TABLES,"Figure_S16_V2_Source_CUDA.csv"),row.names=FALSE)
+  write.csv(cuda_summary,file.path(V2_TABLES,"Figure_S17_V2_Source_CUDA.csv"),row.names=FALSE)
 }
 
 phase_cols <- c("read_sec","initialization_sec","classification_sec","write_sec","process_overhead_sec")

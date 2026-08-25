@@ -97,7 +97,20 @@ Files are written under `outputs/benchmark_v2/`:
 - CUDA kernel, allocation, host-to-device, device-to-host, host-finalization,
   and disk-write phase tables when enabled;
 - CUDA kernel-only and end-to-end speedup relative to C++ sequential;
-- runtime figure with separate scale per language family;
-- within-language scaling figure and their source CSV files.
+- **Figure 6:** R sequential versus R/PSOCK only, with steady-state runtime,
+  end-to-end runtime, and paired R-only speedup;
+- **Figure S15:** Cython sequential versus Cython/OpenMP only, with the same
+  three-panel structure and explicit thread-count legends;
+- **Figure S16:** C++ sequential versus C++/OpenMP only, with the same
+  three-panel structure and explicit thread-count legends;
+- **Figure S17:** CUDA kernel-only and end-to-end acceleration relative only
+  to C++ sequential;
+- separate runtime and speedup source CSV files for every figure.
+
+The dashed horizontal line in each speedup panel marks `1×` (no acceleration).
+No diagonal “ideal scaling” line is drawn because the reported estimand is a
+paired sequential-to-parallel ratio, not strong scaling of the parallel
+implementation from one to `p` workers. Smoke-test figures are labelled as
+layout/pipeline validation outputs and must not be used for inferential claims.
 
 The V1 pipeline and its published artifacts are not modified.
