@@ -194,7 +194,12 @@ unlink(file.path(V2_TABLES, c(
 
 save_language_figure <- function(language_family, sequential_impl, parallel_impl,
                                  sequential_label, parallel_label, worker_noun,
-                                 figure_number, figure_stem, figure_title) {
+                                 figure_number, figure_stem, figure_title,
+                                 title_wrap_width=1000, subtitle_wrap_width=1000,
+                                 outer_left_margin=16, header_spacer_height=.10) {
+  wrap_figure_text <- function(x, width) {
+    paste(strwrap(x, width=width), collapse="\n")
+  }
   selected_workers <- sort(unique(c(1L, V2_PRIMARY_WORKERS)))
   runtime <- summary_table[
     summary_table$language_family == language_family &
@@ -266,8 +271,11 @@ save_language_figure <- function(language_family, sequential_impl, parallel_impl
     ggplot2::scale_fill_manual(values=speed_colors, drop=FALSE) +
     ggplot2::labs(
       title="C. Parallel speedup within the same language",
-      subtitle=paste0("Paired ratio: ", sequential_label, " time / ", parallel_label,
-                      " time. The dashed 1× line denotes no acceleration."),
+      subtitle=wrap_figure_text(
+        paste0("Paired ratio: ", sequential_label, " time / ", parallel_label,
+               " time. The dashed 1× line denotes no acceleration."),
+        width=subtitle_wrap_width
+      ),
       x="Number of biospecimen profiles",
       y="Geometric-mean speedup (log scale)",
       color=paste0("Number of ", worker_noun), fill=paste0("Number of ", worker_noun)
@@ -277,12 +285,13 @@ save_language_figure <- function(language_family, sequential_impl, parallel_impl
     plot_runtime_panel("compute", "A. Steady-state classification", TRUE) /
     plot_runtime_panel("end_to_end", "B. End-to-end execution", FALSE) /
     p_speed +
-    patchwork::plot_layout(heights=c(.10, 1, 1, 1.15)) +
+    patchwork::plot_layout(heights=c(header_spacer_height, 1, 1, 1.15)) +
     patchwork::plot_annotation(
-      title=paste0(figure_number, ". ", figure_title),
+      title=wrap_figure_text(paste0(figure_number, ". ", figure_title),
+                             width=title_wrap_width),
       theme=ggplot2::theme(
         plot.title=ggplot2::element_text(face="bold", size=14, margin=ggplot2::margin(b=20)),
-        plot.margin=ggplot2::margin(t=16, r=16, b=10, l=16)
+        plot.margin=ggplot2::margin(t=16, r=16, b=10, l=outer_left_margin)
       )
     )
   pdf_device <- if (capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf
@@ -304,7 +313,9 @@ if (any(summary_table$language_family == "Python/Cython")) {
   save_language_figure("Python/Cython", "cython_sequential", "cython_openmp",
     "Cython sequential (1 thread)", "Cython/OpenMP", "threads",
     "Figure S15", "Figure_S15_V2_Cython_Sequential_Parallel_Performance",
-    "Cython classification performance: sequential and OpenMP execution")
+    "Cython classification performance: sequential and OpenMP execution",
+    title_wrap_width=66, subtitle_wrap_width=82, outer_left_margin=42,
+    header_spacer_height=.16)
 } else {
   warning("Python/Cython rows are absent; Figure S15 was not generated. Run with V2_RUN_PYTHON=TRUE.")
 }
