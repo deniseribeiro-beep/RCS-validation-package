@@ -1,13 +1,20 @@
 # Ribeiro Classification Score (RCS) validation package
 
+> A publication-oriented second-generation implementation benchmark is
+> available in [`benchmark_v2/README.md`](benchmark_v2/README.md). It is
+> isolated from V1 and adds Python/Cython, standardized compute/end-to-end
+> timing, calibrated samples, randomized repetitions, equivalence gates,
+> uncertainty tables, and revised figures.
+
 Reproducibility package for the governance-aware, rule-based Ribeiro
 Classification Score (RCS) described in *A Governance-Aware Rule-Based
 Computational Framework for Biospecimen Qualification in Biobank Information
 Systems*.
 
-The scientific validation remains canonical in R. Independent C++17,
-OpenMP and CUDA implementations reproduce the same scoring kernel and are used
-only for equivalence-controlled computational-performance experiments.
+The scientific validation remains canonical in R. The V2 performance protocol
+evaluates sequential and parallel execution separately within R, Cython, and
+C++ language families. CUDA is treated only as an accelerator of the C++
+kernel. Cross-language speedups are intentionally outside scope.
 
 ## Validation scope
 
@@ -24,8 +31,8 @@ The pipeline evaluates:
 - global sensitivity, weight perturbation and ablation;
 - sequential runtime scalability;
 - deterministic equivalence between R sequential and persistent R/PSOCK;
-- independent C++17 sequential reproduction;
-- multicore CPU execution with OpenMP;
+- independent R, Cython, and C++17 sequential/parallel reproduction;
+- multicore CPU execution with PSOCK or OpenMP, evaluated within language;
 - NVIDIA GPU execution with CUDA;
 - paired runtime, speedup and 95% confidence-interval analysis.
 
@@ -36,14 +43,14 @@ converted to zero severity. They invalidate governance/context admissibility.
 
 The performance experiment asks:
 
-> What is the impact of implementation language and parallelization model on
-> RCS computational performance when R and C++ are compared under sequential,
-> multicore CPU and GPU-accelerated execution using identical workloads and
-> deterministic output-equivalence requirements?
+> How does parallel execution affect RCS classification performance relative
+> to the sequential baseline within each implementation family, under
+> identical workloads and deterministic output-equivalence requirements?
 
-This is not a generic R-versus-C++ language contest. It compares implementation
-strategies for this specific validated RCS workload. Python is relevant context
-for the broader data-analysis ecosystem but is not tested in this experiment.
+No R-versus-Cython-versus-C++ speedup is estimated. Absolute runtimes may be
+reported descriptively in separate language-specific figures, but acceleration
+ratios use only the sequential baseline from the same family. CUDA uses C++
+sequential as its sole denominator.
 
 ## Requirements
 
