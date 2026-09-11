@@ -29,7 +29,7 @@ plot DATA every ::1 using (strcol(1) eq "fluid" ? xpos(strcol(1),strcol(2)) : 1/
          with boxes lc rgb "#4C78A8" notitle, \
      DATA every ::1 using (strcol(1) eq "solid" ? xpos(strcol(1),strcol(2)) : 1/0):4 \
          with boxes lc rgb "#D9822B" notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):($4 + 0.025):(sprintf("%.1f%%\nn=%d",100.0*$4,int($3))) \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):($4 + 0.025):(sprintf("%.1f",100.0*$4)."%\nn=".sprintf("%d",int($3))) \
          with labels center font "Helvetica,8" tc rgb "#202020" notitle
 
 unset output
