@@ -41,6 +41,36 @@ jobs:
           BENCHMARK_RUN_CUDA: "FALSE"
         run: Rscript scripts/00_check_environment.R
 
+      - name: Verify checked-in threshold summary consistency
+        run: |
+          Rscript - <<'RS'
+          detail <- read.csv("outputs/tables/Table_Threshold_Transition_Detail.csv", check.names = FALSE)
+          summary <- read.csv("outputs/tables/Table_Threshold_Transition_Summary.csv", check.names = FALSE)
+          groups <- split(detail, list(detail$matrix, detail$threshold_transition), drop = TRUE)
+          expected <- do.call(rbind, lapply(groups, function(x) {
+            data.frame(
+              matrix = x$matrix[[1]],
+              transition = gsub(" to ", "-to-", x$threshold_transition[[1]], fixed = TRUE),
+              reached_n = sum(x$reached, na.rm = TRUE),
+              total_n = nrow(x),
+              stringsAsFactors = FALSE
+            )
+          }))
+          expected$reached_fraction <- expected$reached_n / expected$total_n
+          expected$reached <- paste0(expected$reached_n, "/", expected$total_n)
+          key_expected <- paste(expected$matrix, expected$transition, sep = "|")
+          key_summary <- paste(summary$matrix, summary$transition, sep = "|")
+          idx <- match(key_expected, key_summary)
+          if (anyNA(idx)) stop("Threshold summary is missing rows present in the detail table.")
+          observed <- summary[idx, ]
+          if (!all(observed$reached_n == expected$reached_n) ||
+              !all(observed$total_n == expected$total_n) ||
+              !all(abs(observed$reached_fraction - expected$reached_fraction) < 1e-12) ||
+              !all(observed$reached == expected$reached)) {
+            stop("Checked-in threshold summary is inconsistent with Table_Threshold_Transition_Detail.csv.")
+          }
+          RS
+
       - name: Run scientific validation
         env:
           RCS_SEED: "20260504"
