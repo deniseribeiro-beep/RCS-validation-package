@@ -59,7 +59,7 @@ outputs/tables/Table_Weight_Perturbation_Sensitivity.csv
 outputs/tables/Table_Weight_Perturbation_Summary.csv
 ```
 
-The summary tables are deterministically derived by the validation scripts from their corresponding detailed tables/results. Redundant `figure_source` caches and duplicated supplementary-export tables are not retained in the archival structure.
+The summary tables are deterministically derived by the validation scripts from their corresponding detailed tables/results. Redundant `figure_source` caches and duplicated supplementary-export tables are not retained in the repository structure.
 
 ## Benchmark
 
