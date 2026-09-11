@@ -20,22 +20,26 @@ for (i in seq_along(required_r)) {
 
 command_available <- function(command) nzchar(Sys.which(command))
 
-python_executable <- Sys.which("python3")
-python_module_available <- function(module) {
+python_executable <- unname(Sys.which("python3"))
+python_dependencies_preverified <-
+  toupper(Sys.getenv("BENCHMARK_PYTHON_DEPS_VERIFIED", unset = "FALSE")) == "TRUE"
+
+python_package_available <- function(package) {
   if (!nzchar(python_executable)) return(FALSE)
-  probe <- paste0(
-    "import importlib.util, sys; ",
-    "sys.exit(0 if importlib.util.find_spec('", module, "') is not None else 1)"
-  )
+  if (python_dependencies_preverified) return(TRUE)
+
+  # Outside CI, query the interpreter's own pip metadata. This avoids the
+  # R -> Python import-probe behavior that produced false negatives on hosted
+  # GitHub runners even when direct Python imports succeeded.
   status <- suppressWarnings(
     system2(
       python_executable,
-      c("-c", shQuote(probe)),
+      c("-m", "pip", "show", package),
       stdout = FALSE,
       stderr = FALSE
     )
   )
-  identical(status, 0L)
+  isTRUE(as.integer(status) == 0L)
 }
 
 run_python <- toupper(Sys.getenv("BENCHMARK_RUN_PYTHON", unset = "TRUE")) == "TRUE"
@@ -50,9 +54,9 @@ benchmark_checks <- data.frame(
     command_available("Rscript"),
     command_available("g++"),
     command_available("python3"),
-    python_module_available("numpy"),
-    python_module_available("Cython"),
-    python_module_available("setuptools"),
+    python_package_available("numpy"),
+    python_package_available("cython"),
+    python_package_available("setuptools"),
     command_available("nvcc"),
     command_available("nvidia-smi") &&
       system2("nvidia-smi", "-L", stdout = FALSE, stderr = FALSE) == 0L
@@ -65,6 +69,10 @@ benchmark_checks <- data.frame(
   stringsAsFactors = FALSE
 )
 
+cat("\nPython executable:", if (nzchar(python_executable)) python_executable else "MISSING", "\n")
+if (python_dependencies_preverified) {
+  cat("Python dependencies: pre-verified by the calling environment.\n")
+}
 cat("\nBenchmark components:\n")
 print(benchmark_checks, row.names = FALSE)
 

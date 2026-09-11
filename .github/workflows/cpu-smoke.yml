@@ -28,6 +28,17 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Configure Python for R subprocesses
+        run: |
+          mkdir -p "$RUNNER_TEMP/python-r-shim"
+          cat > "$RUNNER_TEMP/python-r-shim/python3" <<'SH'
+          #!/usr/bin/env bash
+          export LD_LIBRARY_PATH="${pythonLocation}/lib"
+          exec "${pythonLocation}/bin/python3" "$@"
+          SH
+          chmod +x "$RUNNER_TEMP/python-r-shim/python3"
+          echo "$RUNNER_TEMP/python-r-shim" >> "$GITHUB_PATH"
+
       - name: Install dependencies
         run: |
           Rscript -e 'install.packages(c(
@@ -36,8 +47,17 @@ jobs:
           ))'
           python3 -m pip install numpy cython setuptools
 
+      - name: Verify Python dependencies
+        run: |
+          which python3
+          python3 --version
+          python3 -c "import numpy, Cython, setuptools; print('Python dependencies available')"
+          Rscript -e 'x <- system2("python3", c("-c", shQuote("import numpy, Cython, setuptools; print(\"Python dependencies available from R\")")), stdout = TRUE, stderr = TRUE); cat(x, sep = "\n"); if (!is.null(attr(x, "status")) && attr(x, "status") != 0L) stop("Python import failed from R subprocess")'
+
       - name: Check environment
         env:
+          BENCHMARK_RUN_PYTHON: "TRUE"
+          BENCHMARK_PYTHON_DEPS_VERIFIED: "TRUE"
           BENCHMARK_RUN_CUDA: "FALSE"
         run: Rscript scripts/00_check_environment.R
 
@@ -84,6 +104,7 @@ jobs:
           BENCHMARK_MIN_SAMPLE_SEC: "0.10"
           BENCHMARK_WORKLOADS: "10000,50000"
           BENCHMARK_RUN_PYTHON: "TRUE"
+          BENCHMARK_PYTHON_DEPS_VERIFIED: "TRUE"
           BENCHMARK_RUN_CUDA: "FALSE"
           BENCHMARK_PROCESS_WORKERS: "1,2"
           BENCHMARK_OPENMP_THREADS: "1,2"
