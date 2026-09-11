@@ -29,8 +29,8 @@ set ylabel "Assigned RCS grade" offset 0.8,0
 # single saturated blue scale for high agreement.
 set palette defined (0 "#EFF4FF", 0.02 "#E7F0FF", 0.25 "#C8DCF9", 0.50 "#94BDF4", 0.75 "#6A9FF0", 1.00 "#4589FF")
 set cbrange [0:1]
-set cbtics ("0%" 0, "25%" 0.25, "50%" 0.50, "75%" 0.75, "100%" 1)
-set cblabel "Proportion" offset 1.2,0
+set cbtics ("0" 0, "25" 0.25, "50" 0.50, "75" 0.75, "100" 1)
+set cblabel "Proportion (%)" offset 1.2,0
 set colorbox vertical user origin screen 0.925,0.22 size screen 0.018,0.60
 
 set label 100 "Fluid biospecimens" at graph 0.23,1.065 center font "Helvetica,10"
@@ -38,12 +38,12 @@ set label 101 "Solid biospecimens" at graph 0.77,1.065 center font "Helvetica,10
 set arrow 100 from first 7, graph 0 to first 7, graph 1 nohead dt 3 lw 0.65 lc rgb "#C8C8C8" back
 
 # Sparse rows are the non-zero cells. White background is therefore the true
-# zero level and the labels preserve exact table proportions.
+# zero level. Cell labels are percentages; the unit is stated on the colourbar.
 plot DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):7 \
          with points pointtype 5 pointsize 5.0 linecolor palette notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.1f",100.0*$7)."%" : "") \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.1f",100.0*$7) : "") \
          with labels center font "Helvetica,8" textcolor rgb "#202020" notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.1f",100.0*$7)."%" : "") \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.1f",100.0*$7) : "") \
          with labels center font "Helvetica,8" textcolor rgb "#FFFFFF" notitle
 
 unset output
