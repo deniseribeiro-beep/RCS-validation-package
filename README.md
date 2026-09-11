@@ -103,8 +103,16 @@ Documentation and metadata remain at repository root: `README.md`, `BENCHMARK_PR
 
 ## Figure generation
 
-Statistical analysis and figure rendering are intentionally separated. The validated `Table_*.csv` files are the source of truth. Figure-specific cached CSVs are not part of the archival package. Final figures are regenerated directly from the retained scientific-validation and benchmark tables so that visual changes cannot alter the validated scientific or computational results.
+Publication figures are generated with Gnuplot from the retained CSV tables in `outputs/tables/`. The figure scripts are stored in `scripts/gnuplot/`, the shared graphical configuration is defined in `scripts/gnuplot/ieee_access_style.gp`, and the adopted publication standard is documented in [`FIGURE_STANDARD.md`](FIGURE_STANDARD.md).
 
-## Archival scope
+Generate the complete figure set from the repository root with:
 
-The archival package preserves executable validation and benchmark code, native sources, validated tables, article-facing summary tables, computational-environment records, citation metadata, and license. Transient benchmark inputs, expected binary outputs, compiled artifacts, virtual environments, duplicated figure-source caches, duplicated supplementary exports, and per-run intermediate files are excluded.
+```bash
+bash scripts/generate_figures.sh
+```
+
+The generated files are written to `outputs/figures/`. The plotting scripts read the retained result tables directly and do not modify them.
+
+## Reproducibility package contents
+
+The repository brings together the executable RCS validation workflow, benchmark orchestration and language-specific implementations, native C++/OpenMP/CUDA sources, retained result tables, computational-environment records, figure-generation scripts, citation metadata, and license in a single reproducibility package.
