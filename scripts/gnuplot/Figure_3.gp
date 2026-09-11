@@ -16,8 +16,8 @@ set boxwidth 0.72
 set style fill solid 0.92 border lc rgb "#FFFFFF"
 set xtics ("Grade A" 1, "Grade B" 2, "Grade C" 3, "Grade D" 4, "Grade E" 5, \
            "Grade A" 7, "Grade B" 8, "Grade C" 9, "Grade D" 10, "Grade E" 11) font "Helvetica,8"
-set ytics ("0%" 0, "10%" 0.10, "20%" 0.20, "30%" 0.30, "40%" 0.40, "50%" 0.50, "60%" 0.60)
-set ylabel "Proportion of admissible combinatorial profiles" offset 0.8,0
+set ytics ("0" 0, "10" 0.10, "20" 0.20, "30" 0.30, "40" 0.40, "50" 0.50, "60" 0.60)
+set ylabel "Proportion of admissible combinatorial profiles (%)" offset 0.8,0
 unset xlabel
 set grid ytics
 
@@ -29,7 +29,7 @@ plot DATA every ::1 using (strcol(1) eq "fluid" ? xpos(strcol(1),strcol(2)) : 1/
          with boxes lc rgb "#4C78A8" notitle, \
      DATA every ::1 using (strcol(1) eq "solid" ? xpos(strcol(1),strcol(2)) : 1/0):4 \
          with boxes lc rgb "#D9822B" notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):($4 + 0.025):(sprintf("%.1f",100.0*$4)."%\nn=".sprintf("%d",int($3))) \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):($4 + 0.025):(sprintf("%.1f",100.0*$4)."\nn=".sprintf("%d",int($3))) \
          with labels center font "Helvetica,8" tc rgb "#202020" notitle
 
 unset output
