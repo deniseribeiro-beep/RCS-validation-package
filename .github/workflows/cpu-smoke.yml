@@ -36,8 +36,15 @@ jobs:
           ))'
           python3 -m pip install numpy cython setuptools
 
+      - name: Verify Python dependencies
+        run: |
+          which python3
+          python3 --version
+          python3 -c "import numpy, Cython, setuptools; print('Python dependencies available')"
+
       - name: Check environment
         env:
+          BENCHMARK_RUN_PYTHON: "TRUE"
           BENCHMARK_RUN_CUDA: "FALSE"
         run: Rscript scripts/00_check_environment.R
 
