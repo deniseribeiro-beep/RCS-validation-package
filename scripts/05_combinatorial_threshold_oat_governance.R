@@ -140,7 +140,7 @@ threshold_transition_summary <- threshold_transition_detail |>
     interpretation = dplyr::case_when(
       matrix == "fluid" & threshold_transition == "A to B" ~ "Second centrifugation did not reach the transition under -20% and -10% perturbation.",
       matrix == "fluid" & threshold_transition == "B to C" ~ "Intermediate threshold transitions occurred in approximately half of perturbation scenarios.",
-      matrix == "fluid" & threshold_transition == "C to D" ~ "Severe isolated-axis degradation rarely reached the Grade D threshold.",
+      matrix == "fluid" & threshold_transition == "C to D" ~ "No isolated fluid axis reached the Grade D threshold.",
       matrix == "fluid" & threshold_transition == "D to E" ~ "No isolated fluid axis produced critical Grade E degradation.",
       matrix == "solid" & threshold_transition == "A to B" ~ "All solid axes reproducibly reached the first threshold transition.",
       matrix == "solid" & threshold_transition == "B to C" ~ "Intermediate threshold transitions occurred in approximately half of perturbation scenarios.",
