@@ -19,18 +19,33 @@ for (i in seq_along(required_r)) {
 }
 
 command_available <- function(command) nzchar(Sys.which(command))
+
+python_executable <- Sys.which("python3")
 python_module_available <- function(module) {
-  if (!command_available("python3")) return(FALSE)
+  if (!nzchar(python_executable)) return(FALSE)
   probe <- paste0(
     "import importlib.util, sys; ",
     "sys.exit(0 if importlib.util.find_spec('", module, "') is not None else 1)"
   )
-  identical(system2("python3", c("-c", probe), stdout = FALSE, stderr = FALSE), 0L)
+  status <- suppressWarnings(
+    system2(
+      python_executable,
+      c("-c", shQuote(probe)),
+      stdout = FALSE,
+      stderr = FALSE
+    )
+  )
+  identical(status, 0L)
 }
 
+run_python <- toupper(Sys.getenv("BENCHMARK_RUN_PYTHON", unset = "TRUE")) == "TRUE"
 run_cuda <- toupper(Sys.getenv("BENCHMARK_RUN_CUDA", unset = "FALSE")) == "TRUE"
+
 benchmark_checks <- data.frame(
-  component = c("Rscript", "g++", "Python 3", "Python NumPy", "Python Cython", "Python setuptools", "nvcc", "NVIDIA GPU"),
+  component = c(
+    "Rscript", "g++", "Python 3", "Python NumPy", "Python Cython",
+    "Python setuptools", "nvcc", "NVIDIA GPU"
+  ),
   available = c(
     command_available("Rscript"),
     command_available("g++"),
@@ -39,14 +54,23 @@ benchmark_checks <- data.frame(
     python_module_available("Cython"),
     python_module_available("setuptools"),
     command_available("nvcc"),
-    command_available("nvidia-smi") && system2("nvidia-smi", "-L", stdout = FALSE, stderr = FALSE) == 0L
+    command_available("nvidia-smi") &&
+      system2("nvidia-smi", "-L", stdout = FALSE, stderr = FALSE) == 0L
   ),
-  required = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, run_cuda, run_cuda),
+  required = c(
+    TRUE, TRUE,
+    run_python, run_python, run_python, run_python,
+    run_cuda, run_cuda
+  ),
   stringsAsFactors = FALSE
 )
 
 cat("\nBenchmark components:\n")
 print(benchmark_checks, row.names = FALSE)
+
+if (!run_cuda) {
+  cat("\nCUDA checks are optional because BENCHMARK_RUN_CUDA=FALSE.\n")
+}
 
 if (!all(available_r)) {
   stop("Missing required R packages: ", paste(required_r[!available_r], collapse = ", "))
@@ -54,7 +78,10 @@ if (!all(available_r)) {
 if (any(benchmark_checks$required & !benchmark_checks$available)) {
   stop(
     "Missing required benchmark components: ",
-    paste(benchmark_checks$component[benchmark_checks$required & !benchmark_checks$available], collapse = ", ")
+    paste(
+      benchmark_checks$component[benchmark_checks$required & !benchmark_checks$available],
+      collapse = ", "
+    )
   )
 }
 
