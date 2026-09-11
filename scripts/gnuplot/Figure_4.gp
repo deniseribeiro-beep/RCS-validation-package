@@ -53,31 +53,31 @@ unset key
 unset grid
 set xrange [0.5:4.5]
 set yrange [5.5:0.5]
-set xtics ("A→B" 1, "B→C" 2, "C→D" 3, "D→E" 4) font sprintf("Helvetica,%.1f", FS_TICK)
+set xtics ("A→B" 1, "B→C" 2, "C→D" 3, "D→E" 4) font "Helvetica,9"
 set cbrange [0:5]
 set palette defined (0 "#F4F4F4", 1 "#DCE8FA", 2 "#B9D1F7", 3 "#91B7F3", 4 "#6B9EF0", 5 "#4589FF")
 set cbtics ("0" 0, "1" 1, "2" 2, "3" 3, "4" 4, "5" 5)
 unset colorbox
 
-set label 900 "Perturbation scenarios reaching threshold (n/5)" at screen 0.5,0.105 center font sprintf("Helvetica,%.1f", FS_SMALL)
+set label 900 "Perturbation scenarios reaching threshold (n/5)" at screen 0.5,0.105 center font "Helvetica,8"
 set multiplot layout 1,2 rowsfirst margins 0.13,0.97,0.20,0.87 spacing 0.115,0.0
 
 # Fluid panel
-set ytics ("Pre-centrifugation delay" 1, "Primary centrifugation" 2, "Second centrifugation" 3, "Post-centrifugation delay" 4, "Storage" 5) font sprintf("Helvetica,%.1f", FS_SMALL)
+set ytics ("Pre-centrifugation delay" 1, "Primary centrifugation" 2, "Second centrifugation" 3, "Post-centrifugation delay" 4, "Storage" 5) font "Helvetica,8"
 set xlabel "RCS grade-transition threshold" offset 0,0.2
-set label 100 "Fluid biospecimens" at graph 0.5,1.075 center font sprintf("Helvetica,%.1f", FS_PANEL)
+set label 100 "Fluid biospecimens" at graph 0.5,1.075 center font "Helvetica,10"
 plot $FLUID using 1:2:3 with image notitle, \
-     $FLUID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font sprintf("Helvetica,%.1f", FS_ANNOT) tc rgb "#202020" notitle, \
-     $FLUID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font sprintf("Helvetica,%.1f", FS_ANNOT) tc rgb "#FFFFFF" notitle
+     $FLUID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,8" tc rgb "#202020" notitle, \
+     $FLUID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,8" tc rgb "#FFFFFF" notitle
 unset label 100
 
 # Solid panel. The colour scale is drawn once for the complete figure.
-set ytics ("Warm ischemia" 1, "Cold ischemia" 2, "Fixation / stabilization" 3, "Fixation time" 4, "Storage" 5) font sprintf("Helvetica,%.1f", FS_SMALL)
-set label 101 "Solid biospecimens" at graph 0.5,1.075 center font sprintf("Helvetica,%.1f", FS_PANEL)
+set ytics ("Warm ischemia" 1, "Cold ischemia" 2, "Fixation / stabilization" 3, "Fixation time" 4, "Storage" 5) font "Helvetica,8"
+set label 101 "Solid biospecimens" at graph 0.5,1.075 center font "Helvetica,10"
 set colorbox horizontal user origin screen 0.33,0.055 size screen 0.34,0.025
 plot $SOLID using 1:2:3 with image notitle, \
-     $SOLID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font sprintf("Helvetica,%.1f", FS_ANNOT) tc rgb "#202020" notitle, \
-     $SOLID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font sprintf("Helvetica,%.1f", FS_ANNOT) tc rgb "#FFFFFF" notitle
+     $SOLID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,8" tc rgb "#202020" notitle, \
+     $SOLID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,8" tc rgb "#FFFFFF" notitle
 unset label 101
 
 unset multiplot
