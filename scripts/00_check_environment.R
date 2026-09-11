@@ -20,8 +20,12 @@ for (i in seq_along(required_r)) {
 
 command_available <- function(command) nzchar(Sys.which(command))
 python_module_available <- function(module) {
-  command_available("python3") &&
-    system2("python3", c("-c", shQuote(paste0("import ", module))), stdout = FALSE, stderr = FALSE) == 0L
+  if (!command_available("python3")) return(FALSE)
+  probe <- paste0(
+    "import importlib.util, sys; ",
+    "sys.exit(0 if importlib.util.find_spec('", module, "') is not None else 1)"
+  )
+  identical(system2("python3", c("-c", probe), stdout = FALSE, stderr = FALSE), 0L)
 }
 
 run_cuda <- toupper(Sys.getenv("BENCHMARK_RUN_CUDA", unset = "FALSE")) == "TRUE"
