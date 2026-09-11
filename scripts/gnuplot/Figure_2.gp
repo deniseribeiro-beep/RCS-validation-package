@@ -27,7 +27,7 @@ unset grid
 
 set palette defined (0 "#FFFFFF", 0.02 "#EAF2F8", 0.25 "#C9DDEA", 0.50 "#9EC5DD", 0.75 "#6EA6CA", 1.00 "#3F82B2")
 set cbrange [0:1]
-set cbtics ("0%" 0, "25%" 0.25, "50%" 0.50, "75%" 0.75, "100%" 1)
+set cbtics ("0" 0, "0.25" 0.25, "0.50" 0.50, "0.75" 0.75, "1.00" 1)
 set cblabel "Proportion"
 set colorbox vertical
 
@@ -36,12 +36,12 @@ set label 101 "Solid biospecimens" at graph 0.77,1.055 center font "Helvetica,9"
 set arrow 100 from first 7, graph 0 to first 7, graph 1 nohead dt 3 lw 0.8 lc rgb "#B0B0B0" back
 
 # Sparse rows represent the non-zero cells; the white background represents zero.
-# Numerical labels make the heatmap interpretable independently of colour.
+# Numeric proportions make the heatmap interpretable independently of colour.
 plot DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):7 \
          with points pointtype 5 pointsize 4.5 linecolor palette notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.1f",100.0*$7)."%" : "") \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.3f",$7) : "") \
          with labels center font "Helvetica,7" textcolor rgb "#202020" notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.1f",100.0*$7)."%" : "") \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.3f",$7) : "") \
          with labels center font "Helvetica,7" textcolor rgb "#FFFFFF" notitle
 
 unset output
