@@ -1,0 +1,3 @@
+# Preserve Unix line endings for shell and Gnuplot scripts across Windows/Linux checkouts.
+*.sh text eol=lf
+*.gp text eol=lf
