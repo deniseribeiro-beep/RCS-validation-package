@@ -21,7 +21,7 @@ set yrange [0.001:10]
 set format y "%.3g"
 unset xlabel
 set ylabel "Median elapsed time (s)" offset 0.7,0
-set key top left horizontal opaque no box
+set key top left horizontal opaque nobox
 set label 100 "(a)" at graph 0.015,0.91 left font "Helvetica,10"
 plot DATA every ::1 using ((strcol(2) eq "R" && strcol(4) eq "r_sequential" && strcol(6) eq "compute") ? $3 : 1/0):8:9:10 \
          with yerrorlines ls 1 title "Compute", \
