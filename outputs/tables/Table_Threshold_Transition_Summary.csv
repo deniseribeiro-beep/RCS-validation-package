@@ -1,7 +1,7 @@
 matrix,transition,reached_n,total_n,reached_fraction,reached,interpretation
 fluid,A-to-B,23,25,0.92,23/25,"Second centrifugation did not reach the transition under -20% and -10% perturbation."
 fluid,B-to-C,13,25,0.52,13/25,"Intermediate threshold transitions occurred in approximately half of perturbation scenarios."
-fluid,C-to-D,1,25,0.04,1/25,"Severe isolated-axis degradation rarely reached the Grade D threshold."
+fluid,C-to-D,0,25,0,0/25,"No isolated fluid axis reached the Grade D threshold."
 fluid,D-to-E,0,25,0,0/25,"No isolated fluid axis produced critical Grade E degradation."
 solid,A-to-B,25,25,1,25/25,"All solid axes reproducibly reached the first threshold transition."
 solid,B-to-C,13,25,0.52,13/25,"Intermediate threshold transitions occurred in approximately half of perturbation scenarios."
