@@ -23,7 +23,7 @@ set multiplot layout 3,1 rowsfirst margins 0.13,0.975,0.09,0.96 spacing 0.0,0.09
 # (a) R / PSOCK
 set xlabel "Workers" offset 0,0.25
 set ylabel "Speedup (×)" offset 0.7,0
-set key top right horizontal opaque no box
+set key top right horizontal opaque nobox
 set label 100 "(a) R / PSOCK" at graph 0.015,0.89 left font "Helvetica,10"
 plot DATA every ::1 using ((strcol(1) eq "R" && $2 == TARGET_N && strcol(3) eq "r_psock" && strcol(5) eq "compute") ? $4 : 1/0):7:8:9 \
          with yerrorlines ls 1 title "Compute", \
