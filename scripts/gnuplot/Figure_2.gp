@@ -20,7 +20,7 @@ unset grid
 set xrange [0.35:13.65]
 set yrange [5.55:0.45]
 set xtics ("Optimal" 1, "Mild\nsuboptimal" 2, "Moderate\nsuboptimal" 3, "Severe\nsuboptimal" 4, "Critical\npenalty" 5, "Governance\nfailure" 6, \
-           "Optimal" 8, "Mild\nsuboptimal" 9, "Moderate\nsuboptimal" 10, "Severe\nsuboptimal" 11, "Critical\npenalty" 12, "Governance\nfailure" 13) font sprintf("Helvetica,%.1f", FS_SMALL)
+           "Optimal" 8, "Mild\nsuboptimal" 9, "Moderate\nsuboptimal" 10, "Severe\nsuboptimal" 11, "Critical\npenalty" 12, "Governance\nfailure" 13) font "Helvetica,8"
 set ytics ("Grade A" 1, "Grade B" 2, "Grade C" 3, "Grade D" 4, "Grade E" 5)
 set xlabel "Synthetic validation scenario" offset 0,0.25
 set ylabel "Assigned RCS grade" offset 0.8,0
@@ -33,17 +33,17 @@ set cbtics ("0%" 0, "25%" 0.25, "50%" 0.50, "75%" 0.75, "100%" 1)
 set cblabel "Proportion" offset 1.2,0
 set colorbox vertical user origin screen 0.925,0.22 size screen 0.018,0.60
 
-set label 100 "Fluid biospecimens" at graph 0.23,1.065 center font sprintf("Helvetica,%.1f", FS_PANEL)
-set label 101 "Solid biospecimens" at graph 0.77,1.065 center font sprintf("Helvetica,%.1f", FS_PANEL)
-set arrow 100 from first 7, graph 0 to first 7, graph 1 nohead dt 3 lw (0.65*DEVICE_SCALE) lc rgb "#C8C8C8" back
+set label 100 "Fluid biospecimens" at graph 0.23,1.065 center font "Helvetica,10"
+set label 101 "Solid biospecimens" at graph 0.77,1.065 center font "Helvetica,10"
+set arrow 100 from first 7, graph 0 to first 7, graph 1 nohead dt 3 lw 0.65 lc rgb "#C8C8C8" back
 
 # Sparse rows are the non-zero cells. White background is therefore the true
 # zero level and the labels preserve exact table proportions.
 plot DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):7 \
          with points pointtype 5 pointsize 5.0 linecolor palette notitle, \
      DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.1f%%",100.0*$7) : "") \
-         with labels center font sprintf("Helvetica,%.1f", FS_SMALL) textcolor rgb "#202020" notitle, \
+         with labels center font "Helvetica,8" textcolor rgb "#202020" notitle, \
      DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.1f%%",100.0*$7) : "") \
-         with labels center font sprintf("Helvetica,%.1f", FS_SMALL) textcolor rgb "#FFFFFF" notitle
+         with labels center font "Helvetica,8" textcolor rgb "#FFFFFF" notitle
 
 unset output
