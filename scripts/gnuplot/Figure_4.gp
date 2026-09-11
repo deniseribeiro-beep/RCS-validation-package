@@ -27,12 +27,13 @@ SOLID_AXIS[4] = "P_fixTime"
 SOLID_AXIS[5] = "P_store"
 
 # Build transient in-memory grids directly from the canonical detail table.
-# No figure-source CSV is written.
+# The grids are comma-separated because the shared style keeps CSV parsing
+# active for both files and datablocks. No figure-source CSV is written.
 set print $FLUID
  do for [i=1:5] {
     do for [j=1:4] {
         stats DATA every ::1 using ((strcol(1) eq "fluid" && strcol(2) eq FLUID_AXIS[i] && strcol(9) eq TRANS_KEY[j] && strcol(14) eq "TRUE") ? 1 : 0) nooutput
-        print sprintf("%d %d %.0f", j, i, STATS_sum)
+        print sprintf("%d,%d,%.0f", j, i, STATS_sum)
     }
     print ""
  }
@@ -42,7 +43,7 @@ set print $SOLID
  do for [i=1:5] {
     do for [j=1:4] {
         stats DATA every ::1 using ((strcol(1) eq "solid" && strcol(2) eq SOLID_AXIS[i] && strcol(9) eq TRANS_KEY[j] && strcol(14) eq "TRUE") ? 1 : 0) nooutput
-        print sprintf("%d %d %.0f", j, i, STATS_sum)
+        print sprintf("%d,%d,%.0f", j, i, STATS_sum)
     }
     print ""
  }
