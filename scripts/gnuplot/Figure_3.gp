@@ -13,7 +13,7 @@ unset key
 set xrange [0.3:11.7]
 set yrange [0:58]
 set boxwidth 0.72
-set style fill solid 0.82 border lc rgb "#4A4A4A" lw 0.7
+set style fill solid 0.82 border lc rgb "#4A4A4A"
 set xtics ("Grade A" 1, "Grade B" 2, "Grade C" 3, "Grade D" 4, "Grade E" 5, \
            "Grade A" 7, "Grade B" 8, "Grade C" 9, "Grade D" 10, "Grade E" 11) font "Helvetica,8"
 set ytics ("0" 0, "0.10" 10, "0.20" 20, "0.30" 30, "0.40" 40, "0.50" 50)
