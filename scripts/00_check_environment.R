@@ -20,22 +20,32 @@ for (i in seq_along(required_r)) {
 
 command_available <- function(command) nzchar(Sys.which(command))
 
-python_executable <- Sys.which("python3")
+python_executable <- unname(Sys.which("python3"))
 python_module_available <- function(module) {
   if (!nzchar(python_executable)) return(FALSE)
-  probe <- paste0(
-    "import importlib.util, sys; ",
-    "sys.exit(0 if importlib.util.find_spec('", module, "') is not None else 1)"
+
+  # Use a temporary Python probe file instead of `python -c` so the check is
+  # independent of shell quoting differences between local environments and CI.
+  probe_file <- tempfile(fileext = ".py")
+  writeLines(
+    c(
+      "import importlib.util, sys",
+      "sys.exit(0 if importlib.util.find_spec(sys.argv[1]) is not None else 1)"
+    ),
+    probe_file
   )
+
   status <- suppressWarnings(
     system2(
       python_executable,
-      c("-c", shQuote(probe)),
+      c(probe_file, module),
       stdout = FALSE,
       stderr = FALSE
     )
   )
-  identical(status, 0L)
+  unlink(probe_file)
+
+  isTRUE(as.integer(status) == 0L)
 }
 
 run_python <- toupper(Sys.getenv("BENCHMARK_RUN_PYTHON", unset = "TRUE")) == "TRUE"
@@ -65,6 +75,7 @@ benchmark_checks <- data.frame(
   stringsAsFactors = FALSE
 )
 
+cat("\nPython executable:", if (nzchar(python_executable)) python_executable else "MISSING", "\n")
 cat("\nBenchmark components:\n")
 print(benchmark_checks, row.names = FALSE)
 
