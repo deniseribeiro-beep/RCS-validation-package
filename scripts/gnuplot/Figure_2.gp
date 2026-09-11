@@ -41,9 +41,9 @@ set arrow 100 from first 7, graph 0 to first 7, graph 1 nohead dt 3 lw 0.65 lc r
 # zero level and the labels preserve exact table proportions.
 plot DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):7 \
          with points pointtype 5 pointsize 5.0 linecolor palette notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.1f%%",100.0*$7) : "") \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.1f",100.0*$7)."%" : "") \
          with labels center font "Helvetica,8" textcolor rgb "#202020" notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.1f%%",100.0*$7) : "") \
+     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.1f",100.0*$7)."%" : "") \
          with labels center font "Helvetica,8" textcolor rgb "#FFFFFF" notitle
 
 unset output
