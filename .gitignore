@@ -1,25 +1,11 @@
-# Generated validation artifacts
-outputs/*
-!outputs/cross_language/
-outputs/cross_language/*
-!outputs/cross_language/.gitkeep
-!outputs/figures/
+# Transient benchmark workspace
+outputs/.benchmark_work/
+
+# Figure files are regenerated from validated tables
 outputs/figures/*
 !outputs/figures/.gitkeep
-!outputs/tables/
-outputs/tables/*
-!outputs/tables/.gitkeep
-!outputs/tables/figure_source/
-outputs/tables/figure_source/*
-!outputs/tables/figure_source/.gitkeep
-!outputs/tables/supplementary/
-outputs/tables/supplementary/*
-!outputs/tables/supplementary/.gitkeep
 
-# Generated environment records and local logs
-validation/environment/Computational_Environment.txt
-validation/environment/Cross_Language_Computational_Environment.txt
-validation/environment/SessionInfo_RCS_validation.txt
+# Local logs
 *.log
 
 # Compiled native artifacts
@@ -42,3 +28,4 @@ __pycache__/
 *.py[cod]
 .venv/
 .venv-benchmark/
+build/
