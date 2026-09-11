@@ -24,11 +24,16 @@ done
 
 mkdir -p outputs/figures
 
-for mode in pdf png; do
+read -r -a output_modes <<< "${OUTPUT_MODES:-pdf png}"
+for mode in "${output_modes[@]}"; do
+  if [[ "$mode" != "pdf" && "$mode" != "png" ]]; then
+    echo "Error: unsupported OUTPUT_MODES entry: $mode" >&2
+    exit 1
+  fi
   for figure in 1 2 3 4 5 6 7; do
     echo "Generating Figure_${figure}.${mode}"
     gnuplot -e "OUTPUT_MODE='${mode}'" "scripts/gnuplot/Figure_${figure}.gp"
   done
 done
 
-echo "All publication figures generated from canonical sources."
+echo "All requested publication figures generated from canonical sources."
