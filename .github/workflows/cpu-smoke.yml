@@ -65,6 +65,12 @@ jobs:
         run: |
           test -f outputs/tables/Table_Property_Based_Checks.csv
           test -f outputs/tables/Table_Validation_Summary.csv
+          test -f outputs/tables/Table_Threshold_Transition_Detail.csv
+          test -f outputs/tables/Table_Threshold_Transition_Summary.csv
+          test -f outputs/tables/Table_Weight_Perturbation_Sensitivity.csv
+          test -f outputs/tables/Table_Weight_Perturbation_Summary.csv
           test -f outputs/tables/Table_Benchmark_Runtime_Raw.csv
           test -f outputs/tables/Table_Benchmark_Equivalence_Check.csv
           test -f outputs/tables/Table_Benchmark_Quality_Gates.csv
+          test ! -d outputs/tables/figure_source
+          test ! -d outputs/tables/supplementary

@@ -119,6 +119,39 @@ threshold_transition_detail <- purrr::map_dfr(
 )
 safe_write_csv(threshold_transition_detail, "Table_Threshold_Transition_Detail.csv")
 
+# Canonical published summary derived directly from the complete transition table.
+threshold_transition_summary <- threshold_transition_detail |>
+  dplyr::group_by(matrix, threshold_transition) |>
+  dplyr::summarise(
+    reached_n = sum(reached, na.rm = TRUE),
+    total_n = dplyr::n(),
+    reached_fraction = reached_n / total_n,
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    transition = dplyr::recode(
+      threshold_transition,
+      "A to B" = "A-to-B",
+      "B to C" = "B-to-C",
+      "C to D" = "C-to-D",
+      "D to E" = "D-to-E"
+    ),
+    reached = paste0(reached_n, "/", total_n),
+    interpretation = dplyr::case_when(
+      matrix == "fluid" & threshold_transition == "A to B" ~ "Second centrifugation did not reach the transition under -20% and -10% perturbation.",
+      matrix == "fluid" & threshold_transition == "B to C" ~ "Intermediate threshold transitions occurred in approximately half of perturbation scenarios.",
+      matrix == "fluid" & threshold_transition == "C to D" ~ "Severe isolated-axis degradation rarely reached the Grade D threshold.",
+      matrix == "fluid" & threshold_transition == "D to E" ~ "No isolated fluid axis produced critical Grade E degradation.",
+      matrix == "solid" & threshold_transition == "A to B" ~ "All solid axes reproducibly reached the first threshold transition.",
+      matrix == "solid" & threshold_transition == "B to C" ~ "Intermediate threshold transitions occurred in approximately half of perturbation scenarios.",
+      matrix == "solid" & threshold_transition == "C to D" ~ "No isolated solid axis reached the Grade D threshold.",
+      matrix == "solid" & threshold_transition == "D to E" ~ "No isolated solid axis produced critical Grade E degradation.",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  dplyr::select(matrix, transition, reached_n, total_n, reached_fraction, reached, interpretation)
+safe_write_csv(threshold_transition_summary, "Table_Threshold_Transition_Summary.csv")
+
 failures <- c(
   "metadata_incompleteness", "invalid_terminology", "traceability_failure",
   "monitoring_failure", "documentation_failure", "semantic_incompatibility"

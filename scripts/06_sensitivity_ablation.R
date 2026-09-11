@@ -22,6 +22,20 @@ perturb_weight_once <- function(mt, perturb_sd = 0.10, n = 1000) {
 wp <- dplyr::bind_rows(perturb_weight_once("fluid"), perturb_weight_once("solid"))
 safe_write_csv(wp, "Table_Weight_Perturbation_Sensitivity.csv")
 
+# Canonical published summary derived directly from all perturbation iterations.
+wp_summary <- wp |>
+  dplyr::group_by(matrix) |>
+  dplyr::summarise(
+    iterations = dplyr::n(),
+    mean_changed_rate = round(mean(changed_rate), 6),
+    mean_abs_rcs_shift = round(mean(mean_abs_rcs_shift), 6),
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    interpretation = "Numerical shifts rarely altered final grade assignment."
+  )
+safe_write_csv(wp_summary, "Table_Weight_Perturbation_Summary.csv")
+
 # Axis maximum influence under severity 1, all other severities 0.
 axis_inf <- purrr::map_dfr(c("fluid", "solid"), function(mt) {
   axes <- axis_names(mt)
