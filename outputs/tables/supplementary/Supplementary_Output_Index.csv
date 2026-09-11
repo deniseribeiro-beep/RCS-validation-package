@@ -1,9 +1,0 @@
-file_name,source_tables,description,status
-Additional_File_S4_Property_Based_Logical_Checks.csv,Table_Property_Based_Checks,"Property-based logical checks validating deterministic behaviour, bounded penalties, monotonicity, matrix-specific axes, and governance override.",generated
-Additional_File_S5_Synthetic_Validation_And_Internal_Calibration.csv,Table_Validation_Summary; Table_Internal_Calibration_Index,Synthetic validation summary and internal calibration agreement tables.,generated
-Additional_File_S6_Threshold_Margin_Analysis.csv,Table_Threshold_Margin_Summary,Threshold-margin analysis quantifying proximity of score-derived classifications to grade boundaries.,generated
-Additional_File_S7_Governance_Failure_Sensitivity_Override.csv,Table_Governance_Sensitivity,Governance-failure sensitivity table demonstrating non-compensable override to Grade E.,generated
-Additional_File_S8_Global_Sensitivity_And_Axis_Influence.csv,Table_Global_Sensitivity; Table_Global_Sensitivity_Summary; Table_Axis_Influence_Summary,"Global sensitivity and axis-influence summaries. These tables describe relative contribution to penalty accumulation, not threshold-crossing behaviour.",generated
-Additional_File_S9_Weight_Perturbation_Robustness.csv,Table_Weight_Perturbation_Sensitivity,Weight-perturbation robustness summaries for RCS outputs.,generated
-Additional_File_S10_Ablation_Analysis.csv,Table_Ablation_Analysis,Ablation analysis of governance-aware RCS components.,generated
-Additional_File_S11_Runtime_Benchmark_Summary.csv,Table_Runtime_Benchmark_Summary; Table_Runtime_Linear_Fit,Runtime benchmark summary and linear-fit diagnostics.,generated

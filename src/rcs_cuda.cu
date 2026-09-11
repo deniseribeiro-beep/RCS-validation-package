@@ -1,4 +1,4 @@
-#include "rcs_common.hpp"
+#include "rcs_benchmark_common.hpp"
 #include <cuda_runtime.h>
 
 #define CUDA_OK(call) do { const cudaError_t e=(call); if(e!=cudaSuccess) throw std::runtime_error(cudaGetErrorString(e)); } while(0)
@@ -10,11 +10,11 @@ __global__ void score_kernel(const DeviceProfile* profiles, DeviceResult* result
   const std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= n) return;
   const DeviceProfile p = profiles[i];
-  const double fw[5] = {30.,15.,10.,20.,25.};
-  const double sw[5] = {25.,25.,15.,20.,15.};
+  const double fw[5] = {30., 15., 10., 20., 25.};
+  const double sw[5] = {25., 25., 15., 20., 15.};
   const int offset = p.matrix == 0 ? 0 : 5;
   double penalty = 0.0;
-  for (int j=0; j<5; ++j) penalty += p.severity[offset+j] * (p.matrix == 0 ? fw[j] : sw[j]);
+  for (int j = 0; j < 5; ++j) penalty += p.severity[offset + j] * (p.matrix == 0 ? fw[j] : sw[j]);
   const double score = 100.0 - penalty;
   unsigned char grade = score >= 90. ? 0 : score >= 80. ? 1 : score >= 65. ? 2 : score >= 50. ? 3 : 4;
   const unsigned char route = !p.governance ? 2 : score < 50. ? 1 : 0;
@@ -22,30 +22,121 @@ __global__ void score_kernel(const DeviceProfile* profiles, DeviceResult* result
   results[i] = {penalty, score, grade, route};
 }
 
+static double cuda_event_seconds(const std::function<void()>& operation) {
+  cudaEvent_t start, stop;
+  CUDA_OK(cudaEventCreate(&start));
+  CUDA_OK(cudaEventCreate(&stop));
+  CUDA_OK(cudaEventRecord(start));
+  operation();
+  CUDA_OK(cudaEventRecord(stop));
+  CUDA_OK(cudaEventSynchronize(stop));
+  CUDA_OK(cudaGetLastError());
+  float milliseconds = 0.0f;
+  CUDA_OK(cudaEventElapsedTime(&milliseconds, start, stop));
+  CUDA_OK(cudaEventDestroy(start));
+  CUDA_OK(cudaEventDestroy(stop));
+  return static_cast<double>(milliseconds) / 1000.0;
+}
+
 int main(int argc, char** argv) {
+  DeviceProfile* d_input = nullptr;
+  DeviceResult* d_output = nullptr;
   try {
-    const auto args = rcs::parse_arguments(argc, argv);
-    const auto host = rcs::read_profiles(args.input);
-    std::vector<DeviceProfile> input(host.size());
-    for (std::size_t i=0;i<host.size();++i) { input[i].matrix=host[i].matrix; input[i].governance=host[i].governance; for(int j=0;j<10;++j) input[i].severity[j]=host[i].severity[j]; }
-    std::vector<DeviceResult> output(host.size());
-    DeviceProfile* d_input=nullptr; DeviceResult* d_output=nullptr;
-    const auto total_start=std::chrono::steady_clock::now();
-    CUDA_OK(cudaMalloc(reinterpret_cast<void**>(&d_input), input.size()*sizeof(DeviceProfile)));
-    CUDA_OK(cudaMalloc(reinterpret_cast<void**>(&d_output), output.size()*sizeof(DeviceResult)));
-    CUDA_OK(cudaMemcpy(d_input,input.data(),input.size()*sizeof(DeviceProfile),cudaMemcpyHostToDevice));
-    cudaEvent_t begin,end; CUDA_OK(cudaEventCreate(&begin)); CUDA_OK(cudaEventCreate(&end));
-    CUDA_OK(cudaEventRecord(begin));
-    score_kernel<<<static_cast<unsigned>((host.size()+255)/256),256>>>(d_input,d_output,host.size());
-    CUDA_OK(cudaEventRecord(end)); CUDA_OK(cudaEventSynchronize(end)); CUDA_OK(cudaGetLastError());
-    float kernel_ms=0; CUDA_OK(cudaEventElapsedTime(&kernel_ms,begin,end));
-    CUDA_OK(cudaMemcpy(output.data(),d_output,output.size()*sizeof(DeviceResult),cudaMemcpyDeviceToHost));
-    CUDA_OK(cudaFree(d_input)); CUDA_OK(cudaFree(d_output)); CUDA_OK(cudaEventDestroy(begin)); CUDA_OK(cudaEventDestroy(end));
-    const double total=std::chrono::duration<double>(std::chrono::steady_clock::now()-total_start).count();
-    std::vector<rcs::Result> results(output.size());
-    for(std::size_t i=0;i<output.size();++i) results[i]={output[i].p_bio,output[i].score,output[i].final_grade,output[i].grade_route};
-    rcs::write_results(args.output,results);
-    rcs::print_timing("cpp_cuda",host.size(),0,total,kernel_ms/1000.0);
+    const auto args = rcs_benchmark::parse_arguments(argc, argv);
+    std::vector<rcs::Profile> host;
+    const double read_seconds = rcs_benchmark::elapsed([&]() { host = rcs::read_profiles(args.input); });
+
+    std::vector<DeviceProfile> input;
+    std::vector<DeviceResult> output;
+    const double host_prepare_seconds = rcs_benchmark::elapsed([&]() {
+      input.resize(host.size());
+      output.resize(host.size());
+      for (std::size_t i = 0; i < host.size(); ++i) {
+        input[i].matrix = host[i].matrix;
+        input[i].governance = host[i].governance;
+        for (int j = 0; j < 10; ++j) input[i].severity[j] = host[i].severity[j];
+      }
+    });
+    const double device_setup_seconds = rcs_benchmark::elapsed([&]() {
+      CUDA_OK(cudaFree(nullptr));
+      CUDA_OK(cudaMalloc(reinterpret_cast<void**>(&d_input), input.size() * sizeof(DeviceProfile)));
+      CUDA_OK(cudaMalloc(reinterpret_cast<void**>(&d_output), output.size() * sizeof(DeviceResult)));
+    });
+    const double h2d_seconds = rcs_benchmark::elapsed([&]() {
+      CUDA_OK(cudaMemcpy(d_input, input.data(), input.size() * sizeof(DeviceProfile), cudaMemcpyHostToDevice));
+    });
+    const auto launch = [&]() {
+      score_kernel<<<static_cast<unsigned>((host.size() + 255) / 256), 256>>>(d_input, d_output, host.size());
+    };
+
+    int loops = 1;
+    int calibration_attempts = 0;
+    bool calibration_floor_passed = false;
+    double measurement_block_seconds = NAN;
+    double kernel_seconds = NAN;
+    if (args.mode == "compute") {
+      for (int i = 0; i < args.warmups; ++i) launch();
+      CUDA_OK(cudaDeviceSynchronize());
+      CUDA_OK(cudaGetLastError());
+      while (true) {
+        ++calibration_attempts;
+        measurement_block_seconds = cuda_event_seconds([&]() {
+          for (int i = 0; i < loops; ++i) launch();
+        });
+        if (std::isfinite(measurement_block_seconds) && measurement_block_seconds >= args.min_seconds) {
+          calibration_floor_passed = true;
+          break;
+        }
+        if (loops >= args.max_loops) break;
+        long long estimate = static_cast<long long>(loops) * 2LL;
+        if (std::isfinite(measurement_block_seconds) && measurement_block_seconds > 0.0)
+          estimate = static_cast<long long>(std::ceil(1.10 * loops * args.min_seconds / measurement_block_seconds));
+        loops = static_cast<int>(std::min(
+          static_cast<long long>(args.max_loops),
+          std::max({static_cast<long long>(loops) + 1LL, static_cast<long long>(loops) * 2LL, estimate})
+        ));
+      }
+      kernel_seconds = measurement_block_seconds / loops;
+    } else {
+      kernel_seconds = cuda_event_seconds(launch);
+    }
+
+    const double d2h_seconds = rcs_benchmark::elapsed([&]() {
+      CUDA_OK(cudaMemcpy(output.data(), d_output, output.size() * sizeof(DeviceResult), cudaMemcpyDeviceToHost));
+    });
+    const double device_teardown_seconds = rcs_benchmark::elapsed([&]() {
+      CUDA_OK(cudaFree(d_input)); d_input = nullptr;
+      CUDA_OK(cudaFree(d_output)); d_output = nullptr;
+    });
+
+    std::vector<rcs::Result> results;
+    const double host_finalize_seconds = rcs_benchmark::elapsed([&]() {
+      results.resize(output.size());
+      for (std::size_t i = 0; i < output.size(); ++i)
+        results[i] = {output[i].p_bio, output[i].score, output[i].final_grade, output[i].grade_route};
+    });
+    const double disk_write_seconds = rcs_benchmark::elapsed([&]() { rcs::write_results(args.output, results); });
+
+    if (args.mode == "e2e") {
+      const double initialization = host_prepare_seconds + device_setup_seconds + h2d_seconds;
+      const double writing = d2h_seconds + device_teardown_seconds + host_finalize_seconds + disk_write_seconds;
+      rcs_benchmark::print_phases(read_seconds, initialization, kernel_seconds, writing);
+      std::cout << std::setprecision(12) << "RCSCUDA," << host_prepare_seconds << ','
+                << device_setup_seconds << ',' << h2d_seconds << ',' << kernel_seconds << ','
+                << d2h_seconds << ',' << device_teardown_seconds << ',' << host_finalize_seconds << ','
+                << disk_write_seconds << '\n';
+    }
+    rcs_benchmark::print_result(
+      args, host.size(), loops,
+      args.mode == "compute" ? kernel_seconds : NAN,
+      args.mode == "compute" ? measurement_block_seconds : NAN,
+      calibration_floor_passed, calibration_attempts
+    );
     return 0;
-  } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }
+  } catch (const std::exception& e) {
+    if (d_input) cudaFree(d_input);
+    if (d_output) cudaFree(d_output);
+    std::cerr << e.what() << '\n';
+    return 1;
+  }
 }

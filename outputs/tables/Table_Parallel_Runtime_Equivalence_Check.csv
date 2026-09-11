@@ -1,2 +1,0 @@
-benchmark_runs,workers,cluster_strategy,min_n_records,max_n_records,all_equivalence_checks_passed,max_abs_pbio_diff,max_abs_rcs_diff,all_final_grades_identical,all_grade_routes_identical
-35,8,persistent_cluster,10000,5000000,TRUE,0,0,TRUE,TRUE

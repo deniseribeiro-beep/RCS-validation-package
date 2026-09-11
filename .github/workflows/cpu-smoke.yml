@@ -23,33 +23,48 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Install R dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
         run: |
           Rscript -e 'install.packages(c(
             "dplyr", "tidyr", "purrr", "ggplot2", "readr", "stringr",
             "scales", "tibble", "forcats", "broom", "patchwork"
           ))'
+          python3 -m pip install numpy cython setuptools
 
       - name: Check environment
-        run: Rscript validation/environment/00_check_environment.R
-
-      - name: Run aligned CPU smoke test
         env:
-          RUN_LARGE_BENCH: "FALSE"
-          BENCH_REPS: "1"
+          BENCHMARK_RUN_CUDA: "FALSE"
+        run: Rscript scripts/00_check_environment.R
+
+      - name: Run scientific validation
+        env:
           RCS_SEED: "20260504"
-          RUN_CROSS_LANGUAGE_BENCH: "TRUE"
-          RCS_PARALLEL_WORKERS: "2"
-          RCS_OPENMP_THREADS: "2"
-          RUN_CUDA_BENCH: "FALSE"
         run: Rscript scripts/run_all.R
+
+      - name: Run benchmark smoke test
+        env:
+          BENCHMARK_SMOKE: "TRUE"
+          BENCHMARK_REPS: "2"
+          BENCHMARK_BOOT_REPS: "200"
+          BENCHMARK_MIN_SAMPLE_SEC: "0.10"
+          BENCHMARK_WORKLOADS: "10000,50000"
+          BENCHMARK_RUN_PYTHON: "TRUE"
+          BENCHMARK_RUN_CUDA: "FALSE"
+          BENCHMARK_PROCESS_WORKERS: "1,2"
+          BENCHMARK_OPENMP_THREADS: "1,2"
+          BENCHMARK_PRIMARY_WORKERS: "2"
+          BENCHMARK_RESUME: "FALSE"
+        run: Rscript scripts/run_benchmark.R
 
       - name: Verify required artifacts
         run: |
-          test -f outputs/figures/Figure_2_Synthetic_Validation_Heatmap.pdf
-          test -f outputs/figures/Figure_3_Combinatorial_Distribution_Admissible_Grades.pdf
-          test -f outputs/figures/Figure_4_Threshold_Stability_Grade_Transitions.pdf
-          test -f outputs/figures/Figure_5_Runtime_Scalability.pdf
-          test -f outputs/figures/Figure_6_Implementation_Performance_Benchmark.pdf
-          test -f outputs/tables/Table_Cross_Language_Equivalence_Check.csv
-          test -f outputs/tables/figure_source/Figure_6_Source_Overall_Speedup_Raw.csv
+          test -f outputs/tables/Table_Property_Based_Checks.csv
+          test -f outputs/tables/Table_Validation_Summary.csv
+          test -f outputs/tables/Table_Benchmark_Runtime_Raw.csv
+          test -f outputs/tables/Table_Benchmark_Equivalence_Check.csv
+          test -f outputs/tables/Table_Benchmark_Quality_Gates.csv
