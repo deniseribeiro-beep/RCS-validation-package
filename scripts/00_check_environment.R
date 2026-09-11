@@ -24,28 +24,34 @@ python_executable <- unname(Sys.which("python3"))
 python_module_available <- function(module) {
   if (!nzchar(python_executable)) return(FALSE)
 
-  # Use a temporary Python probe file instead of `python -c` so the check is
-  # independent of shell quoting differences between local environments and CI.
+  # Probe by importing the module with the exact Python interpreter selected by
+  # the environment. The probe always exits normally and reports availability
+  # on stdout, avoiding false negatives caused by exit-status/quoting behavior
+  # when R invokes Python inside GitHub Actions.
   probe_file <- tempfile(fileext = ".py")
   writeLines(
     c(
-      "import importlib.util, sys",
-      "sys.exit(0 if importlib.util.find_spec(sys.argv[1]) is not None else 1)"
+      "import importlib, sys",
+      "try:",
+      "    importlib.import_module(sys.argv[1])",
+      "    print('AVAILABLE')",
+      "except Exception as exc:",
+      "    print('MISSING:' + repr(exc))"
     ),
     probe_file
   )
 
-  status <- suppressWarnings(
+  output <- suppressWarnings(
     system2(
       python_executable,
       c(probe_file, module),
-      stdout = FALSE,
-      stderr = FALSE
+      stdout = TRUE,
+      stderr = TRUE
     )
   )
   unlink(probe_file)
 
-  isTRUE(as.integer(status) == 0L)
+  any(trimws(output) == "AVAILABLE")
 }
 
 run_python <- toupper(Sys.getenv("BENCHMARK_RUN_PYTHON", unset = "TRUE")) == "TRUE"
