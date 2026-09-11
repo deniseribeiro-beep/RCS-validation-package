@@ -50,6 +50,17 @@ Rscript scripts/run_all.R
 
 The scientific validation writes authoritative CSV tables to `outputs/tables/` and environment information to `outputs/environment/`.
 
+The repository retains the canonical machine-readable tables used to support the manuscript. In particular, threshold-transition and weight-perturbation evidence are preserved both at detailed level and as the article-facing summaries:
+
+```text
+outputs/tables/Table_Threshold_Transition_Detail.csv
+outputs/tables/Table_Threshold_Transition_Summary.csv
+outputs/tables/Table_Weight_Perturbation_Sensitivity.csv
+outputs/tables/Table_Weight_Perturbation_Summary.csv
+```
+
+The summary tables are deterministically derived by the validation scripts from their corresponding detailed tables/results. Redundant `figure_source` caches and duplicated supplementary-export tables are not retained in the archival structure.
+
 ## Benchmark
 
 The benchmark evaluates identical deterministic workloads in R sequential, persistent R/PSOCK, Cython sequential, Cython/OpenMP, C++ sequential, C++/OpenMP, and optional C++/CUDA execution. It records `compute` and `end_to_end` timing regions and enforces deterministic output equivalence before accepting a timing.
@@ -92,8 +103,8 @@ Documentation and metadata remain at repository root: `README.md`, `BENCHMARK_PR
 
 ## Figure generation
 
-Statistical analysis and figure rendering are intentionally separated. The current repository retains the validated tables as the source of truth. Figure generation is handled independently from those tables so that visual changes do not alter the validated scientific or benchmark results.
+Statistical analysis and figure rendering are intentionally separated. The validated `Table_*.csv` files are the source of truth. Figure-specific cached CSVs are not part of the archival package. Final figures are regenerated directly from the retained scientific-validation and benchmark tables so that visual changes cannot alter the validated scientific or computational results.
 
 ## Archival scope
 
-The archival package preserves executable validation and benchmark code, native sources, validated tables, computational-environment records, citation metadata, and license. Transient benchmark inputs, expected binary outputs, compiled artifacts, virtual environments, and per-run intermediate files are excluded.
+The archival package preserves executable validation and benchmark code, native sources, validated tables, article-facing summary tables, computational-environment records, citation metadata, and license. Transient benchmark inputs, expected binary outputs, compiled artifacts, virtual environments, duplicated figure-source caches, duplicated supplementary exports, and per-run intermediate files are excluded.
