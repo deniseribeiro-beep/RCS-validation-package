@@ -54,45 +54,66 @@ sequential as its sole denominator.
 
 ## Requirements
 
-- R 4.2.2 or newer;
-- R packages: `dplyr`, `tidyr`, `purrr`, `ggplot2`, `readr`,
-  `stringr`, `scales`, `tibble`, `forcats`, `broom`, `patchwork`;
-- a C++17 compiler (`g++`);
-- OpenMP support (`-fopenmp`);
-- NVIDIA CUDA Toolkit with `nvcc` and a compatible NVIDIA GPU for CUDA.
+The repository contains two complementary execution layers: the original
+scientific-validation pipeline and the publication-oriented Benchmark V2.4.
 
-Check the R environment:
+The scientific-validation pipeline requires R 4.2.2 or newer and the R
+packages `dplyr`, `tidyr`, `purrr`, `ggplot2`, `readr`, `stringr`, `scales`,
+`tibble`, `forcats`, `broom`, and `patchwork`.
+
+Benchmark V2.4 requires R with `ggplot2`, `patchwork`, and `scales`; Python 3
+with `numpy`, `cython`, and `setuptools`; a C++17 compiler with OpenMP support;
+and, when CUDA is enabled, `nvcc` and a compatible NVIDIA GPU.
+
+Check the scientific-validation environment with:
 
 ```bash
 Rscript validation/environment/00_check_environment.R
 ```
 
+Check the Benchmark V2.4 environment with:
+
+```bash
+python3 -m pip install numpy cython setuptools
+Rscript benchmark_v2/00_check_environment.R
+```
+
 ## Experimental design
 
-The controlled final run uses:
+The publication-oriented Benchmark V2.4 uses data seed `20260504`, order seed
+`20260824`, 30 repetitions per condition, 5,000 bootstrap repetitions, a
+minimum calibrated compute-measurement duration of 0.50 s, and a maximum of
+1,000,000 inner loops.
 
-- seed `20260504`;
-- five paired repetitions;
-- workloads of 10,000; 50,000; 100,000; 500,000; 1,000,000; 2,000,000;
-  and 5,000,000 profiles;
-- four persistent PSOCK workers;
-- four OpenMP threads;
-- double precision in R, C++ and CUDA;
-- the same canonical input for every implementation within each
-  workload/repetition pair.
+The evaluated workloads contain 10,000; 50,000; 100,000; 500,000; 1,000,000;
+2,000,000; and 5,000,000 profiles. R/PSOCK process counts and OpenMP thread
+counts are evaluated at 1, 2, 4, 8, and 16, with 8 designated as the primary
+worker count.
 
-Each canonical input is generated once in R and reused unchanged by:
+Each canonical input is generated from the same deterministic R specification
+and reused unchanged for:
 
 1. R sequential;
 2. persistent R/PSOCK;
-3. C++17 sequential;
-4. C++17 with OpenMP and static scheduling;
-5. C++17 with CUDA.
+3. Cython sequential;
+4. Cython with OpenMP;
+5. C++17 sequential;
+6. C++17 with OpenMP;
+7. C++17 with CUDA acceleration.
 
-Compilation, data generation and serialization are excluded from the timed
-scoring region. For CUDA, the primary device metric includes allocation,
-host-to-device transfer, kernel execution, synchronization and device-to-host
-transfer. Kernel-only time is retained as a complementary metric.
+Two timing regions are recorded. `compute` is a warmed-up, calibrated
+classification measurement with input already available in memory.
+`end_to_end` uses a fresh process and includes startup, input reading and
+decoding, initialization, classification, serialization, and output writing.
+Internal phases and residual process/runtime overhead are retained separately.
+
+CUDA is treated as an accelerator of the C++ implementation, not as a separate
+language family.
+
+In publication mode, compute conditions are considered stable when the
+bootstrap 95% confidence interval for the median has relative half-width at
+most 10%. The configured minimum accepted compute-stability rate is 90%.
+End-to-end stability is reported separately and remains diagnostic by default.
 
 ## RCS calculation
 
@@ -115,8 +136,8 @@ A failed governance gate is non-compensable and routes directly to Grade E.
 
 ## Equivalence criteria
 
-R is the canonical output. Every native result must preserve record order and
-pass all criteria:
+R is the canonical output. Every independent implementation must preserve
+record order and pass all criteria:
 
 ```text
 same number and order of profiles
@@ -130,92 +151,117 @@ The pipeline stops on any equivalence failure.
 
 ## Performance calculations
 
-All ratios are computed inside each paired workload/repetition before summary.
-Ratios of unpaired means are not used.
+All speedup ratios are computed within the same implementation family and
+inside each paired workload/repetition before summary. Ratios of unpaired
+means and cross-language speedups are not used.
 
 ```text
-PSOCK effect        = T_R,sequential / T_R,PSOCK
-language effect     = T_R,sequential / T_C++,sequential
-OpenMP effect       = T_C++,sequential / T_C++,OpenMP
-CUDA effect         = T_C++,sequential / T_C++,CUDA,total
-
-overall PSOCK       = T_R,sequential / T_R,PSOCK
-overall C++ seq.    = T_R,sequential / T_C++,sequential
-overall OpenMP      = T_R,sequential / T_C++,OpenMP
-overall CUDA        = T_R,sequential / T_C++,CUDA,total
-
-direct PSOCK/OpenMP = T_R,PSOCK / T_C++,OpenMP
-direct PSOCK/CUDA   = T_R,PSOCK / T_C++,CUDA,total
+R parallel effect       = T_R,sequential / T_R,PSOCK
+Cython parallel effect  = T_Cython,sequential / T_Cython,OpenMP
+C++ parallel effect     = T_C++,sequential / T_C++,OpenMP
 ```
 
-Figure 6 is the single computational comparison:
+CUDA acceleration is reported separately relative only to C++ sequential,
+using kernel-only and end-to-end measurements.
 
-- Panel A: elapsed time for every implementation;
-- Panel B: overall speedup relative to canonical R sequential;
-- Panel C: decomposed PSOCK, language, OpenMP and CUDA effects.
+No R-versus-Cython, R-versus-C++, or Cython-versus-C++ acceleration ratio is
+estimated.
 
-Individual repetitions are displayed. Arithmetic means and 95% confidence
-intervals are added when at least two repetitions exist. Direct PSOCK/OpenMP
-and PSOCK/CUDA comparisons are exported as supplementary audit tables.
+The performance figures are separated by implementation family:
 
-## Run locally
+- Figure 6: R sequential versus R/PSOCK;
+- Figure S15: Cython sequential versus Cython/OpenMP;
+- Figure S16: C++ sequential versus C++/OpenMP;
+- Figure S17: CUDA acceleration relative only to C++ sequential.
 
-CPU-only smoke test:
+The `1×` horizontal reference identifies no acceleration. No ideal-scaling
+diagonal is used because the reported estimand is the paired
+sequential-to-parallel ratio rather than strong scaling from one parallel
+worker to `p` workers.
+
+Gross timing anomalies are identified with the protocol's robust diagnostic
+rule and are reported rather than silently removed.
+
+## Execution
+
+The original scientific-validation pipeline under `scripts/` is preserved for
+the scientific-validation analyses and V1 artifacts. It is not the source of
+the final publication-oriented V2 performance figures.
+
+Benchmark V2.4 is executed through:
 
 ```bash
-RUN_LARGE_BENCH=FALSE \
-BENCH_REPS=1 \
-RCS_SEED=20260504 \
-RUN_CROSS_LANGUAGE_BENCH=TRUE \
-RCS_PARALLEL_WORKERS=2 \
-RCS_OPENMP_THREADS=2 \
-RUN_CUDA_BENCH=FALSE \
-Rscript scripts/run_all.R 2>&1 | tee local_smoke_test.log
+Rscript scripts/run_benchmark_v2.R
 ```
 
-This run validates the full R workflow, R/PSOCK, C++ sequential, OpenMP,
-equivalence checks, tables and Figures 2-6. CUDA is omitted dynamically.
+The authoritative smoke-test and publication-oriented configurations are
+documented in [`benchmark_v2/README.md`](benchmark_v2/README.md).
 
-## Run the controlled GCP experiment
+For the publication-oriented run, the protocol uses 30 repetitions, 5,000
+bootstrap repetitions, workloads from 10,000 to 5,000,000 profiles, R/PSOCK
+process counts of 1, 2, 4, 8, and 16, OpenMP thread counts of 1, 2, 4, 8, and
+16, mandatory compute quality gates, and diagnostic end-to-end stability.
 
-```bash
-RUN_LARGE_BENCH=TRUE \
-BENCH_REPS=5 \
-RCS_SEED=20260504 \
-RUN_CROSS_LANGUAGE_BENCH=TRUE \
-RCS_PARALLEL_WORKERS=4 \
-RCS_OPENMP_THREADS=4 \
-RUN_CUDA_BENCH=TRUE \
-Rscript scripts/run_all.R 2>&1 | tee gcp_final_benchmark.log
-```
-
-Before the final run, verify `nvidia-smi` and `nvcc --version`. CUDA series
-appear automatically when CUDA observations are present.
+`V2_RESUME=TRUE` may be used only to continue results generated with the same
+protocol version, commit, inputs, and configuration.
 
 ## Generated artifacts
 
-- Figures 2-6 as vector PDF and 600-dpi PNG;
-- validation, sensitivity, ablation, runtime and equivalence tables;
-- machine-readable figure-source tables;
-- supplementary audit tables, including direct optimized-path speedups;
-- temporary canonical binary inputs/native outputs under
-  `outputs/cross_language/`;
-- R session and compiler/GPU environment records under
-  `validation/environment/`.
+The repository preserves two artifact groups.
 
-Generated results, binaries, logs and environment snapshots are ignored by
-Git. The repository intentionally keeps output directories empty except for
-`.gitkeep` markers; every controlled run starts from regenerated artifacts.
+The scientific-validation artifacts are stored under `outputs/figures/` and
+`outputs/tables/` and correspond to the canonical R validation pipeline.
+Figures 2-5 and their source tables belong to this scientific-validation
+layer. Earlier V1 computational-performance artifacts are retained for
+provenance but must not be used to infer Benchmark V2.4 performance.
+
+The final Benchmark V2.4 publication artifacts are versioned under
+`outputs/benchmark_v2/` and include:
+
+- `figures/`: Figure 6, Figure S15, Figure S16, and Figure S17 in PDF and PNG;
+- `tables/`: raw and summarized runtime, within-family speedup, equivalence,
+  calibration, stability, outlier-diagnostic, phase-decomposition,
+  quality-gate, CUDA, and figure-source tables;
+- `environment/`: the computational-environment snapshot for the final run.
+
+Large transient benchmark inputs, expected binary outputs, compiled artifacts,
+and per-run intermediate result files are generated locally and are not part
+of the versioned publication artifact set.
+
+## Legacy V1 artifacts
+
+The V1 pipeline and its retained artifacts are preserved for provenance and
+are not modified by Benchmark V2.4. In particular, legacy cross-language
+runtime tables, the earlier unified implementation-performance Figure 6, and
+its figure-source tables must not be interpreted as V2 performance outputs.
+
+The root-level `gcp_full_benchmark.log` is a retained V1 execution log.
+Likewise, `benchmark_git_commit.txt` is a retained V1 commit marker and must
+not be interpreted as the commit identifier for the final V2 execution. The
+V2 execution commit and computational environment are recorded in
+`outputs/benchmark_v2/environment/Computational_Environment_V2.txt`.
 
 ## Repository structure
 
 ```text
-scripts/                         validation, benchmarking and figure scripts
-src/                             C++17, OpenMP and CUDA scoring engines
-outputs/figures/                 generated main manuscript figures
-outputs/tables/figure_source/    generated machine-readable figure sources
-outputs/tables/supplementary/    generated supplementary audit tables
-outputs/cross_language/          generated canonical/native binary artifacts
-validation/environment/          checks and generated environment records
-.github/workflows/               CPU smoke validation
+benchmark_v2/                     Benchmark V2.4 protocol and language-family engines
+scripts/                          scientific validation and benchmark orchestration
+src/                              native C++/OpenMP/CUDA implementations
+src/v2/                           Benchmark V2 native scoring engines
+outputs/figures/                  scientific-validation and retained V1 artifacts
+outputs/tables/                   scientific-validation and retained V1 tables
+outputs/benchmark_v2/figures/     final V2 publication figures
+outputs/benchmark_v2/tables/      final V2 publication tables and figure sources
+outputs/benchmark_v2/environment/ final V2 computational-environment record
+validation/environment/           scientific-validation environment checks
+.github/workflows/                automated CPU smoke validation for the retained V1 pipeline
 ```
+
+## Archival scope
+
+The versioned repository is intended to preserve the executable validation
+code, Benchmark V2.4 protocol, scientific-validation outputs, final V2 tables
+and figures, computational-environment record, citation metadata, and license.
+Transient virtual environments, compiled binaries, large expected-output
+binaries, and raw per-run intermediate benchmark files are intentionally
+excluded from the versioned publication package.
