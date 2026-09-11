@@ -45,6 +45,7 @@ jobs:
       - name: Check environment
         env:
           BENCHMARK_RUN_PYTHON: "TRUE"
+          BENCHMARK_PYTHON_DEPS_VERIFIED: "TRUE"
           BENCHMARK_RUN_CUDA: "FALSE"
         run: Rscript scripts/00_check_environment.R
 
