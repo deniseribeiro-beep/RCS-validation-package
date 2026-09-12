@@ -1,11 +1,8 @@
 @echo off
 setlocal EnableExtensions
 
-where gnuplot >nul 2>&1
-if errorlevel 1 (
-  echo Error: gnuplot is required and must be available in PATH.
-  exit /b 1
-)
+call scripts\check_figure_requirements.cmd
+if errorlevel 1 exit /b 1
 
 set "SCOPE=%RCS_RUN_SCOPE%"
 if not defined SCOPE set "SCOPE=local"
