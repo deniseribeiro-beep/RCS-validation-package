@@ -103,9 +103,10 @@ analytical_sensitivity <- function(mt, baseline_severity = 0.25, delta = 0.25, t
     stop("Finite-difference validation must remain inside the severity domain [0,1].")
   }
 
-  # Deterministic finite-difference verification against the executable R
-  # scoring implementation. Governance evidence is supplied explicitly so the
-  # check isolates only the additive P_bio identity.
+  # Deterministic finite-difference verification of the analysis-side scorer.
+  # The C reference independently verifies the same identity in
+  # tests/test_reference.c, so this check does not make R the computational
+  # reference implementation.
   base_profile <- tibble::tibble(
     matrix = mt,
     metadata_complete = TRUE,
