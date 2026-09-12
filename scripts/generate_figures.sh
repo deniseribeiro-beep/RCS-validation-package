@@ -23,6 +23,7 @@ for table in "${required_tables[@]}"; do
 done
 
 mkdir -p outputs/figures
+rm -f outputs/figures/Figure_1.pdf outputs/figures/Figure_1.png
 
 read -r -a output_modes <<< "${OUTPUT_MODES:-pdf png}"
 for mode in "${output_modes[@]}"; do
