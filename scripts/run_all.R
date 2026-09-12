@@ -13,7 +13,7 @@ source(file.path("scripts", "03_property_checks.R"))
 source(file.path("scripts", "04_synthetic_validation.R"))
 source(file.path("scripts", "05_combinatorial_threshold_oat_governance.R"))
 source(file.path("scripts", "06_sensitivity_ablation.R"))
-source(file.path("scripts", "07_export_environment.R"))
+source(file.path("scripts", "07_export_scientific_environment.R"))
 
 run_benchmark <- toupper(Sys.getenv("RUN_BENCHMARK", unset = "FALSE")) == "TRUE"
 if (run_benchmark) {
