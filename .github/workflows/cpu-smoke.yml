@@ -51,6 +51,21 @@ jobs:
       - name: Check scientific-validation requirements
         run: Rscript scripts/00_check_environment.R scientific
 
+      - name: Verify publication output override is protected
+        run: |
+          if RCS_RUN_SCOPE=local RCS_OUTPUT_ROOT="$GITHUB_WORKSPACE/results/publication" \
+            Rscript -e 'source("scripts/output_config.R")'; then
+            echo "Expected absolute publication-root override to be rejected." >&2
+            exit 1
+          fi
+          if RCS_RUN_SCOPE=smoke RCS_OUTPUT_ROOT="$GITHUB_WORKSPACE/results/publication/ci-bypass" \
+            Rscript -e 'source("scripts/output_config.R")'; then
+            echo "Expected publication descendant override to be rejected." >&2
+            exit 1
+          fi
+          test ! -e results/publication/ci-bypass
+          test -z "$(git status --porcelain -- outputs results)"
+
       - name: Run deterministic scientific validation A
         env:
           RCS_RUN_SCOPE: smoke
