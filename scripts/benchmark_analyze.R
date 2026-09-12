@@ -5,7 +5,6 @@ source(file.path("scripts", "benchmark_config.R"))
 raw_path <- file.path(BENCHMARK_TABLES, "Table_Benchmark_Runtime_Raw.csv")
 if (!file.exists(raw_path)) stop("Run scripts/benchmark_run.R first.")
 raw <- read.csv(raw_path, stringsAsFactors = FALSE)
-if ("protocol_version" %in% names(raw)) stop("Legacy protocol_version schema is not supported.")
 if (!nrow(raw) || any(!raw$equivalence_passed) || any(!is.finite(raw$elapsed_sec)) || any(raw$elapsed_sec <= 0))
   stop("Benchmark raw results are invalid or incomplete.")
 
