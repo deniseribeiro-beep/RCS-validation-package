@@ -1,28 +1,103 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bash scripts/check_figure_requirements.sh
+lexical_absolute_path() {
+  local path="$1"
+  local part
+  local -a input_parts=()
+  local -a output_parts=()
+
+  if [[ "$path" != /* ]]; then
+    path="${PWD}/${path}"
+  fi
+
+  IFS='/' read -r -a input_parts <<< "$path"
+  for part in "${input_parts[@]}"; do
+    case "$part" in
+      ""|.) ;;
+      ..)
+        if ((${#output_parts[@]} > 0)); then
+          unset 'output_parts[${#output_parts[@]}-1]'
+        fi
+        ;;
+      *) output_parts+=("$part") ;;
+    esac
+  done
+
+  if ((${#output_parts[@]} == 0)); then
+    printf '/\n'
+    return
+  fi
+
+  printf '/%s' "${output_parts[0]}"
+  for ((i = 1; i < ${#output_parts[@]}; ++i)); do
+    printf '/%s' "${output_parts[$i]}"
+  done
+  printf '\n'
+}
+
+canonicalize_guard_path() {
+  local lexical candidate base part
+  local -a suffix=()
+
+  lexical="$(lexical_absolute_path "$1")"
+  candidate="$lexical"
+
+  while [[ ! -e "$candidate" && "$candidate" != "/" ]]; do
+    suffix=("$(basename "$candidate")" "${suffix[@]}")
+    candidate="$(dirname "$candidate")"
+  done
+
+  if [[ -d "$candidate" ]]; then
+    base="$(cd "$candidate" && pwd -P)"
+  elif [[ -e "$candidate" ]]; then
+    base="$(cd "$(dirname "$candidate")" && pwd -P)/$(basename "$candidate")"
+  else
+    base="$candidate"
+  fi
+
+  for part in "${suffix[@]}"; do
+    base="${base%/}/${part}"
+  done
+
+  lexical_absolute_path "$base"
+}
 
 scope="${RCS_RUN_SCOPE:-local}"
+case "$scope" in
+  local|smoke|publication) ;;
+  *)
+    echo "Error: RCS_RUN_SCOPE must be local, smoke, or publication." >&2
+    exit 1
+    ;;
+esac
+
+allow_publication_write="${RCS_ALLOW_PUBLICATION_WRITE:-FALSE}"
+if [[ "$scope" == "publication" && "$allow_publication_write" != "TRUE" ]]; then
+  echo "Error: publication output is protected. Set RCS_ALLOW_PUBLICATION_WRITE=TRUE only for the deliberate final publication run." >&2
+  exit 1
+fi
+
 if [[ -n "${RCS_OUTPUT_ROOT:-}" ]]; then
   root="${RCS_OUTPUT_ROOT}"
 else
-  case "${scope}" in
+  case "$scope" in
     local) root="outputs/local" ;;
     smoke) root="outputs/smoke" ;;
-    publication)
-      if [[ "${RCS_ALLOW_PUBLICATION_WRITE:-FALSE}" != "TRUE" ]]; then
-        echo "Error: publication output is protected. Set RCS_ALLOW_PUBLICATION_WRITE=TRUE only for the deliberate final publication run." >&2
-        exit 1
-      fi
-      root="results/publication"
-      ;;
-    *)
-      echo "Error: RCS_RUN_SCOPE must be local, smoke, or publication." >&2
-      exit 1
-      ;;
+    publication) root="results/publication" ;;
   esac
 fi
+
+protected_root="$(canonicalize_guard_path "results/publication")"
+resolved_root="$(canonicalize_guard_path "$root")"
+if [[ "$resolved_root" == "$protected_root" || "$resolved_root" == "$protected_root/"* ]]; then
+  if [[ "$allow_publication_write" != "TRUE" ]]; then
+    echo "Error: publication output is protected. RCS_OUTPUT_ROOT resolves inside results/publication; set RCS_ALLOW_PUBLICATION_WRITE=TRUE only for the deliberate final publication run." >&2
+    exit 1
+  fi
+fi
+
+bash scripts/check_figure_requirements.sh
 
 tables_dir="${root}/tables"
 figures_dir="${root}/figures"
