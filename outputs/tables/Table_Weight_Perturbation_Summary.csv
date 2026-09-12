@@ -1,3 +1,0 @@
-matrix,iterations,mean_changed_rate,mean_abs_rcs_shift,interpretation
-fluid,1000,0,0.046060,"Numerical shifts rarely altered final grade assignment."
-solid,1000,0.000982,0.045161,"Numerical shifts rarely altered final grade assignment."
