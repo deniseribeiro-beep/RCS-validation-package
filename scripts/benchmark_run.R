@@ -123,8 +123,6 @@ write.csv(schedule, file.path(BENCHMARK_WORK_ROOT, "Randomized_Execution_Schedul
 
 raw_path <- file.path(BENCHMARK_TABLES, "Table_Benchmark_Runtime_Raw.csv")
 raw <- if (BENCHMARK_RESUME && file.exists(raw_path)) read.csv(raw_path, stringsAsFactors = FALSE) else data.frame()
-if (nrow(raw) && "protocol_version" %in% names(raw))
-  stop("Legacy benchmark schema detected. Publication/development iteration schemas are not resumable.")
 required_raw_columns <- c(
   "read_sec", "initialization_sec", "classification_sec", "write_sec", "internal_total_sec",
   "process_overhead_sec", "cuda_h2d_sec", "cuda_d2h_sec", "cuda_host_prepare_sec",
