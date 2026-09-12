@@ -4,6 +4,7 @@ set -euo pipefail
 lexical_absolute_path() {
   local path="$1"
   local part
+  local last_index
   local -a input_parts=()
   local -a output_parts=()
 
@@ -17,7 +18,8 @@ lexical_absolute_path() {
       ""|.) ;;
       ..)
         if ((${#output_parts[@]} > 0)); then
-          unset 'output_parts[${#output_parts[@]}-1]'
+          last_index=$((${#output_parts[@]} - 1))
+          unset "output_parts[$last_index]"
         fi
         ;;
       *) output_parts+=("$part") ;;
