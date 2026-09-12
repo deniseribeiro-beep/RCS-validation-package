@@ -5,6 +5,7 @@ on:
     paths:
       - "scripts/gnuplot/**"
       - "scripts/generate_figures.sh"
+      - "scripts/generate_figures.cmd"
       - "outputs/tables/**"
       - "FIGURE_STANDARD.md"
       - ".github/workflows/figure-smoke.yml"
@@ -26,14 +27,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gnuplot-nox fonts-urw-base35
 
-      - name: Generate vector figures
+      - name: Seed stale Figure 1 artifacts
+        run: |
+          mkdir -p outputs/figures
+          printf 'stale\n' > outputs/figures/Figure_1.pdf
+          printf 'stale\n' > outputs/figures/Figure_1.png
+
+      - name: Generate publication figures
         env:
-          OUTPUT_MODES: "pdf"
+          OUTPUT_MODES: "pdf png"
         run: bash scripts/generate_figures.sh
 
       - name: Verify figure artifacts
         run: |
-          for figure in 1 2 3 4 5 6 7; do
+          for figure in 2 3 4 5 6 7; do
             test -s "outputs/figures/Figure_${figure}.pdf"
+            test -s "outputs/figures/Figure_${figure}.png"
           done
+          test ! -e outputs/figures/Figure_1.pdf
+          test ! -e outputs/figures/Figure_1.png
           test ! -d outputs/tables/figure_source
