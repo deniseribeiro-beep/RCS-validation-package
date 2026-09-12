@@ -5,11 +5,12 @@ source(file.path("scripts", "benchmark_config.R"))
 raw_path <- file.path(BENCHMARK_TABLES, "Table_Benchmark_Runtime_Raw.csv")
 if (!file.exists(raw_path)) stop("Run scripts/benchmark_run.R first.")
 raw <- read.csv(raw_path, stringsAsFactors = FALSE)
-if ("protocol_version" %in% names(raw)) raw$protocol_version <- NULL
+if ("protocol_version" %in% names(raw)) stop("Legacy protocol_version schema is not supported.")
 if (!nrow(raw) || any(!raw$equivalence_passed) || any(!is.finite(raw$elapsed_sec)) || any(raw$elapsed_sec <= 0))
   stop("Benchmark raw results are invalid or incomplete.")
 
 family_map <- c(
+  c_reference = "C reference",
   r_sequential = "R", r_psock = "R",
   cython_sequential = "Python/Cython", cython_openmp = "Python/Cython",
   cpp_sequential = "C++", cpp_openmp = "C++", cpp_cuda = "CUDA"
@@ -17,6 +18,7 @@ family_map <- c(
 baseline_map <- c(R = "r_sequential", `Python/Cython` = "cython_sequential", `C++` = "cpp_sequential")
 parallel_map <- c(R = "r_psock", `Python/Cython` = "cython_openmp", `C++` = "cpp_openmp")
 raw$language_family <- unname(family_map[raw$implementation])
+if (anyNA(raw$language_family)) stop("Unknown benchmark implementation in raw results.")
 
 raw$is_timing_outlier <- FALSE
 outlier_groups <- split(
@@ -137,6 +139,7 @@ if (nrow(cuda_raw)) {
 }
 
 equivalence <- aggregate(cbind(max_abs_pbio_diff, max_abs_rcs_diff) ~ language_family + implementation + workers, raw, max)
+equivalence$reference_implementation <- "C reference"
 equivalence$all_equivalence_checks_passed <- TRUE
 write.csv(equivalence, file.path(BENCHMARK_TABLES, "Table_Benchmark_Equivalence_Check.csv"), row.names = FALSE)
 
@@ -162,6 +165,7 @@ e2e_stability_gate_passed <- e2e_stability_rate >= BENCHMARK_MIN_STABILITY_RATE
 
 quality_gates <- data.frame(
   run_mode = if (BENCHMARK_SMOKE) "smoke_diagnostic" else "publication",
+  computational_reference = "C reference",
   quality_gates_enforced = BENCHMARK_ENFORCE_QUALITY_GATES,
   equivalence_gate_passed = equivalence_gate_passed,
   calibrated_compute_measurements = sum(compute_rows),
@@ -218,7 +222,7 @@ if (nrow(cuda_phases)) {
   write.csv(cuda_phase_summary, file.path(BENCHMARK_TABLES, "Table_Benchmark_CUDA_Phase_Decomposition.csv"), row.names = FALSE)
 }
 
-cat("Benchmark tables generated without cross-language speedup comparisons; CUDA uses C++ sequential only.\n")
+cat("Benchmark tables generated with C-reference equivalence; no cross-language speedup comparisons were computed.\n")
 cat(sprintf("Calibration floor gate: %d/%d compute measurements passed.\n",
             sum(raw$calibration_floor_passed[compute_rows] %in% TRUE), sum(compute_rows)))
 cat(sprintf("Compute stability: %d/%d conditions (%.1f%%; target %.1f%%).\n",
@@ -234,4 +238,4 @@ if (BENCHMARK_SMOKE && !compute_stability_gate_passed)
 if (BENCHMARK_ENFORCE_QUALITY_GATES && !quality_gates$all_quality_gates_passed)
   stop("Benchmark publication quality gate failed. Inspect calibration, stability, outlier, and quality-gate tables.")
 if (!BENCHMARK_ENFORCE_QUALITY_GATES && !quality_gates$all_quality_gates_passed)
-  stop("Benchmark mandatory equivalence or calibration floor gate failed.")
+  stop("Benchmark mandatory C-reference equivalence or calibration floor gate failed.")
