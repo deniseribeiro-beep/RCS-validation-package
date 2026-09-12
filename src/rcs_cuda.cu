@@ -1,5 +1,6 @@
 #include "rcs_benchmark_common.hpp"
 #include <cuda_runtime.h>
+#include <math_constants.h>
 
 #define CUDA_OK(call) do { const cudaError_t e=(call); if(e!=cudaSuccess) throw std::runtime_error(cudaGetErrorString(e)); } while(0)
 
@@ -10,15 +11,22 @@ __global__ void score_kernel(const DeviceProfile* profiles, DeviceResult* result
   const std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= n) return;
   const DeviceProfile p = profiles[i];
+
+  // Match the C computational reference: governance failure is non-compensable
+  // and produces no numerical P_bio/RCS.
+  if (!p.governance) {
+    results[i] = {CUDART_NAN, CUDART_NAN, 4, 2};
+    return;
+  }
+
   const double fw[5] = {30., 15., 10., 20., 25.};
   const double sw[5] = {25., 25., 15., 20., 15.};
   const int offset = p.matrix == 0 ? 0 : 5;
   double penalty = 0.0;
   for (int j = 0; j < 5; ++j) penalty += p.severity[offset + j] * (p.matrix == 0 ? fw[j] : sw[j]);
   const double score = 100.0 - penalty;
-  unsigned char grade = score >= 90. ? 0 : score >= 80. ? 1 : score >= 65. ? 2 : score >= 50. ? 3 : 4;
-  const unsigned char route = !p.governance ? 2 : score < 50. ? 1 : 0;
-  if (!p.governance) grade = 4;
+  const unsigned char grade = score >= 90. ? 0 : score >= 80. ? 1 : score >= 65. ? 2 : score >= 50. ? 3 : 4;
+  const unsigned char route = score < 50. ? 1 : 0;
   results[i] = {penalty, score, grade, route};
 }
 
