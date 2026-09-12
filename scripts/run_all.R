@@ -8,6 +8,7 @@ if (!file.exists(file.path("scripts", "02_model.R"))) {
   stop("Run this script from the repository root.")
 }
 
+source(file.path("scripts", "check_scientific_requirements.R"), local = new.env(parent = globalenv()))
 source(file.path("scripts", "03_property_checks.R"))
 source(file.path("scripts", "04_synthetic_validation.R"))
 source(file.path("scripts", "05_combinatorial_threshold_oat_governance.R"))
