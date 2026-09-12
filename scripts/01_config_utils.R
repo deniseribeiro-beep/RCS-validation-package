@@ -24,6 +24,10 @@ RCS_SEED <- as.integer(Sys.getenv("RCS_SEED", unset = "20260504"))
 if (is.na(RCS_SEED)) stop("RCS_SEED must be an integer.")
 set.seed(RCS_SEED)
 
+# Scientific grade ordering. Keep this independent from any plotting palette or
+# figure-generation dependency.
+RCS_GRADE_LEVELS <- c("Grade A", "Grade B", "Grade C", "Grade D", "Grade E")
+
 DIR_TABLES <- RCS_TABLES_DIR
 DIR_LOGS <- RCS_ENVIRONMENT_DIR
 
