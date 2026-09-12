@@ -1,16 +1,135 @@
-name: CPU smoke validation
+name: Validation CI
 
 on:
   pull_request:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  cpu-smoke:
+  c-reference-clean-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Clean build C reference
+        run: |
+          make clean
+          make reference
+          make test
+          test -x bin/rcs-reference
+          test -x bin/test-reference
+
+      - name: Verify repository outputs remain untouched
+        run: |
+          test -z "$(git status --porcelain -- outputs results)"
+
+  scientific-determinism:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Install scientific-validation R dependencies
+        run: |
+          Rscript -e 'install.packages(c("dplyr", "tidyr", "purrr", "readr", "stringr", "tibble"))'
+
+      - name: Check scientific-validation requirements
+        run: Rscript scripts/00_check_environment.R scientific
+
+      - name: Run deterministic scientific validation A
+        env:
+          RCS_RUN_SCOPE: smoke
+          RCS_OUTPUT_ROOT: ${{ runner.temp }}/scientific-a
+          RCS_SEED: "20260504"
+          RUN_BENCHMARK: "FALSE"
+        run: Rscript scripts/run_all.R
+
+      - name: Run deterministic scientific validation B
+        env:
+          RCS_RUN_SCOPE: smoke
+          RCS_OUTPUT_ROOT: ${{ runner.temp }}/scientific-b
+          RCS_SEED: "20260504"
+          RUN_BENCHMARK: "FALSE"
+        run: Rscript scripts/run_all.R
+
+      - name: Verify scientific outputs are deterministic
+        run: |
+          diff -qr "${RUNNER_TEMP}/scientific-a/tables" "${RUNNER_TEMP}/scientific-b/tables"
+
+      - name: Verify scientific gates and required tables
+        env:
+          SCIENTIFIC_ROOT: ${{ runner.temp }}/scientific-a
+        run: |
+          Rscript - <<'RS'
+          root <- Sys.getenv("SCIENTIFIC_ROOT")
+          tables <- file.path(root, "tables")
+          required <- c(
+            "Table_Property_Based_Checks.csv",
+            "Table_Validation_Summary.csv",
+            "Table_Threshold_Transition_Detail.csv",
+            "Table_Threshold_Transition_Summary.csv",
+            "Table_Weight_Perturbation_Sensitivity.csv",
+            "Table_Weight_Perturbation_Summary.csv",
+            "Table_Global_Sensitivity_Summary.csv",
+            "Table_Global_Sensitivity_Checks.csv"
+          )
+          missing <- required[!file.exists(file.path(tables, required))]
+          if (length(missing)) stop("Missing scientific output tables: ", paste(missing, collapse = ", "))
+
+          checks <- read.csv(file.path(tables, "Table_Global_Sensitivity_Checks.csv"), stringsAsFactors = FALSE)
+          if (!all(checks$morris_identity_passed) ||
+              !all(checks$variance_partition_passed) ||
+              !all(checks$additive_no_interaction_passed)) {
+            stop("Analytical sensitivity checks failed.")
+          }
+
+          detail <- read.csv(file.path(tables, "Table_Threshold_Transition_Detail.csv"), check.names = FALSE)
+          summary <- read.csv(file.path(tables, "Table_Threshold_Transition_Summary.csv"), check.names = FALSE)
+          groups <- split(detail, list(detail$matrix, detail$threshold_transition), drop = TRUE)
+          expected <- do.call(rbind, lapply(groups, function(x) {
+            data.frame(
+              matrix = x$matrix[[1]],
+              transition = gsub(" to ", "-to-", x$threshold_transition[[1]], fixed = TRUE),
+              reached_n = sum(x$reached, na.rm = TRUE),
+              total_n = nrow(x),
+              stringsAsFactors = FALSE
+            )
+          }))
+          expected$reached_fraction <- expected$reached_n / expected$total_n
+          expected$reached <- paste0(expected$reached_n, "/", expected$total_n)
+          key_expected <- paste(expected$matrix, expected$transition, sep = "|")
+          key_summary <- paste(summary$matrix, summary$transition, sep = "|")
+          idx <- match(key_expected, key_summary)
+          if (anyNA(idx)) stop("Threshold summary is missing generated detail rows.")
+          observed <- summary[idx, ]
+          if (!all(observed$reached_n == expected$reached_n) ||
+              !all(observed$total_n == expected$total_n) ||
+              !all(abs(observed$reached_fraction - expected$reached_fraction) < 1e-12) ||
+              !all(observed$reached == expected$reached)) {
+            stop("Generated threshold summary is inconsistent with generated detail table.")
+          }
+          RS
+
+      - name: Verify scientific smoke is isolated from repository outputs
+        run: |
+          test -z "$(git status --porcelain -- outputs results)"
+
+  benchmark-c-reference-equivalence:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -39,65 +158,22 @@ jobs:
           chmod +x "$RUNNER_TEMP/python-r-shim/python3"
           echo "$RUNNER_TEMP/python-r-shim" >> "$GITHUB_PATH"
 
-      - name: Install dependencies
+      - name: Install benchmark dependencies
         run: |
-          Rscript -e 'install.packages(c(
-            "dplyr", "tidyr", "purrr", "ggplot2", "readr", "stringr",
-            "scales", "tibble", "forcats", "broom", "patchwork"
-          ))'
+          Rscript -e 'install.packages(c("dplyr", "tidyr", "purrr", "readr", "stringr", "tibble"))'
           python3 -m pip install numpy cython setuptools
 
-      - name: Verify Python dependencies
-        run: |
-          which python3
-          python3 --version
-          python3 -c "import numpy, Cython, setuptools; print('Python dependencies available')"
-          Rscript -e 'x <- system2("python3", c("-c", shQuote("import numpy, Cython, setuptools; print(\"Python dependencies available from R\")")), stdout = TRUE, stderr = TRUE); cat(x, sep = "\n"); if (!is.null(attr(x, "status")) && attr(x, "status") != 0L) stop("Python import failed from R subprocess")'
-
-      - name: Check environment
+      - name: Check benchmark requirements
         env:
           BENCHMARK_RUN_PYTHON: "TRUE"
           BENCHMARK_PYTHON_DEPS_VERIFIED: "TRUE"
           BENCHMARK_RUN_CUDA: "FALSE"
-        run: Rscript scripts/00_check_environment.R
+        run: Rscript scripts/00_check_environment.R benchmark
 
-      - name: Verify checked-in threshold summary consistency
-        run: |
-          Rscript - <<'RS'
-          detail <- read.csv("outputs/tables/Table_Threshold_Transition_Detail.csv", check.names = FALSE)
-          summary <- read.csv("outputs/tables/Table_Threshold_Transition_Summary.csv", check.names = FALSE)
-          groups <- split(detail, list(detail$matrix, detail$threshold_transition), drop = TRUE)
-          expected <- do.call(rbind, lapply(groups, function(x) {
-            data.frame(
-              matrix = x$matrix[[1]],
-              transition = gsub(" to ", "-to-", x$threshold_transition[[1]], fixed = TRUE),
-              reached_n = sum(x$reached, na.rm = TRUE),
-              total_n = nrow(x),
-              stringsAsFactors = FALSE
-            )
-          }))
-          expected$reached_fraction <- expected$reached_n / expected$total_n
-          expected$reached <- paste0(expected$reached_n, "/", expected$total_n)
-          key_expected <- paste(expected$matrix, expected$transition, sep = "|")
-          key_summary <- paste(summary$matrix, summary$transition, sep = "|")
-          idx <- match(key_expected, key_summary)
-          if (anyNA(idx)) stop("Threshold summary is missing rows present in the detail table.")
-          observed <- summary[idx, ]
-          if (!all(observed$reached_n == expected$reached_n) ||
-              !all(observed$total_n == expected$total_n) ||
-              !all(abs(observed$reached_fraction - expected$reached_fraction) < 1e-12) ||
-              !all(observed$reached == expected$reached)) {
-            stop("Checked-in threshold summary is inconsistent with Table_Threshold_Transition_Detail.csv.")
-          }
-          RS
-
-      - name: Run scientific validation
+      - name: Run isolated CPU benchmark smoke with C reference
         env:
-          RCS_SEED: "20260504"
-        run: Rscript scripts/run_all.R
-
-      - name: Run benchmark smoke test
-        env:
+          RCS_RUN_SCOPE: smoke
+          RCS_OUTPUT_ROOT: ${{ runner.temp }}/benchmark-smoke
           BENCHMARK_SMOKE: "TRUE"
           BENCHMARK_REPS: "2"
           BENCHMARK_BOOT_REPS: "200"
@@ -110,18 +186,50 @@ jobs:
           BENCHMARK_OPENMP_THREADS: "1,2"
           BENCHMARK_PRIMARY_WORKERS: "2"
           BENCHMARK_RESUME: "FALSE"
+          BENCHMARK_ENFORCE_QUALITY_GATES: "FALSE"
         run: Rscript scripts/run_benchmark.R
 
-      - name: Verify required artifacts
+      - name: Verify C-reference equivalence gates
+        env:
+          BENCHMARK_ROOT: ${{ runner.temp }}/benchmark-smoke
         run: |
-          test -f outputs/tables/Table_Property_Based_Checks.csv
-          test -f outputs/tables/Table_Validation_Summary.csv
-          test -f outputs/tables/Table_Threshold_Transition_Detail.csv
-          test -f outputs/tables/Table_Threshold_Transition_Summary.csv
-          test -f outputs/tables/Table_Weight_Perturbation_Sensitivity.csv
-          test -f outputs/tables/Table_Weight_Perturbation_Summary.csv
-          test -f outputs/tables/Table_Benchmark_Runtime_Raw.csv
-          test -f outputs/tables/Table_Benchmark_Equivalence_Check.csv
-          test -f outputs/tables/Table_Benchmark_Quality_Gates.csv
-          test ! -d outputs/tables/figure_source
-          test ! -d outputs/tables/supplementary
+          Rscript - <<'RS'
+          root <- Sys.getenv("BENCHMARK_ROOT")
+          tables <- file.path(root, "tables")
+          eq_path <- file.path(tables, "Table_Benchmark_Equivalence_Check.csv")
+          gate_path <- file.path(tables, "Table_Benchmark_Quality_Gates.csv")
+          raw_path <- file.path(tables, "Table_Benchmark_Runtime_Raw.csv")
+          if (!all(file.exists(c(eq_path, gate_path, raw_path)))) stop("Missing benchmark smoke outputs.")
+
+          eq <- read.csv(eq_path, stringsAsFactors = FALSE)
+          required_impl <- c(
+            "c_reference", "r_sequential", "r_psock",
+            "cython_sequential", "cython_openmp",
+            "cpp_sequential", "cpp_openmp"
+          )
+          missing_impl <- setdiff(required_impl, unique(eq$implementation))
+          if (length(missing_impl)) stop("Missing equivalence implementations: ", paste(missing_impl, collapse = ", "))
+          if (!all(eq$reference_implementation == "C reference")) stop("Benchmark reference is not C.")
+          if (!all(eq$all_equivalence_checks_passed)) stop("One or more equivalence checks failed.")
+          if (any(eq$max_abs_pbio_diff > 1e-9) || any(eq$max_abs_rcs_diff > 1e-9)) {
+            stop("Numerical equivalence tolerance exceeded.")
+          }
+
+          raw <- read.csv(raw_path, stringsAsFactors = FALSE)
+          if (!all(raw$equivalence_passed) ||
+              !all(raw$identical_final_grade) ||
+              !all(raw$identical_grade_route)) {
+            stop("Raw benchmark equivalence to C reference failed.")
+          }
+
+          gates <- read.csv(gate_path, stringsAsFactors = FALSE)
+          if (!all(gates$computational_reference == "C reference") ||
+              !all(gates$equivalence_gate_passed) ||
+              !all(gates$calibration_floor_gate_passed)) {
+            stop("Mandatory C-reference benchmark gates failed.")
+          }
+          RS
+
+      - name: Verify benchmark smoke is isolated from repository outputs
+        run: |
+          test -z "$(git status --porcelain -- outputs results)"
