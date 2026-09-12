@@ -42,14 +42,14 @@ The external guidance links already adopted by the project are retained here:
 Figures are generated from the `tables/` directory under the selected run root:
 
 ```text
-local       -> outputs/local/tables/      -> outputs/local/figures/
-smoke       -> outputs/smoke/tables/      -> outputs/smoke/figures/
+local       -> outputs/local/tables/       -> outputs/local/figures/
+smoke       -> outputs/smoke/tables/       -> outputs/smoke/figures/
 publication -> results/publication/tables/ -> results/publication/figures/
 ```
 
 `RCS_OUTPUT_ROOT` can redirect both table input and figure output to an isolated root. This is how CI validates the plotting scripts without touching repository result directories.
 
-Publication writes remain protected by `RCS_RUN_SCOPE=publication` and `RCS_ALLOW_PUBLICATION_WRITE=TRUE`.
+Publication protection is enforced against the **resolved output path**, not only against `RCS_RUN_SCOPE`. Consequently, an override that resolves to `results/publication/` or any descendant is rejected unless `RCS_ALLOW_PUBLICATION_WRITE=TRUE`. The guard runs before stale Figure 1 cleanup, directory creation, or Gnuplot rendering.
 
 ## Figure mapping
 
