@@ -69,13 +69,15 @@ If the governance gate fails, the final result is Grade E through the governance
 
 ## Computational reference
 
-The reference computational implementation is written in ISO C11 and exposed by:
+The reference computational implementation is written in ISO C11. Its current layers are:
 
 ```text
-include/rcs_reference.h
-src/rcs_reference.c
+include/rcs_reference.h  / src/rcs_reference.c  - deterministic weighted scoring core
+include/rcs_sprec.h      / src/rcs_sprec.c      - executable SPREC 2.0 severity resolution
 ```
 
-At this stage the low-level function `rcs_score_resolved()` implements the deterministic scoring core for already-resolved severities and an explicit governance decision. The higher-level reference API will add the complete SPREC severity-resolution and governance-aggregation layers without changing this mathematical core.
+The SPREC resolution layer implements Supplementary File 1, Table S3 and is documented in [`SPREC_MAPPING.md`](SPREC_MAPPING.md). Machine-readable mirrors of Supplementary Tables S1-S3 are retained under `reference/`.
+
+At this stage `rcs_score_resolved()` remains the low-level deterministic scoring function for already-resolved severities and an explicit governance decision. The later governance-aggregation and complete high-level C API layers will consume the SPREC resolver without changing the weighted scoring rule.
 
 Other language implementations do not define the RCS. Their outputs must be shown equivalent to the C reference implementation before their benchmark timings are accepted.
