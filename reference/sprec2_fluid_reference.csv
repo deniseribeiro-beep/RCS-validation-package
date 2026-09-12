@@ -1,0 +1,144 @@
+descriptor,condition_or_description,code
+Type of sample,Ascites fluid,ASC
+Type of sample,Amniotic fluid,AMN
+Type of sample,Bronchoalveolar lavage,BAL
+Type of sample,Blood (whole),BLD
+Type of sample,Bone marrow aspirate,BMA
+Type of sample,Breast milk,BMK
+Type of sample,Buccal cells,BUC
+Type of sample,"Unficolled buffy coat, viable",BUF
+Type of sample,"Unficolled buffy coat, non-viable",BFF
+Type of sample,"Ficoll mononuclear cells, viable",CEL
+Type of sample,Fresh cells from non-blood specimen type,CEN
+Type of sample,"Cells from non blood specimen type (e.g. ascites, amniotic), viable",CLN
+Type of sample,Cord blood,CRD
+Type of sample,Cerebrospinal fluid,CSF
+Type of sample,Dried whole blood (e.g. Guthrie cards),DWB
+Type of sample,Nasal washing,NAS
+Type of sample,"Ficoll mononuclear cells, non viable",PEL
+Type of sample,"Cells from non blood specimen type (e.g. ascites, amniotic), non-viable",PEN
+Type of sample,Pleural fluid,PFL
+Type of sample,"Plasma, single spun",PL1
+Type of sample,"Plasma, double spun",PL2
+Type of sample,Red blood cells,RBC
+Type of sample,Saliva,SAL
+Type of sample,Semen,SEM
+Type of sample,Serum,SER
+Type of sample,Sputum,SPT
+Type of sample,Stool,STL
+Type of sample,Synovial fluid,SYN
+Type of sample,Tears,TER
+Type of sample,24 h urine,U24
+Type of sample,"Urine, random (“spot”)",URN
+Type of sample,"Urine, first morning",URM
+Type of sample,"Urine, timed",URT
+Type of sample,Other,ZZZ
+Type of primary container,Acid citrate dextrose,ACD
+Type of primary container,Additives,ADD
+Type of primary container,Serum tube without clot activator,CAT
+Type of primary container,Citrate phosphate dextrose,CPD
+Type of primary container,Cell Preparation Tube®,CPT
+Type of primary container,EDTA and gel,EDG
+Type of primary container,Lithium heparin,HEP
+Type of primary container,Hirudin,HIR
+Type of primary container,Lithium heparin and gel,LHG
+Type of primary container,Oragene collection container or equivalent,ORG
+Type of primary container,PAXgene® blood RNA+,PAX
+Type of primary container,Potassium EDTA,PED
+Type of primary container,Polyethylene tube sterile,PET
+Type of primary container,S8820 protease inhibitor tablets or equivalent,PI1
+Type of primary container,Protease inhibitors,PIX
+Type of primary container,Polypropylene tube sterile,PPS
+Type of primary container,PAXgene® blood DNA,PXD
+Type of primary container,PAXgene® bone marrow RNA,PXR
+Type of primary container,Sodium citrate,SCI
+Type of primary container,Sodium EDTA,SED
+Type of primary container,Sodium heparin,SHP
+Type of primary container,Sodium fluoride/potassium oxalate,SPO
+Type of primary container,Serum separator tube with clot activator,SST
+Type of primary container,Tempus® tube,TEM
+Type of primary container,Trace elements tube,TRC
+Type of primary container,Unknown,XXX
+Type of primary container,Other,ZZZ
+Pre-centrifugation (delay between collection and processing),< 2 h at RT,A
+Pre-centrifugation (delay between collection and processing),< 2 h at 2 to 10 °C,B
+Pre-centrifugation (delay between collection and processing),2–4 h at RT,C
+Pre-centrifugation (delay between collection and processing),2–4 h at 2 to 10 °C,D
+Pre-centrifugation (delay between collection and processing),4–8 h at RT,E
+Pre-centrifugation (delay between collection and processing),4–8 h at 2 to 10 °C,F
+Pre-centrifugation (delay between collection and processing),8–12 h at RT,G
+Pre-centrifugation (delay between collection and processing),8–12 h at 2 to 10 °C,H
+Pre-centrifugation (delay between collection and processing),12–24 h at RT,I
+Pre-centrifugation (delay between collection and processing),12–24 h at 2 to 10 °C,J
+Pre-centrifugation (delay between collection and processing),24–48 h at RT,K
+Pre-centrifugation (delay between collection and processing),24–48 h at 2 to 10 °C,L
+Pre-centrifugation (delay between collection and processing),> 48 h at RT,M
+Pre-centrifugation (delay between collection and processing),> 48 h at 2 to 10 °C,N
+Pre-centrifugation (delay between collection and processing),< 2 h at 35 to 38 °C,O
+Pre-centrifugation (delay between collection and processing),Unknown,X
+Pre-centrifugation (delay between collection and processing),Other,Z
+Centrifugation,RT 10 to 15 min; < 3000 g no braking,A
+Centrifugation,RT 10 to 15 min; < 3000 g with braking,B
+Centrifugation,2 to 10 °C 10 to 15 min; < 3000 g no braking,C
+Centrifugation,2 to 10 °C 10 to 15 min; < 3000 g with braking,D
+Centrifugation,RT 10 to 15 min; 3000 g to 6000 g with braking,E
+Centrifugation,2 to 10 °C 10 to 15 min; 3000 g to 6000 g with braking,F
+Centrifugation,RT 10 to 15 min; 6000 g to 10000 g with braking,G
+Centrifugation,2 to 10 °C 10 to 15 min; 6000 g to 10000 g with braking,H
+Centrifugation,RT 10 to 15 min; > 10000 g with braking,I
+Centrifugation,2 to 10 °C 10 to 15 min; > 10000 g with braking,J
+Centrifugation,RT 30 min; < 1000 g no braking,M
+Centrifugation,No centrifugation,N
+Centrifugation,Unknown,X
+Centrifugation,Other,Z
+Second centrifugation,RT 10 to 15 min; < 3000 g no braking,A
+Second centrifugation,RT 10 to 15 min; < 3000 g with braking,B
+Second centrifugation,2 to 10 °C 10 to 15 min; < 3000 g no braking,C
+Second centrifugation,2 to 10 °C 10 to 15 min; < 3000 g with braking,D
+Second centrifugation,RT 10 to 15 min; 3000 g to 6000 g with braking,E
+Second centrifugation,2 to 10 °C 10 to 15 min; 3000 g to 6000 g with braking,F
+Second centrifugation,RT 10 to 15 min; 6000 g to 10000 g with braking,G
+Second centrifugation,2 to 10 °C 10 to 15 min; 6000 g to 10000 g with braking,H
+Second centrifugation,RT 10 to 15 min; > 10000 g with braking,I
+Second centrifugation,2 to 10 °C 10 to 15 min; > 10000 g with braking,J
+Second centrifugation,No centrifugation,N
+Second centrifugation,Unknown,X
+Second centrifugation,Other,Z
+Post-centrifugation delay,< 1 h 2 to 10 °C,A
+Post-centrifugation delay,< 1 h RT,B
+Post-centrifugation delay,1 to 2 h 2 to 10 °C,C
+Post-centrifugation delay,1 to 2 h RT,D
+Post-centrifugation delay,2 to 8 h 2 to 10 °C,E
+Post-centrifugation delay,2 to 8 h RT,F
+Post-centrifugation delay,8 to 24 h 2 to 10 °C,G
+Post-centrifugation delay,8 to 24 h RT,H
+Post-centrifugation delay,> 24 h 2 to 10 °C,I
+Post-centrifugation delay,> 24 h RT,J
+Post-centrifugation delay,Not applicable,N
+Post-centrifugation delay,Unknown,X
+Post-centrifugation delay,Other,Z
+Long-term storage,PP tube 0.5- to 2-mL; (−85) to (−60) °C,A
+Long-term storage,PP tube 0.5- to 2-mL; (−35) to (−18) °C,B
+Long-term storage,PP tube 0.5- to 2-mL; < −135 °C,V
+Long-term storage,Cryotube 1- to 2-mL; LN,C
+Long-term storage,Cryotube 1- to 2-mL; (−85) to (−60) °C,D
+Long-term storage,Cryotube 1- to 2-mL; programmable freezing to < −135 °C,E
+Long-term storage,Plastic cryo straw; LN,F
+Long-term storage,Straw; (−85) to (−60) °C,G
+Long-term storage,Straw; (−35) to (−18) °C,H
+Long-term storage,Straw; programmable freezing to < −135 °C,I
+Long-term storage,PP tube ≥ 5 mL; (−85) to (−60) °C,J
+Long-term storage,PP tube ≥ 5 mL; (−35) to (−18) °C,K
+Long-term storage,Microplate; (−85) to (−60) °C,L
+Long-term storage,Microplate; (−35) to (−18) °C,M
+Long-term storage,Cryotube 1- to 2-mL; LN after temporary (−85) to (−60) °C,N
+Long-term storage,Plastic cryo straw; LN after temporary (−85) to (−60) °C,O
+Long-term storage,Paraffin block; RT or 2 to 10 °C,P
+Long-term storage,Bag; LN,Q
+Long-term storage,Dry technology medium; RT,R
+Long-term storage,PP tube 40- to 500-µL; (−85) to (−60) °C,S
+Long-term storage,PP tube 40- to 500-µL; (−35) to (−18) °C,T
+Long-term storage,PP tube 40- to 500-µL; < −135 °C,W
+Long-term storage,Original primary container; (−35) to (−18) °C or (−85) to (−60) °C,Y
+Long-term storage,Unknown,X
+Long-term storage,Other,Z

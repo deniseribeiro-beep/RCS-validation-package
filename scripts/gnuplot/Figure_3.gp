@@ -4,7 +4,8 @@ FIGURE_WIDTH = 7.16
 FIGURE_HEIGHT = 3.35
 load "scripts/gnuplot/ieee_access_style.gp"
 
-DATA = "outputs/tables/Table_Combinatorial_Grade_Distribution.csv"
+if (!exists("TABLES_DIR")) TABLES_DIR = "outputs/local/tables"
+DATA = sprintf("%s/Table_Combinatorial_Grade_Distribution.csv", TABLES_DIR)
 
 grade_id(s) = s eq "Grade A" ? 1 : s eq "Grade B" ? 2 : s eq "Grade C" ? 3 : s eq "Grade D" ? 4 : s eq "Grade E" ? 5 : 1/0
 xpos(m,g) = grade_id(g) + (m eq "solid" ? 6 : 0)
@@ -25,11 +26,11 @@ set label 100 "Fluid biospecimens" at graph 0.23,1.065 center font "Helvetica,10
 set label 101 "Solid biospecimens" at graph 0.77,1.065 center font "Helvetica,10"
 set arrow 100 from first 6, graph 0 to first 6, graph 1 nohead dt 3 lw 0.65 lc rgb "#C8C8C8" back
 
-plot DATA every ::1 using (strcol(1) eq "fluid" ? xpos(strcol(1),strcol(2)) : 1/0):4 \
+plot DATA every ::1 using (stringcolumn("matrix") eq "fluid" ? xpos(stringcolumn("matrix"),stringcolumn("final_grade")) : 1/0):(column("proportion")) \
          with boxes lc rgb "#4C78A8" notitle, \
-     DATA every ::1 using (strcol(1) eq "solid" ? xpos(strcol(1),strcol(2)) : 1/0):4 \
+     DATA every ::1 using (stringcolumn("matrix") eq "solid" ? xpos(stringcolumn("matrix"),stringcolumn("final_grade")) : 1/0):(column("proportion")) \
          with boxes lc rgb "#D9822B" notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):($4 + 0.025):(sprintf("%.1f",100.0*$4)."\nn=".sprintf("%d",int($3))) \
+     DATA every ::1 using (xpos(stringcolumn("matrix"),stringcolumn("final_grade"))):(column("proportion") + 0.025):(sprintf("%.1f",100.0*column("proportion"))."\nn=".sprintf("%d",int(column("n")))) \
          with labels center font "Helvetica,8" tc rgb "#202020" notitle
 
 unset output

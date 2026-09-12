@@ -1,14 +1,16 @@
-# Transient benchmark workspace
-outputs/.benchmark_work/
+# Transient local and CI outputs
+outputs/local/
+outputs/smoke/
 
-# Figure files are regenerated from validated tables
-outputs/figures/*
-!outputs/figures/.gitkeep
+# Benchmark workspaces are never retained, including publication runs
+outputs/.benchmark_work/
+results/publication/.benchmark_work/
 
 # Local logs
 *.log
 
 # Compiled native artifacts
+bin/
 *.o
 *.so
 *.a

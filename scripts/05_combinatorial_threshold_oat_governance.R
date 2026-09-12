@@ -30,7 +30,9 @@ oat <- purrr::map_dfr(c("fluid", "solid"), function(mt) {
   axes <- axis_names(mt)
   purrr::map_dfr(axes, function(axis) {
     states <- seq(0, 1, by = 0.05)
-    df <- tibble::tibble(matrix = mt, varied_axis = axis, severity_state = states)
+    df <- add_admissible_analysis_governance(
+      tibble::tibble(matrix = mt, varied_axis = axis, severity_state = states)
+    )
     for (a in axes) df[[paste0(a, "_severity")]] <- ifelse(a == axis, states, 0)
     score_profiles(df)
   })

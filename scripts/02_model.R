@@ -7,6 +7,16 @@ axis_weights <- list(
 
 axis_names <- function(matrix_type) names(axis_weights[[matrix_type]])
 
+analysis_governance_fields <- c(
+  "metadata_complete", "terminology_valid", "traceability_ok",
+  "monitoring_ok", "documentation_ok", "semantic_compatible"
+)
+
+add_admissible_analysis_governance <- function(df) {
+  for (field in analysis_governance_fields) df[[field]] <- TRUE
+  df
+}
+
 score_grade <- function(rcs) {
   dplyr::case_when(
     rcs >= 90 ~ "Grade A",
@@ -24,14 +34,15 @@ score_profiles <- function(df) {
     stop("Unknown matrix type. Allowed values: ", paste(allowed_matrices, collapse = ", "))
   }
 
-  governance_fields <- c(
-    "metadata_complete", "terminology_valid", "traceability_ok",
-    "monitoring_ok", "documentation_ok", "semantic_compatible"
-  )
-  for (field in governance_fields) {
-    if (!field %in% names(df)) df[[field]] <- TRUE
+  missing_governance <- setdiff(analysis_governance_fields, names(df))
+  if (length(missing_governance)) {
+    stop(
+      "Missing explicit governance evidence fields: ",
+      paste(missing_governance, collapse = ", "),
+      ". Validation inputs must provide governance evidence explicitly."
+    )
   }
-  governance_matrix <- as.matrix(df[, governance_fields, drop = FALSE])
+  governance_matrix <- as.matrix(df[, analysis_governance_fields, drop = FALSE])
   if (anyNA(governance_matrix)) {
     stop("Governance evidence cannot be NA. Use FALSE for failed or unresolved evidence.")
   }
@@ -92,8 +103,8 @@ score_profiles <- function(df) {
     dplyr::mutate(
       P_bio = pbio,
       RCS = rcs,
-      score_based_grade = factor(score_based, levels = names(rcs_cols)),
-      final_grade = factor(final, levels = names(rcs_cols)),
+      score_based_grade = factor(score_based, levels = RCS_GRADE_LEVELS),
+      final_grade = factor(final, levels = RCS_GRADE_LEVELS),
       grade_route = route,
       nearest_threshold = nearest,
       threshold_margin = margins
@@ -157,7 +168,7 @@ generate_synthetic_cohort <- function(n_per_scenario = 300) {
   tidyr::expand_grid(matrix = c("fluid", "solid"), scenario = scenarios) |>
     purrr::pmap_dfr(~ make_profile_block(..1, ..2, n_per_scenario)) |>
     score_profiles() |>
-    dplyr::mutate(expected_grade = factor(expected_grade, levels = names(rcs_cols)))
+    dplyr::mutate(expected_grade = factor(expected_grade, levels = RCS_GRADE_LEVELS))
 }
 
 make_combinatorial_grid <- function(matrix_type, states = c(0, 0.25, 0.5, 0.75, 1)) {
@@ -167,5 +178,6 @@ make_combinatorial_grid <- function(matrix_type, states = c(0, 0.25, 0.5, 0.75, 
   tibble::as_tibble(grid) |>
     dplyr::mutate(matrix = matrix_type) |>
     dplyr::select(matrix, dplyr::everything()) |>
+    add_admissible_analysis_governance() |>
     score_profiles()
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+source(file.path("scripts", "output_config.R"))
+
 benchmark_bool <- function(name, default = FALSE) {
   value <- toupper(Sys.getenv(name, unset = if (default) "TRUE" else "FALSE"))
   if (!value %in% c("TRUE", "FALSE")) stop(name, " must be TRUE or FALSE.")
@@ -33,7 +35,10 @@ benchmark_int_list <- function(name, default) {
   unique(values)
 }
 
-BENCHMARK_SMOKE <- benchmark_bool("BENCHMARK_SMOKE", TRUE)
+BENCHMARK_SMOKE <- benchmark_bool("BENCHMARK_SMOKE", RCS_RUN_SCOPE != "publication")
+if (RCS_RUN_SCOPE == "publication" && BENCHMARK_SMOKE)
+  stop("Publication scope cannot run BENCHMARK_SMOKE=TRUE.")
+
 BENCHMARK_DATA_SEED <- benchmark_int("BENCHMARK_DATA_SEED", 20260504L, 0L)
 BENCHMARK_ORDER_SEED <- benchmark_int("BENCHMARK_ORDER_SEED", 20260824L, 0L)
 BENCHMARK_REPS <- benchmark_int("BENCHMARK_REPS", if (BENCHMARK_SMOKE) 5L else 30L)
@@ -69,13 +74,13 @@ BENCHMARK_ENFORCE_E2E_STABILITY <- benchmark_bool("BENCHMARK_ENFORCE_E2E_STABILI
 if (!1L %in% BENCHMARK_PROCESS_WORKERS) stop("BENCHMARK_PROCESS_WORKERS must include 1.")
 if (!1L %in% BENCHMARK_OPENMP_THREADS) stop("BENCHMARK_OPENMP_THREADS must include 1.")
 
-BENCHMARK_WORK_ROOT <- file.path("outputs", ".benchmark_work")
+BENCHMARK_WORK_ROOT <- file.path(RCS_OUTPUT_ROOT, ".benchmark_work")
 BENCHMARK_INPUTS <- file.path(BENCHMARK_WORK_ROOT, "inputs")
 BENCHMARK_EXPECTED <- file.path(BENCHMARK_WORK_ROOT, "expected")
 BENCHMARK_RESULTS <- file.path(BENCHMARK_WORK_ROOT, "results")
 BENCHMARK_BIN <- file.path(BENCHMARK_WORK_ROOT, "bin")
-BENCHMARK_TABLES <- file.path("outputs", "tables")
-BENCHMARK_LOGS <- file.path("outputs", "environment")
+BENCHMARK_TABLES <- RCS_TABLES_DIR
+BENCHMARK_LOGS <- RCS_ENVIRONMENT_DIR
 
 invisible(lapply(
   c(BENCHMARK_WORK_ROOT, BENCHMARK_INPUTS, BENCHMARK_EXPECTED, BENCHMARK_RESULTS,

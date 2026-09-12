@@ -3,10 +3,12 @@
 
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -30,20 +32,28 @@ struct Result {
 };
 
 inline Result score_one(const Profile& p) {
+  if (p.matrix > 1) throw std::runtime_error("Invalid matrix");
+  if (p.governance > 1) throw std::runtime_error("Invalid governance decision");
+
+  // Match the C computational reference: governance is non-compensable and is
+  // evaluated before additive scoring. Failed governance has no numeric P_bio/RCS.
+  if (!p.governance) {
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    return {nan, nan, 4, 2};
+  }
+
   const auto& weights = p.matrix == 0 ? fluid_weights : solid_weights;
   const std::size_t offset = p.matrix == 0 ? 0 : 5;
   double penalty = 0.0;
-  bool valid = p.matrix <= 1;
   for (std::size_t j = 0; j < 5; ++j) {
     const double value = p.severity[offset + j];
-    valid = valid && value >= 0.0 && value <= 1.0;
+    if (!std::isfinite(value) || value < 0.0 || value > 1.0)
+      throw std::runtime_error("Severity outside [0,1]");
     penalty += value * weights[j];
   }
-  if (!valid) throw std::runtime_error("Invalid matrix or severity outside [0,1]");
   const double score = 100.0 - penalty;
-  std::uint8_t grade = score >= 90.0 ? 0 : score >= 80.0 ? 1 : score >= 65.0 ? 2 : score >= 50.0 ? 3 : 4;
-  const std::uint8_t route = !p.governance ? 2 : score < 50.0 ? 1 : 0;
-  if (!p.governance) grade = 4;
+  const std::uint8_t grade = score >= 90.0 ? 0 : score >= 80.0 ? 1 : score >= 65.0 ? 2 : score >= 50.0 ? 3 : 4;
+  const std::uint8_t route = score < 50.0 ? 1 : 0;
   return {penalty, score, grade, route};
 }
 

@@ -2,22 +2,28 @@
 
 Reproducibility package for the governance-aware, rule-based Ribeiro Classification Score (RCS) described in *A Governance-Aware Rule-Based Computational Framework for Biospecimen Qualification in Biobank Information Systems*.
 
-The repository contains two complementary components in one executable structure:
+The scientific definition of the RCS is language-independent. The **ISO C11 implementation is the computational reference implementation** in this repository. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations used for analysis, equivalence testing, and benchmarking; they do not define the RCS.
 
-- scientific validation of the RCS in R;
-- implementation benchmark across R/PSOCK, Cython/OpenMP, C++/OpenMP, and CUDA acceleration of the C++ kernel.
+The repository currently contains no retained legacy study results. Final publication outputs will be generated again only after code/protocol freeze and the planned complete execution on GCP.
 
-Cross-language speedups are outside scope. Parallel speedup is calculated only against the sequential baseline of the same implementation family. CUDA is compared only with C++ sequential.
+## Package components
 
-## Validation scope
+The executable package contains:
 
-The scientific pipeline evaluates non-compensable governance admissibility, matrix-specific weighted penalties, the identity `RCS = 100 - P_bio`, deterministic grade thresholds and routing, property-based logical behaviour, synthetic internal validation, combinatorial coverage, threshold margins, governance-failure sensitivity, one-axis transitions, global sensitivity, weight perturbation, and ablation.
+- the C reference scoring and certification implementation;
+- executable SPREC 2.0 reference vocabularies and SPREC-to-severity mapping from Supplementary File 1;
+- explicit metadata-governance aggregation from Supplementary File 2;
+- deterministic C reference tests;
+- R-based scientific-validation analyses;
+- equivalence and performance benchmarking across the C reference, R/PSOCK, Cython/OpenMP, C++/OpenMP, and optional CUDA;
+- Gnuplot scripts for Figures 2–7;
+- isolated local, smoke/CI, and publication output scopes.
 
-Unknown, missing, invalid, incompatible or `Not scored` conditions are never converted to zero severity. They invalidate governance/context admissibility.
+Cross-language speedups are outside scope. Parallel speedup is calculated only against the sequential baseline of the same implementation family. CUDA acceleration is compared only with C++ sequential. All secondary implementations must first pass equivalence against C-reference expected outputs.
 
-## RCS calculation
+## Scientific definition and complete C API
 
-For matrix `k`:
+For a governance-admissible biospecimen of matrix `k`:
 
 ```text
 p_i^(k)   = W_i^(k) * s_i(x_i)
@@ -27,57 +33,100 @@ RCS^(k)   = 100 - P_bio^(k)
 
 Fluid weights are `(30, 15, 10, 20, 25)` for `P_pre`, `P_cent1`, `P_cent2`, `P_post`, and `P_store`. Solid weights are `(25, 25, 15, 20, 15)` for `P_warm`, `P_cold`, `P_fix`, `P_fixTime`, and `P_store`.
 
-Score-based grades are A for `RCS >= 90`, B for `80 <= RCS < 90`, C for `65 <= RCS < 80`, D for `50 <= RCS < 65`, and E for `RCS < 50`. A failed governance gate is non-compensable and routes directly to Grade E.
+Score-based grades are A for `RCS >= 90`, B for `80 <= RCS < 90`, C for `65 <= RCS < 80`, D for `50 <= RCS < 65`, and E for `RCS < 50`. Governance non-admissibility is non-compensable and routes to Grade E without a numerical `P_bio` or RCS.
 
-## Environment
+The complete C API is exposed by `rcs_certify()` in `include/rcs_certification.h` / `src/rcs_certification.c`:
 
-Check the complete environment with:
+```text
+raw SPREC 2.0 components
++ explicit SPREC context
++ explicit governance evidence
+        ↓
+SPREC controlled-vocabulary validation
+        ↓
+governance aggregation
+        ↓
+SPREC severity resolution
+        ↓
+weighted P_bio / RCS / grade / route
+```
+
+Unknown, missing, invalid, other/non-standard, incompatible, unresolved, or `Not scored` conditions are never converted to zero severity.
+
+See [`SCIENTIFIC_SPECIFICATION.md`](SCIENTIFIC_SPECIFICATION.md), [`SPREC_MAPPING.md`](SPREC_MAPPING.md), and [`GOVERNANCE_MODEL.md`](GOVERNANCE_MODEL.md).
+
+## Build and deterministic C tests
+
+From the repository root:
+
+```bash
+make clean
+make reference
+make test
+```
+
+`make test` executes the deterministic C reference tests in `tests/test_reference.c`.
+
+## Requirements are separated by task
+
+Scientific validation, benchmarking, and figure generation have independent requirement checks.
+
+Scientific validation:
+
+```bash
+Rscript scripts/00_check_environment.R scientific
+```
+
+This requires `cc`, `make`, R, and the scientific-analysis R packages used by the scripts.
+
+Benchmarking:
 
 ```bash
 python3 -m pip install numpy cython setuptools
-Rscript scripts/00_check_environment.R
+Rscript scripts/00_check_environment.R benchmark
 ```
 
-The scientific validation requires the R packages listed in `scripts/00_check_environment.R`. The benchmark additionally requires Python 3, NumPy, Cython, setuptools, a C++17 compiler with OpenMP support, and, when CUDA is enabled, `nvcc` and a compatible NVIDIA GPU.
+The CPU benchmark additionally requires `g++` with OpenMP support. CUDA requires `nvcc` and an NVIDIA GPU only when `BENCHMARK_RUN_CUDA=TRUE`.
+
+Figure generation:
+
+```bash
+bash scripts/check_figure_requirements.sh
+```
+
+or, on Windows:
+
+```bat
+scripts\check_figure_requirements.cmd
+```
+
+Figure generation requires Gnuplot and does not require the benchmark toolchain.
 
 ## Scientific validation
 
-Run the validation pipeline from the repository root:
+Run the validation-analysis pipeline with:
 
 ```bash
 Rscript scripts/run_all.R
 ```
 
-The scientific validation writes authoritative CSV tables to `outputs/tables/` and environment information to `outputs/environment/`.
+The exact experimental parameters are frozen in [`VALIDATION_PROTOCOL.md`](VALIDATION_PROTOCOL.md). They include the synthetic generator, five-state combinatorial grid, one-axis analysis, renormalized threshold perturbation, multiplicative weight perturbation, analytical sensitivity identities, and ablation design.
 
-The repository retains the canonical machine-readable tables used to support the manuscript. In particular, threshold-transition and weight-perturbation evidence are preserved both at detailed level and as the article-facing summaries:
-
-```text
-outputs/tables/Table_Threshold_Transition_Detail.csv
-outputs/tables/Table_Threshold_Transition_Summary.csv
-outputs/tables/Table_Weight_Perturbation_Sensitivity.csv
-outputs/tables/Table_Weight_Perturbation_Summary.csv
-```
-
-The summary tables are deterministically derived by the validation scripts from their corresponding detailed tables/results. Redundant `figure_source` caches and duplicated supplementary-export tables are not retained in the repository structure.
+R is an analysis harness here; it is not the computational reference implementation. The complete executable SPREC/governance certification path is the C reference API.
 
 ## Benchmark
 
-The benchmark evaluates identical deterministic workloads in R sequential, persistent R/PSOCK, Cython sequential, Cython/OpenMP, C++ sequential, C++/OpenMP, and optional C++/CUDA execution. It records `compute` and `end_to_end` timing regions and enforces deterministic output equivalence before accepting a timing.
-
-Run it with:
+Run a local/smoke benchmark with:
 
 ```bash
 Rscript scripts/run_benchmark.R
 ```
 
-The detailed smoke and publication configurations are documented in [`BENCHMARK_PROTOCOL.md`](BENCHMARK_PROTOCOL.md).
+The C reference implementation generates the expected deterministic benchmark outputs. Every timed implementation is compared with those expected outputs before its measurement is accepted. Equivalence covers record order, `P_bio`, RCS, final grade, and route, with numerical tolerance `1e-9` for `P_bio` and RCS.
 
-Equivalence requires preservation of record order, `P_bio`, RCS score, final grade, and grade route, with numerical tolerance `1e-9` for `P_bio` and RCS.
+The benchmark measures the **classification/scoring kernel on pre-resolved benchmark inputs**. It does not measure SPREC parsing/resolution, governance-evidence aggregation, database access, network transfer, or a complete biobank information-system workflow.
 
-## Performance calculations
-
-All acceleration ratios are paired inside each workload/repetition and remain within the same implementation family:
+Performance comparisons remain within implementation families:
 
 ```text
 R parallel effect       = T_R,sequential / T_R,PSOCK
@@ -86,39 +135,74 @@ C++ parallel effect     = T_C++,sequential / T_C++,OpenMP
 CUDA acceleration       = T_C++,sequential / T_CUDA
 ```
 
-No R-versus-Cython, R-versus-C++, or Cython-versus-C++ speedup is estimated.
+No R-versus-Cython, R-versus-C++, C-reference-versus-C++, or other cross-language speedup is reported. See [`BENCHMARK_PROTOCOL.md`](BENCHMARK_PROTOCOL.md).
 
-## Repository structure
+## Output isolation and publication protection
+
+All scripts use one of three output scopes:
 
 ```text
-scripts/               scientific validation, benchmark orchestration, and language engines
-src/                   native C++/OpenMP/CUDA benchmark sources
-outputs/tables/        authoritative scientific-validation and benchmark tables
-outputs/environment/   computational-environment records
-outputs/figures/       figure destination; figures are regenerated from validated tables
-.github/workflows/     automated CPU and figure smoke validation
+local       -> outputs/local/
+smoke       -> outputs/smoke/
+publication -> results/publication/
 ```
 
-Documentation and metadata remain at repository root: `README.md`, `BENCHMARK_PROTOCOL.md`, `FIGURE_STANDARD.md`, `CITATION.cff`, and `LICENSE`.
+`outputs/local/` and `outputs/smoke/` are transient and ignored by Git. CI additionally redirects its runs to temporary runner directories.
+
+Publication output is protected. Writing to `results/publication/` requires the deliberate combination:
+
+```bash
+RCS_RUN_SCOPE=publication \
+RCS_ALLOW_PUBLICATION_WRITE=TRUE \
+<command>
+```
+
+`RCS_OUTPUT_ROOT` can override the destination root for an isolated run. The **resolved** override path is checked against the protected `results/publication/` tree, so an override that points to that directory or any descendant still requires `RCS_ALLOW_PUBLICATION_WRITE=TRUE`, regardless of whether `RCS_RUN_SCOPE` is `local`, `smoke`, or `publication`.
+
+The future final GCP execution will populate `results/publication/` only after the repository passes the pre-publication audit. Until then, no existing file should be interpreted as a final study result.
 
 ## Figure generation
 
-`Figure_1` is the conceptual RCS workflow maintained with the manuscript and is not generated by Gnuplot. The reproducible plotting scripts generate `Figure_2` through `Figure_7` directly from the retained CSV tables in `outputs/tables/`. The scripts are stored in `scripts/gnuplot/`, the shared graphical configuration is defined in `scripts/gnuplot/ieee_access_style.gp`, and the adopted publication standard is documented in [`FIGURE_STANDARD.md`](FIGURE_STANDARD.md).
+`Figure_1` is the conceptual workflow maintained with the manuscript and is not generated by Gnuplot. Figures 2–7 are generated from validated tables under the selected output root.
 
-On Windows, with Gnuplot available in `PATH`, run from the repository root:
-
-```bat
-scripts\generate_figures.cmd
-```
-
-On Linux, macOS, or WSL with Gnuplot installed in that environment, run:
+On Linux, macOS, or WSL:
 
 ```bash
 bash scripts/generate_figures.sh
 ```
 
-Both runners generate PDF and PNG outputs for `Figure_2` through `Figure_7` in `outputs/figures/`. The plotting scripts read the retained result tables directly and do not modify them.
+On Windows:
 
-## Reproducibility package contents
+```bat
+scripts\generate_figures.cmd
+```
 
-The repository brings together the executable RCS validation workflow, benchmark orchestration and language-specific implementations, native C++/OpenMP/CUDA sources, retained result tables, computational-environment records, figure-generation scripts, citation metadata, and license in a single reproducibility package.
+For a future retained publication run, figure generation must use the deliberately enabled publication scope. Plotting scripts read columns by header name and do not use a persistent `figure_source` cache. See [`FIGURE_STANDARD.md`](FIGURE_STANDARD.md).
+
+## Continuous integration
+
+The GitHub Actions validation workflow performs:
+
+- a clean build and deterministic tests of the C reference implementation;
+- two independent scientific-validation runs with the same seed followed by a table diff;
+- an isolated CPU benchmark smoke run with mandatory C-reference equivalence gates;
+- analytical-sensitivity and generated threshold-summary consistency checks;
+- regression checks that absolute or descendant `RCS_OUTPUT_ROOT` overrides cannot bypass publication protection;
+- verification that smoke runs do not modify repository publication/local output trees.
+
+The figure workflow uses CI-only schema fixtures in a temporary directory to validate Figures 2–7 without depending on retained scientific results. CUDA equivalence is not executed on the CPU-only hosted CI runner and will be exercised during the final GPU-enabled GCP run.
+
+## Repository structure
+
+```text
+include/                 C reference public headers
+src/                     C reference implementation and native benchmark engines
+reference/               machine-readable SPREC/governance reference material
+scripts/                 validation, benchmark, requirement, and figure orchestration
+tests/                   deterministic C reference tests
+outputs/                 transient local/smoke outputs only
+results/publication/     protected destination for the future final retained run
+.github/workflows/       clean-build, determinism, equivalence, and figure smoke CI
+```
+
+Root documentation includes `SCIENTIFIC_SPECIFICATION.md`, `SPREC_MAPPING.md`, `GOVERNANCE_MODEL.md`, `VALIDATION_PROTOCOL.md`, `BENCHMARK_PROTOCOL.md`, `FIGURE_STANDARD.md`, `CITATION.cff`, and `LICENSE`.

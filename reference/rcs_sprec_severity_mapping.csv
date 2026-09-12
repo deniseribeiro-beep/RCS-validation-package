@@ -1,0 +1,76 @@
+matrix,axis,sprec_code_or_codes,condition,severity,context_requirement
+fluid,P_pre,A|B,< 2 h at RT or 2 to 10 °C,0.00,none
+fluid,P_pre,C|D,2–4 h at RT or 2 to 10 °C,0.20,none
+fluid,P_pre,E|F,4–8 h at RT or 2 to 10 °C,0.40,none
+fluid,P_pre,G|H,8–12 h at RT or 2 to 10 °C,0.60,none
+fluid,P_pre,I|J,12–24 h at RT or 2 to 10 °C,0.80,none
+fluid,P_pre,K|L,24–48 h at RT or 2 to 10 °C,0.90,none
+fluid,P_pre,M|N,> 48 h at RT or 2 to 10 °C,1.00,none
+fluid,P_pre,O,< 2 h at 35 to 38 °C,0.25,none
+fluid,P_cent1,A|B|C|D,"10 to 15 min, < 3000 g, with or without braking, at RT or 2 to 10 °C",0.00,none
+fluid,P_cent1,E|F,"10 to 15 min, 3000 g to 6000 g, with braking",0.33,none
+fluid,P_cent1,G|H,"10 to 15 min, 6000 g to 10000 g, with braking",0.66,none
+fluid,P_cent1,I|J,"10 to 15 min, > 10000 g, with braking",1.00,none
+fluid,P_cent1,M,"RT 30 min, < 1000 g, no braking",0.50,none
+fluid,P_cent1,N,"No centrifugation, when the intended specimen workflow is unseparated whole blood, dried blood, or a cellular matrix not requiring plasma or serum separation",0.00,primary_centrifugation=unseparated_or_cellular
+fluid,P_cent1,N,"No centrifugation, when plasma, serum, cell-free plasma, platelet-poor plasma, or another separated fluid fraction is required",1.00,primary_centrifugation=separated_fluid_required
+fluid,P_cent2,A|B|C|D,"10 to 15 min, < 3000 g, with or without braking, at RT or 2 to 10 °C",0.00,none
+fluid,P_cent2,E|F,"10 to 15 min, 3000 g to 6000 g, with braking",0.33,none
+fluid,P_cent2,G|H,"10 to 15 min, 6000 g to 10000 g, with braking",0.66,none
+fluid,P_cent2,I|J,"10 to 15 min, > 10000 g, with braking",1.00,none
+fluid,P_cent2,N,"No second centrifugation, when the intended workflow does not require platelet-poor, cell-free, or highly clarified plasma",0.00,second_centrifugation=not_required
+fluid,P_cent2,N,"No second centrifugation, when the intended workflow is routine plasma or serum analysis and second centrifugation is not mandatory but would reduce residual cellular or platelet contamination",0.25,second_centrifugation=routine_plasma_or_serum
+fluid,P_cent2,N,"No second centrifugation, when platelet-poor plasma, cell-free plasma, plasma DNA, miRNA, extracellular vesicle, or another low-cell-contamination workflow is required",1.00,second_centrifugation=low_cell_contamination_required
+fluid,P_post,A|B,< 1 h at 2 to 10 °C or RT,0.00,none
+fluid,P_post,C|D,1 to 2 h at 2 to 10 °C or RT,0.25,none
+fluid,P_post,E|F,2 to 8 h at 2 to 10 °C or RT,0.50,none
+fluid,P_post,G|H,8 to 24 h at 2 to 10 °C or RT,0.75,none
+fluid,P_post,I|J,> 24 h at 2 to 10 °C or RT,1.00,none
+fluid,P_post,N,Not applicable,0.00,none
+fluid,P_store,C|F|Q|V|W|E|I,"Liquid nitrogen, < −135 °C, or programmable freezing to < −135 °C",0.00,none
+fluid,P_store,A|D|G|J|L|S|N|O,"Storage at −85 to −60 °C, including temporary ultra-low storage before liquid nitrogen when applicable",0.25,none
+fluid,P_store,B|H|K|M|T,Storage at −35 to −18 °C,0.60,none
+fluid,P_store,Y,Original primary container with documented storage at −85 to −60 °C,0.25,storage_temperature=-85_to_-60
+fluid,P_store,Y,Original primary container with documented storage at −35 to −18 °C,0.60,storage_temperature=-35_to_-18
+fluid,P_store,Y,Original primary container with unresolved or undocumented storage temperature,Not scored,storage_temperature=unresolved
+solid,P_store,C|F|Q|V|W|E|I,"Liquid nitrogen, < −135 °C, or programmable freezing to < −135 °C",0.00,none
+solid,P_store,A|D|G|J|L|S|N|O,"Storage at −85 to −60 °C, including temporary ultra-low storage before liquid nitrogen when applicable",0.25,none
+solid,P_store,B|H|K|M|T,Storage at −35 to −18 °C,0.60,none
+solid,P_store,Y,Original primary container with documented storage at −85 to −60 °C,0.25,storage_temperature=-85_to_-60
+solid,P_store,Y,Original primary container with documented storage at −35 to −18 °C,0.60,storage_temperature=-35_to_-18
+solid,P_store,Y,Original primary container with unresolved or undocumented storage temperature,Not scored,storage_temperature=unresolved
+fluid,P_store,P|R,"Paraffin block at RT or 2 to 10 °C, or dry technology medium at RT, when compatible with the intended archival, morphological, dried-matrix, or validated local workflow",0.25,storage_workflow=archival_morphological_or_validated_local
+fluid,P_store,P|R,"Paraffin block at RT or 2 to 10 °C, or dry technology medium at RT, when native molecular integrity, viable cells, cryopreserved fluid matrix, or ultra-low-temperature preservation is required",1.00,storage_workflow=native_viable_or_ultralow_required
+fluid,P_store,P|R,Intended downstream workflow not documented or local compatibility not validated,Not scored,storage_workflow=unresolved
+solid,P_store,P|R,"Paraffin block at RT or 2 to 10 °C, or dry technology medium at RT, when compatible with the intended archival, morphological, dried-matrix, FFPE-compatible, or validated local workflow",0.25,storage_workflow=archival_morphological_or_validated_local
+solid,P_store,P|R,"Paraffin block at RT or 2 to 10 °C, or dry technology medium at RT, when snap-frozen tissue, viable cells, native protein/RNA preservation, or ultra-low-temperature storage is required",1.00,storage_workflow=native_viable_or_ultralow_required
+solid,P_store,P|R,Intended downstream workflow not documented or local compatibility not validated,Not scored,storage_workflow=unresolved
+solid,P_warm,A,< 2 min,0.00,none
+solid,P_warm,B,2 to 10 min,0.20,none
+solid,P_warm,C,10 to 20 min,0.40,none
+solid,P_warm,D,20 to 30 min,0.60,none
+solid,P_warm,E,30 to 60 min,0.80,none
+solid,P_warm,F,> 60 min,1.00,none
+solid,P_warm,N,Not applicable,0.00,none
+solid,P_cold,A,< 2 min,0.00,none
+solid,P_cold,B,2 to 10 min,0.20,none
+solid,P_cold,C,10 to 20 min,0.40,none
+solid,P_cold,D,20 to 30 min,0.60,none
+solid,P_cold,E,30 to 60 min,0.80,none
+solid,P_cold,F,> 60 min,1.00,none
+solid,P_cold,N,Not applicable,0.00,none
+solid,P_fix,SNP|PXT|RNL|ALL|HST,"Snap freezing, PAXgene tissue, RNA Later, Allprotect tissue reagent, or heat stabilization",0.00,none
+solid,P_fix,NBF|OCT,Neutral buffered formalin or optimum cutting temperature medium,0.33,none
+solid,P_fix,FOR|ALD|ETH|ACA|NAA,"Non-buffered formalin, aldehyde-based, alcohol-based, non-aldehyde with acetic acid, or non-aldehyde without acetic acid",0.66,none
+solid,P_fix,any recognized fixation/stabilization code,Any fixation or stabilization method incompatible with the intended analytical workflow,1.00,fixation_workflow=incompatible
+solid,P_fixTime,B,15 min to 1 h,0.00,none
+solid,P_fixTime,A,< 15 min,0.50,none
+solid,P_fixTime,C,1 to 4 h,0.20,none
+solid,P_fixTime,D,4 to 8 h,0.40,none
+solid,P_fixTime,E,8 to 24 h,0.60,none
+solid,P_fixTime,F,24 to 48 h,0.80,none
+solid,P_fixTime,G,48 to 72 h,1.00,none
+solid,P_fixTime,N,Not applicable,0.00,none
+all,Any RCS variable,X|XXX,Unknown value; missing value; invalid or unrecognized controlled code,Not scored,governance_gate
+all,Any RCS variable,Z|ZZZ,Other or non-standard value without validated local interpretation,Not scored,governance_gate
+all,Any RCS variable,context-dependent,"Semantically incompatible value considering matrix type, event type, SPREC axis, or recorded specimen context",Not scored,governance_gate

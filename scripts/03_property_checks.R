@@ -28,8 +28,8 @@ checks[[3]] <- check(
 
 mono <- purrr::map_lgl(c("fluid", "solid"), function(mt) {
   axes <- axis_names(mt)
-  low <- tibble::tibble(matrix = mt)
-  high <- tibble::tibble(matrix = mt)
+  low <- add_admissible_analysis_governance(tibble::tibble(matrix = mt))
+  high <- add_admissible_analysis_governance(tibble::tibble(matrix = mt))
   for (a in axes) {
     low[[paste0(a, "_severity")]] <- 0.2
     high[[paste0(a, "_severity")]] <- 0.2
@@ -81,6 +81,26 @@ checks[[7]] <- check(
     not_scored$final_grade == "Grade E" &&
     not_scored$grade_route == "Governance failure",
   "An unresolved axis produced governance failure, Grade E, and no numerical Pbio/RCS."
+)
+
+missing_governance_rejected <- tryCatch(
+  {
+    score_profiles(tibble::tibble(
+      matrix = "fluid",
+      P_pre_severity = 0,
+      P_cent1_severity = 0,
+      P_cent2_severity = 0,
+      P_post_severity = 0,
+      P_store_severity = 0
+    ))
+    FALSE
+  },
+  error = function(e) grepl("Missing explicit governance evidence fields", conditionMessage(e), fixed = TRUE)
+)
+checks[[8]] <- check(
+  "Missing governance evidence is never promoted to pass",
+  missing_governance_rejected,
+  "A profile without explicit governance evidence must be rejected as incomplete input."
 )
 
 property_checks <- dplyr::bind_rows(checks)

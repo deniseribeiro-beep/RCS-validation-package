@@ -3,6 +3,7 @@
 import numpy as np
 cimport numpy as cnp
 from cython.parallel cimport prange
+from libc.math cimport NAN
 
 ctypedef cnp.uint8_t u8
 ctypedef cnp.float64_t f64
@@ -11,6 +12,16 @@ cdef inline void score_one(u8 matrix_code, u8 governance, f64[:, ::1] severity,
                            Py_ssize_t i, f64[::1] p_bio, f64[::1] score,
                            u8[::1] grade, u8[::1] route) noexcept nogil:
     cdef double penalty
+
+    # Match the C computational reference: failed governance is evaluated before
+    # additive scoring and therefore has no numerical P_bio/RCS.
+    if governance == 0:
+        p_bio[i] = NAN
+        score[i] = NAN
+        grade[i] = 4
+        route[i] = 2
+        return
+
     if matrix_code == 0:
         penalty = (severity[i, 0] * 30.0 + severity[i, 1] * 15.0 + severity[i, 2] * 10.0 +
                    severity[i, 3] * 20.0 + severity[i, 4] * 25.0)
@@ -19,16 +30,12 @@ cdef inline void score_one(u8 matrix_code, u8 governance, f64[:, ::1] severity,
                    severity[i, 8] * 20.0 + severity[i, 9] * 15.0)
     p_bio[i] = penalty
     score[i] = 100.0 - penalty
-    if governance == 0:
-        grade[i] = 4
-        route[i] = 2
-    else:
-        if score[i] >= 90.0: grade[i] = 0
-        elif score[i] >= 80.0: grade[i] = 1
-        elif score[i] >= 65.0: grade[i] = 2
-        elif score[i] >= 50.0: grade[i] = 3
-        else: grade[i] = 4
-        route[i] = 1 if score[i] < 50.0 else 0
+    if score[i] >= 90.0: grade[i] = 0
+    elif score[i] >= 80.0: grade[i] = 1
+    elif score[i] >= 65.0: grade[i] = 2
+    elif score[i] >= 50.0: grade[i] = 3
+    else: grade[i] = 4
+    route[i] = 1 if score[i] < 50.0 else 0
 
 def score(cnp.ndarray[u8, ndim=1] matrix_code,
           cnp.ndarray[u8, ndim=1] governance,
