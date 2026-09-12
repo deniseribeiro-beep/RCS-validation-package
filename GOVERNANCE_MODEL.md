@@ -30,15 +30,15 @@ The zero/default C state is `UNSET`, which is rejected by the evaluator. Therefo
 
 Evidence described as **required** for identification, qualification, trajectory reconstruction, governance approval, or reliable downstream qualification is a hard admissibility requirement. A failed or unresolved required item blocks the governance gate.
 
-Evidence described as **supporting** admissibility, auditability, reproducibility, or technical review is not silently promoted to a hard failure. A failed or unresolved supporting item produces `REVIEW_REQUIRED`, and additive RCS scoring remains blocked until that review is resolved.
+Evidence described only as **supporting** admissibility, auditability, reproducibility, or technical review is not silently converted into a hard failure. When such evidence is not satisfied, the caller must explicitly route it to technical review; the RCS does not invent a stronger consequence that Supplementary Table S1 does not define.
 
-For the three categories where Supplementary Table S1 explicitly permits more than one consequence, the caller must supply the disposition rather than the RCS inventing it:
+For categories where Supplementary Table S1 names alternative consequences, the caller must supply the disposition rather than the RCS inventing it:
 
-- nonconformity control: critical nonconformities may require technical review or restriction;
-- deviation documentation: critical deviations may require technical review or quarantine;
-- semantic validity/context compatibility: invalid, unrecognized, or severely incompatible codes may require gate failure or technical review.
+- nonconformity control: `TECHNICAL_REVIEW` or `RESTRICT`;
+- deviation documentation: `TECHNICAL_REVIEW` or `QUARANTINE`;
+- semantic validity/context compatibility: `TECHNICAL_REVIEW` or `GATE_FAILURE`.
 
-For these categories, a non-satisfied evidence state without an explicit disposition is rejected as incomplete input.
+For quality management, biospecimen handling, and documentation/SOP evidence, the only accepted unresolved/failed disposition is `TECHNICAL_REVIEW`, because Supplementary Table S1 does not define restriction, quarantine, or automatic gate failure for those categories. A non-satisfied evidence item that requires a disposition but omits it is rejected as incomplete input.
 
 ## Governance outcome and the binary gate
 
