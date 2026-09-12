@@ -27,6 +27,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gnuplot-nox fonts-urw-base35
 
+      - name: Seed stale Figure 1 artifacts
+        run: |
+          mkdir -p outputs/figures
+          printf 'stale\n' > outputs/figures/Figure_1.pdf
+          printf 'stale\n' > outputs/figures/Figure_1.png
+
       - name: Generate publication figures
         env:
           OUTPUT_MODES: "pdf png"
