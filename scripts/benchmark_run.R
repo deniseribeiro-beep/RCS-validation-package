@@ -16,23 +16,48 @@ run_command <- function(command, args, timed = FALSE) {
 }
 
 compile_native <- function() {
-  if (!nzchar(Sys.which("g++"))) stop("g++ is required for the benchmark.")
-  seq_bin <- file.path(BENCHMARK_BIN, "rcs_sequential")
-  omp_bin <- file.path(BENCHMARK_BIN, "rcs_openmp")
-  run_command("g++", c("-std=c++17", "-O3", "-DNDEBUG", "-march=native", "src/rcs_sequential.cpp", "-o", seq_bin))
-  run_command("g++", c("-std=c++17", "-O3", "-DNDEBUG", "-march=native", "-fopenmp", "src/rcs_openmp.cpp", "-o", omp_bin))
+  cc <- Sys.which("cc")
+  if (!nzchar(cc)) stop("A C compiler (cc) is required for the computational reference benchmark.")
+  if (!nzchar(Sys.which("g++"))) stop("g++ is required for the C++ benchmark implementations.")
+
+  c_ref_bin <- file.path(BENCHMARK_BIN, "rcs_c_reference")
+  cpp_seq_bin <- file.path(BENCHMARK_BIN, "rcs_cpp_sequential")
+  cpp_omp_bin <- file.path(BENCHMARK_BIN, "rcs_cpp_openmp")
+
+  run_command(cc, c(
+    "-std=c11", "-O3", "-DNDEBUG", "-march=native", "-Iinclude",
+    "src/rcs_reference.c", "src/rcs_c_reference_benchmark.c", "-lm", "-o", c_ref_bin
+  ))
+  run_command("g++", c(
+    "-std=c++17", "-O3", "-DNDEBUG", "-march=native",
+    "src/rcs_sequential.cpp", "-o", cpp_seq_bin
+  ))
+  run_command("g++", c(
+    "-std=c++17", "-O3", "-DNDEBUG", "-march=native", "-fopenmp",
+    "src/rcs_openmp.cpp", "-o", cpp_omp_bin
+  ))
+
   cuda_bin <- file.path(BENCHMARK_BIN, "rcs_cuda")
   if (BENCHMARK_RUN_CUDA) {
     if (!nzchar(Sys.which("nvcc"))) stop("BENCHMARK_RUN_CUDA=TRUE but nvcc was not found.")
-    run_command("nvcc", c("-std=c++17", "-O3", "-Xcompiler", "-march=native", "src/rcs_cuda.cu", "-o", cuda_bin))
+    run_command("nvcc", c(
+      "-std=c++17", "-O3", "-Xcompiler", "-march=native",
+      "src/rcs_cuda.cu", "-o", cuda_bin
+    ))
   }
-  list(cpp_sequential = seq_bin, cpp_openmp = omp_bin, cpp_cuda = cuda_bin)
+
+  list(
+    c_reference = c_ref_bin,
+    cpp_sequential = cpp_seq_bin,
+    cpp_openmp = cpp_omp_bin,
+    cpp_cuda = cuda_bin
+  )
 }
 
 compile_cython <- function() {
   if (!BENCHMARK_RUN_PYTHON) return(invisible(NULL))
   check <- system2("python3", c("-c", shQuote("import numpy, Cython, setuptools; print(Cython.__version__)")), stdout = TRUE, stderr = TRUE)
-  if (!status_ok(check)) stop("Python NumPy, Cython, and setuptools are required. Install with: python3 -m pip install numpy cython setuptools")
+  if (!status_ok(check)) stop("Python NumPy, Cython, and setuptools are required.")
   run_command("python3", c(
     file.path("scripts", "setup_cython.py"), "build_ext",
     "--build-lib", file.path("scripts"),
@@ -43,17 +68,34 @@ compile_cython <- function() {
 if (BENCHMARK_RUN_PYTHON) {
   if (!nzchar(Sys.which("python3"))) stop("python3 is required when BENCHMARK_RUN_PYTHON=TRUE.")
   check <- system2("python3", c("-c", shQuote("import numpy; print(numpy.__version__)")), stdout = TRUE, stderr = TRUE)
-  if (!status_ok(check)) stop("Python NumPy is required. Install it with: python3 -m pip install numpy cython setuptools")
+  if (!status_ok(check)) stop("Python NumPy is required.")
 }
 
-source(file.path("scripts", "benchmark_prepare_inputs.R"))
 bins <- compile_native()
 compile_cython()
+source(file.path("scripts", "benchmark_prepare_inputs.R"))
 manifest <- read.csv(file.path(BENCHMARK_WORK_ROOT, "Input_Manifest.csv"), stringsAsFactors = FALSE)
 
+# The C reference implementation is the sole generator of expected benchmark
+# outputs. Every R/Cython/C++/CUDA result is compared against these files.
+for (i in seq_len(nrow(manifest))) {
+  run_command(bins$c_reference, c(
+    "--input", manifest$input_file[[i]],
+    "--output", manifest$expected_file[[i]],
+    "--implementation", "c_reference",
+    "--workers", "1",
+    "--warmups", "0",
+    "--min-sec", "0.01",
+    "--max-loops", "1",
+    "--mode", "e2e"
+  ))
+}
+
 engines <- data.frame(
-  implementation = c("r_sequential", "cpp_sequential"),
-  workers = c(1L, 1L), family = c("r", "cpp"), stringsAsFactors = FALSE
+  implementation = c("c_reference", "r_sequential", "cpp_sequential"),
+  workers = c(1L, 1L, 1L),
+  family = c("c_reference", "r", "cpp"),
+  stringsAsFactors = FALSE
 )
 engines <- rbind(
   engines,
@@ -81,7 +123,8 @@ write.csv(schedule, file.path(BENCHMARK_WORK_ROOT, "Randomized_Execution_Schedul
 
 raw_path <- file.path(BENCHMARK_TABLES, "Table_Benchmark_Runtime_Raw.csv")
 raw <- if (BENCHMARK_RESUME && file.exists(raw_path)) read.csv(raw_path, stringsAsFactors = FALSE) else data.frame()
-if ("protocol_version" %in% names(raw)) raw$protocol_version <- NULL
+if (nrow(raw) && "protocol_version" %in% names(raw))
+  stop("Legacy benchmark schema detected. Publication/development iteration schemas are not resumable.")
 required_raw_columns <- c(
   "read_sec", "initialization_sec", "classification_sec", "write_sec", "internal_total_sec",
   "process_overhead_sec", "cuda_h2d_sec", "cuda_d2h_sec", "cuda_host_prepare_sec",
@@ -90,7 +133,7 @@ required_raw_columns <- c(
   "minimum_block_sec", "calibration_floor_passed", "calibration_attempts"
 )
 if (nrow(raw) && !all(required_raw_columns %in% names(raw)))
-  stop("BENCHMARK_RESUME cannot reuse results with an incompatible schema. Run with BENCHMARK_RESUME=FALSE.")
+  stop("BENCHMARK_RESUME cannot reuse results with an incompatible schema.")
 
 completed_key <- function(implementation, workers, n_records, repetition, timing_region) {
   if (!nrow(raw)) return(FALSE)
@@ -99,6 +142,7 @@ completed_key <- function(implementation, workers, n_records, repetition, timing
 }
 
 engine_command <- function(implementation) {
+  if (implementation == "c_reference") return(c(unname(bins$c_reference)))
   if (implementation %in% c("r_sequential", "r_psock")) return(c("Rscript", file.path("scripts", "r_engine.R")))
   if (implementation %in% c("cython_sequential", "cython_openmp")) return(c("python3", file.path("scripts", "python_engine.py")))
   c(unname(bins[[implementation]]))
@@ -171,7 +215,7 @@ for (i in seq_len(nrow(schedule))) {
     execution <- run_command(command, c(base_args, "--output", output, "--mode", "compute"))
     parsed <- parse_compute(execution$text)
     comparison <- benchmark_compare_results(expected, benchmark_read_results(output))
-    if (!comparison$pass) stop("Equivalence failed for ", output)
+    if (!comparison$pass) stop("C-reference equivalence failed for ", output)
     append_row(data.frame(
       n_records = item$n_records, repetition = item$repetition, random_order = item$random_order,
       implementation = item$implementation, workers = item$workers, timing_region = "compute",
@@ -200,7 +244,7 @@ for (i in seq_len(nrow(schedule))) {
     cuda <- parse_cuda(execution$text)
     if (item$implementation == "cpp_cuda" && is.na(cuda$kernel_sec)) stop("CUDA engine did not emit phase details.")
     comparison <- benchmark_compare_results(expected, benchmark_read_results(output))
-    if (!comparison$pass) stop("Equivalence failed for ", output)
+    if (!comparison$pass) stop("C-reference equivalence failed for ", output)
     append_row(data.frame(
       n_records = item$n_records, repetition = item$repetition, random_order = item$random_order,
       implementation = item$implementation, workers = item$workers, timing_region = "end_to_end",
@@ -222,4 +266,4 @@ for (i in seq_len(nrow(schedule))) {
   }
 }
 
-cat("Benchmark raw execution completed successfully.\n")
+cat("Benchmark raw execution completed with C-reference equivalence enforced.\n")
