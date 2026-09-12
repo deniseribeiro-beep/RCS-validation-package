@@ -156,7 +156,7 @@ The resulting grade distributions are compared at the model level.
 
 ## Output scopes
 
-Validation outputs are never written directly to retained publication results unless publication mode is explicitly enabled.
+Validation outputs are never written directly to retained publication results unless publication writing is explicitly enabled.
 
 The default scopes are:
 
@@ -166,13 +166,19 @@ smoke       -> outputs/smoke/
 publication -> results/publication/
 ```
 
-Publication writes require both:
+Publication writes require:
+
+```text
+RCS_ALLOW_PUBLICATION_WRITE=TRUE
+```
+
+and the normal final-run configuration uses:
 
 ```text
 RCS_RUN_SCOPE=publication
 RCS_ALLOW_PUBLICATION_WRITE=TRUE
 ```
 
-`RCS_OUTPUT_ROOT` may be supplied to redirect a run to another isolated directory, including CI temporary directories.
+`RCS_OUTPUT_ROOT` may be supplied to redirect a run to another isolated directory, including CI temporary directories. The resolved override path is validated against the protected `results/publication/` tree before any output directory is created. Therefore an override that resolves to `results/publication/` or any descendant is rejected unless `RCS_ALLOW_PUBLICATION_WRITE=TRUE`, even when `RCS_RUN_SCOPE` is `local` or `smoke`.
 
 The final GCP execution will be performed only after the repository code and validation protocol are frozen. Until that execution is completed and promoted, `results/publication/` must not be interpreted as containing final study results.
