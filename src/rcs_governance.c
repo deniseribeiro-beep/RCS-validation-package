@@ -5,9 +5,8 @@
 
 typedef enum {
     POLICY_REQUIRED = 0,
-    POLICY_SUPPORTING_REVIEW = 1,
-    POLICY_EXPLICIT_DISPOSITION = 2,
-    POLICY_CONDITIONAL_REQUIRED = 3
+    POLICY_EXPLICIT_DISPOSITION = 1,
+    POLICY_CONDITIONAL_REQUIRED = 2
 } GovernancePolicy;
 
 static const GovernancePolicy GOVERNANCE_POLICY[RCS_GOV_EVIDENCE_COUNT] = {
@@ -16,13 +15,13 @@ static const GovernancePolicy GOVERNANCE_POLICY[RCS_GOV_EVIDENCE_COUNT] = {
     POLICY_REQUIRED,             /* collection context */
     POLICY_REQUIRED,             /* event-level metadata */
     POLICY_REQUIRED,             /* metadata completeness */
-    POLICY_SUPPORTING_REVIEW,    /* quality management */
+    POLICY_EXPLICIT_DISPOSITION, /* quality management */
     POLICY_REQUIRED,             /* traceability */
     POLICY_EXPLICIT_DISPOSITION, /* nonconformity control */
     POLICY_REQUIRED,             /* data reliability */
-    POLICY_SUPPORTING_REVIEW,    /* biospecimen handling */
+    POLICY_EXPLICIT_DISPOSITION, /* biospecimen handling */
     POLICY_CONDITIONAL_REQUIRED, /* storage monitoring */
-    POLICY_SUPPORTING_REVIEW,    /* documentation and SOPs */
+    POLICY_EXPLICIT_DISPOSITION, /* documentation and SOPs */
     POLICY_EXPLICIT_DISPOSITION, /* deviation documentation */
     POLICY_EXPLICIT_DISPOSITION  /* semantic validity/context compatibility */
 };
@@ -87,12 +86,6 @@ static void apply_required_failure(RCSGovernanceResult *result, size_t index) {
     result->blocking_mask |= bit_for(index);
 }
 
-static void apply_supporting_review(RCSGovernanceResult *result, size_t index) {
-    result->technical_review_required = true;
-    result->review_mask |= bit_for(index);
-    result->blocking_mask |= bit_for(index);
-}
-
 RCSGovernanceStatus rcs_governance_evaluate(
     const RCSGovernanceProfile *profile,
     RCSGovernanceResult *result
@@ -150,16 +143,26 @@ RCSGovernanceStatus rcs_governance_evaluate(
                 apply_required_failure(result, i);
                 break;
 
-            case POLICY_SUPPORTING_REVIEW:
-                if (evidence.disposition != RCS_GOV_DISPOSITION_NONE &&
-                    evidence.disposition != RCS_GOV_DISPOSITION_TECHNICAL_REVIEW)
-                    return RCS_GOV_STATUS_INVALID_DISPOSITION;
-                apply_supporting_review(result, i);
-                break;
-
             case POLICY_EXPLICIT_DISPOSITION:
                 if (evidence.disposition == RCS_GOV_DISPOSITION_NONE)
                     return RCS_GOV_STATUS_DISPOSITION_REQUIRED;
+                if (i == RCS_GOV_NONCONFORMITY_CONTROL &&
+                    evidence.disposition != RCS_GOV_DISPOSITION_TECHNICAL_REVIEW &&
+                    evidence.disposition != RCS_GOV_DISPOSITION_RESTRICT)
+                    return RCS_GOV_STATUS_INVALID_DISPOSITION;
+                if (i == RCS_GOV_DEVIATION_DOCUMENTATION &&
+                    evidence.disposition != RCS_GOV_DISPOSITION_TECHNICAL_REVIEW &&
+                    evidence.disposition != RCS_GOV_DISPOSITION_QUARANTINE)
+                    return RCS_GOV_STATUS_INVALID_DISPOSITION;
+                if (i == RCS_GOV_SEMANTIC_CONTEXT_VALIDITY &&
+                    evidence.disposition != RCS_GOV_DISPOSITION_TECHNICAL_REVIEW &&
+                    evidence.disposition != RCS_GOV_DISPOSITION_GATE_FAILURE)
+                    return RCS_GOV_STATUS_INVALID_DISPOSITION;
+                if ((i == RCS_GOV_QUALITY_MANAGEMENT ||
+                     i == RCS_GOV_BIOSPECIMEN_HANDLING ||
+                     i == RCS_GOV_DOCUMENTATION_SOPS) &&
+                    evidence.disposition != RCS_GOV_DISPOSITION_TECHNICAL_REVIEW)
+                    return RCS_GOV_STATUS_INVALID_DISPOSITION;
                 apply_disposition(result, i, evidence.disposition);
                 break;
 
