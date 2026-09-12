@@ -4,7 +4,7 @@
 # Output directories are created by the platform-specific generation wrapper.
 
 if (!exists("OUTPUT_MODE")) OUTPUT_MODE = "pdf"
-if (!exists("OUTPUT_DIR")) OUTPUT_DIR = "outputs/figures"
+if (!exists("OUTPUT_DIR")) OUTPUT_DIR = "outputs/local/figures"
 if (!exists("FIGURE_NAME")) { print "FIGURE_NAME is required"; exit }
 if (!exists("FIGURE_WIDTH")) FIGURE_WIDTH = 7.16
 if (!exists("FIGURE_HEIGHT")) FIGURE_HEIGHT = 4.5
@@ -14,9 +14,6 @@ set datafile separator comma
 set datafile missing "NA"
 set decimalsign locale "C"
 
-# PDF is sized in physical inches. PNG uses the same proportions at 600 dpi.
-# pngcairo fontscale/linewidth/pointscale preserve the physical appearance of
-# the PDF when the raster canvas is enlarged for publication-resolution output.
 DEVICE_SCALE = 1.0
 if (OUTPUT_MODE eq "png") {
     OUTPUT_DPI = 600.0
@@ -39,8 +36,6 @@ set cbtics font "Helvetica,8"
 set key font "Helvetica,9" samplen 2.0 spacing 1.08
 set grid back linewidth 0.45 dashtype 3 linecolor rgb "#D9D9D9"
 
-# Colour-blind-conscious line styles. Colour is reinforced by line type and
-# point symbol so figures remain interpretable in grayscale.
 set style line 1 linecolor rgb "#0072B2" linewidth 1.55 dashtype 1 pointtype 7 pointsize 0.82
 set style line 2 linecolor rgb "#D55E00" linewidth 1.55 dashtype 2 pointtype 5 pointsize 0.82
 set style line 3 linecolor rgb "#009E73" linewidth 1.55 dashtype 4 pointtype 9 pointsize 0.82
