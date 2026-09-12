@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! command -v gnuplot >/dev/null 2>&1; then
-  echo "Error: gnuplot is required to generate the publication figures." >&2
-  exit 1
-fi
+bash scripts/check_figure_requirements.sh
 
 scope="${RCS_RUN_SCOPE:-local}"
 if [[ -n "${RCS_OUTPUT_ROOT:-}" ]]; then
