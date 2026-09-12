@@ -35,6 +35,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Verify publication figure overrides are blocked before rendering
+        run: |
+          if RCS_RUN_SCOPE=local RCS_OUTPUT_ROOT="$GITHUB_WORKSPACE/results/publication" \
+            bash scripts/generate_figures.sh; then
+            echo "Expected absolute publication-root figure override to be rejected." >&2
+            exit 1
+          fi
+          if RCS_RUN_SCOPE=smoke RCS_OUTPUT_ROOT="$GITHUB_WORKSPACE/results/publication/ci-bypass" \
+            bash scripts/generate_figures.sh; then
+            echo "Expected publication-descendant figure override to be rejected." >&2
+            exit 1
+          fi
+          test ! -e results/publication/ci-bypass
+          test -z "$(git status --porcelain -- outputs results)"
+
       - name: Install figure-generation requirements
         run: |
           sudo apt-get update
