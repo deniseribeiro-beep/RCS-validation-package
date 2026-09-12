@@ -15,7 +15,7 @@ perturb_weight_once <- function(mt, perturb_sd = 0.10, n = 1000) {
     sev <- as.matrix(profiles[, paste0(axes, "_severity"), drop = FALSE])
     pb <- as.numeric(sev %*% w)
     rcs <- 100 - pb
-    fg <- factor(score_grade(rcs), levels = names(rcs_cols))
+    fg <- factor(score_grade(rcs), levels = RCS_GRADE_LEVELS)
     tibble::tibble(matrix = mt, iteration = i, changed_rate = mean(fg != base), mean_abs_rcs_shift = mean(abs(rcs - profiles$RCS)))
   })
 }
@@ -40,7 +40,7 @@ safe_write_csv(wp_summary, "Table_Weight_Perturbation_Summary.csv")
 axis_inf <- purrr::map_dfr(c("fluid", "solid"), function(mt) {
   axes <- axis_names(mt)
   purrr::map_dfr(axes, function(axis) {
-    df <- tibble::tibble(matrix = mt, G_gov = 1L, axis = axis)
+    df <- add_admissible_analysis_governance(tibble::tibble(matrix = mt, axis = axis))
     for (a in axes) df[[paste0(a, "_severity")]] <- ifelse(a == axis, 1, 0)
     score_profiles(df) |>
       dplyr::transmute(matrix, axis, P_bio, RCS, final_grade)
@@ -69,7 +69,7 @@ equal_score <- function(df) {
     }
   }
   rcs <- 100 - pb
-  df2 |> dplyr::mutate(P_bio = pb, RCS = rcs, final_grade = factor(ifelse(G_gov == 0, "Grade E", score_grade(rcs)), levels = names(rcs_cols)))
+  df2 |> dplyr::mutate(P_bio = pb, RCS = rcs, final_grade = factor(ifelse(G_gov == 0, "Grade E", score_grade(rcs)), levels = RCS_GRADE_LEVELS))
 }
 equal <- equal_score(cohort) |>
   dplyr::count(model = "Equal axis weights", final_grade, name = "n")
