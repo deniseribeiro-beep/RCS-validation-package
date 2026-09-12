@@ -157,7 +157,7 @@ RCS_ALLOW_PUBLICATION_WRITE=TRUE \
 <command>
 ```
 
-`RCS_OUTPUT_ROOT` can override the destination root for an isolated run.
+`RCS_OUTPUT_ROOT` can override the destination root for an isolated run. The **resolved** override path is checked against the protected `results/publication/` tree, so an override that points to that directory or any descendant still requires `RCS_ALLOW_PUBLICATION_WRITE=TRUE`, regardless of whether `RCS_RUN_SCOPE` is `local`, `smoke`, or `publication`.
 
 The future final GCP execution will populate `results/publication/` only after the repository passes the pre-publication audit. Until then, no existing file should be interpreted as a final study result.
 
@@ -187,6 +187,7 @@ The GitHub Actions validation workflow performs:
 - two independent scientific-validation runs with the same seed followed by a table diff;
 - an isolated CPU benchmark smoke run with mandatory C-reference equivalence gates;
 - analytical-sensitivity and generated threshold-summary consistency checks;
+- regression checks that absolute or descendant `RCS_OUTPUT_ROOT` overrides cannot bypass publication protection;
 - verification that smoke runs do not modify repository publication/local output trees.
 
 The figure workflow uses CI-only schema fixtures in a temporary directory to validate Figures 2–7 without depending on retained scientific results. CUDA equivalence is not executed on the CPU-only hosted CI runner and will be exercised during the final GPU-enabled GCP run.
