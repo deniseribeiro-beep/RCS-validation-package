@@ -41,6 +41,54 @@ static void test_score_boundaries(void) {
     assert(result.route == RCS_ROUTE_GOVERNANCE_FAILURE);
 }
 
+static void test_analytical_sensitivity_identity(void) {
+    const RCSMatrix matrices[] = {RCS_MATRIX_FLUID, RCS_MATRIX_SOLID};
+    const double baseline = 0.25;
+    const double delta = 0.25;
+    const double tolerance = 1e-12;
+    size_t m, i;
+
+    for (m = 0; m < sizeof(matrices) / sizeof(matrices[0]); ++m) {
+        const double *weights = rcs_reference_weights(matrices[m]);
+        RCSResolvedProfile base_profile;
+        RCSResult base_result;
+        double squared_weight_sum = 0.0;
+        double first_order_share_sum = 0.0;
+
+        assert(weights != NULL);
+        base_profile.matrix = matrices[m];
+        base_profile.governance = RCS_GOVERNANCE_PASS;
+        for (i = 0; i < 5; ++i) {
+            base_profile.severity[i] = baseline;
+            squared_weight_sum += weights[i] * weights[i];
+        }
+        assert(rcs_score_resolved(&base_profile, &base_result) == RCS_STATUS_OK);
+
+        for (i = 0; i < 5; ++i) {
+            RCSResolvedProfile perturbed = base_profile;
+            RCSResult perturbed_result;
+            double elementary_effect;
+            double variance_share;
+
+            perturbed.severity[i] += delta;
+            assert(perturbed.severity[i] <= 1.0);
+            assert(rcs_score_resolved(&perturbed, &perturbed_result) == RCS_STATUS_OK);
+
+            elementary_effect = (perturbed_result.p_bio - base_result.p_bio) / delta;
+            assert(fabs(elementary_effect - weights[i]) <= tolerance);
+
+            variance_share = (weights[i] * weights[i]) / squared_weight_sum;
+            assert(variance_share > 0.0 && variance_share < 1.0);
+            first_order_share_sum += variance_share;
+        }
+
+        /* For independent severity inputs with equal finite non-zero variance,
+           the additive model has no interaction variance and the first-order
+           variance contributions exhaust Var(P_bio). */
+        assert(fabs(first_order_share_sum - 1.0) <= tolerance);
+    }
+}
+
 static void test_sprec_resolution(void) {
     RCSSprecContext context;
     RCSSprecResolution result;
@@ -167,6 +215,7 @@ static void test_complete_api_rejects_missing_governance(void) {
 
 int main(void) {
     test_score_boundaries();
+    test_analytical_sensitivity_identity();
     test_sprec_resolution();
     test_governance();
     test_complete_fluid_certification();
