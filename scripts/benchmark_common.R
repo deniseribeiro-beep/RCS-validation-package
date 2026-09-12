@@ -34,18 +34,33 @@ benchmark_write_profiles <- function(x, path) {
   for (j in seq_len(10L)) writeBin(as.double(x$severity[, j]), con, size = 8L, endian = "little")
 }
 
-benchmark_score_core <- function(x) {
+# Secondary R implementation used only for equivalence/benchmarking. The C
+# reference implementation is the computational reference and generates the
+# expected benchmark outputs.
+benchmark_score_r_secondary <- function(x) {
   fluid_w <- c(30, 15, 10, 20, 25)
   solid_w <- c(25, 25, 15, 20, 15)
-  p_bio <- numeric(x$n)
-  fluid <- x$matrix == 0L
-  solid <- !fluid
+  if (any(!x$matrix %in% c(0L, 1L))) stop("Invalid benchmark matrix code.")
+  if (any(!x$governance %in% c(0L, 1L))) stop("Invalid benchmark governance code.")
+
+  p_bio <- rep(NaN, x$n)
+  score <- rep(NaN, x$n)
+  grade <- rep(4L, x$n)
+  route <- rep(2L, x$n)
+  admissible <- x$governance == 1L
+  fluid <- admissible & x$matrix == 0L
+  solid <- admissible & x$matrix == 1L
+
   if (any(fluid)) p_bio[fluid] <- as.numeric(x$severity[fluid, 1:5, drop = FALSE] %*% fluid_w)
   if (any(solid)) p_bio[solid] <- as.numeric(x$severity[solid, 6:10, drop = FALSE] %*% solid_w)
-  score <- 100 - p_bio
-  grade <- ifelse(score >= 90, 0L, ifelse(score >= 80, 1L, ifelse(score >= 65, 2L, ifelse(score >= 50, 3L, 4L))))
-  route <- ifelse(x$governance == 0L, 2L, ifelse(score < 50, 1L, 0L))
-  grade[x$governance == 0L] <- 4L
+  score[admissible] <- 100 - p_bio[admissible]
+  grade[admissible] <- ifelse(
+    score[admissible] >= 90, 0L,
+    ifelse(score[admissible] >= 80, 1L,
+      ifelse(score[admissible] >= 65, 2L,
+        ifelse(score[admissible] >= 50, 3L, 4L)))
+  )
+  route[admissible] <- ifelse(score[admissible] < 50, 1L, 0L)
   list(p_bio = p_bio, score = score, grade = as.integer(grade), route = as.integer(route))
 }
 
@@ -72,16 +87,33 @@ benchmark_read_results <- function(path) {
   )
 }
 
+benchmark_numeric_equivalence <- function(expected, observed, tolerance) {
+  if (length(expected) != length(observed)) return(list(pass = FALSE, max_diff = Inf))
+  expected_missing <- is.na(expected)
+  observed_missing <- is.na(observed)
+  if (!identical(expected_missing, observed_missing)) return(list(pass = FALSE, max_diff = Inf))
+  keep <- !expected_missing
+  if (!any(keep)) return(list(pass = TRUE, max_diff = 0))
+  diffs <- abs(expected[keep] - observed[keep])
+  if (any(!is.finite(diffs))) return(list(pass = FALSE, max_diff = Inf))
+  max_diff <- max(diffs)
+  list(pass = max_diff <= tolerance, max_diff = max_diff)
+}
+
 benchmark_compare_results <- function(expected, observed, tolerance = 1e-9) {
   same_n <- length(expected$p_bio) == length(observed$p_bio)
-  max_p <- if (same_n) max(abs(expected$p_bio - observed$p_bio)) else Inf
-  max_r <- if (same_n) max(abs(expected$score - observed$score)) else Inf
-  same_grade <- same_n && identical(expected$grade, observed$grade)
-  same_route <- same_n && identical(expected$route, observed$route)
+  if (!same_n) return(list(
+    pass = FALSE, max_abs_pbio_diff = Inf, max_abs_rcs_diff = Inf,
+    identical_grade = FALSE, identical_route = FALSE
+  ))
+  p_cmp <- benchmark_numeric_equivalence(expected$p_bio, observed$p_bio, tolerance)
+  r_cmp <- benchmark_numeric_equivalence(expected$score, observed$score, tolerance)
+  same_grade <- identical(expected$grade, observed$grade)
+  same_route <- identical(expected$route, observed$route)
   list(
-    pass = same_n && max_p <= tolerance && max_r <= tolerance && same_grade && same_route,
-    max_abs_pbio_diff = max_p,
-    max_abs_rcs_diff = max_r,
+    pass = p_cmp$pass && r_cmp$pass && same_grade && same_route,
+    max_abs_pbio_diff = p_cmp$max_diff,
+    max_abs_rcs_diff = r_cmp$max_diff,
     identical_grade = same_grade,
     identical_route = same_route
   )
