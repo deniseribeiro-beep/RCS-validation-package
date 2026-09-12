@@ -4,8 +4,8 @@ CPPFLAGS ?= -Iinclude
 LDLIBS ?= -lm
 
 REFERENCE_BIN := bin/rcs-reference
-REFERENCE_SOURCES := src/rcs_reference.c src/rcs_sprec.c src/rcs_sprec_reference.c src/rcs_reference_cli.c
-REFERENCE_HEADERS := include/rcs_reference.h include/rcs_sprec.h include/rcs_sprec_reference.h
+REFERENCE_SOURCES := src/rcs_reference.c src/rcs_sprec.c src/rcs_sprec_reference.c src/rcs_governance.c src/rcs_reference_cli.c
+REFERENCE_HEADERS := include/rcs_reference.h include/rcs_sprec.h include/rcs_sprec_reference.h include/rcs_governance.h
 
 .PHONY: all reference clean
 
