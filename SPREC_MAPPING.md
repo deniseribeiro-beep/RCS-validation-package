@@ -10,6 +10,7 @@ This layer implements the SPREC reference vocabularies and SPREC-to-RCS severity
 - `include/rcs_sprec_reference.h` and `src/rcs_sprec_reference.c` make all seven Table S1/S2 SPREC positions executable as controlled-vocabulary validation, distinguishing standard, unknown, other/non-standard, and invalid/unrecognized codes exactly where those states are defined by the supplied tables.
 - `include/rcs_sprec.h` defines the C severity-resolution API and the explicit contexts required by conditional Table S3 rules.
 - `src/rcs_sprec.c` is the executable C implementation of the Table S3 severity rules.
+- `include/rcs_certification.h` and `src/rcs_certification.c` integrate reference validation and severity resolution into the complete C certification path.
 
 SPREC 2.0 is the fixed SPREC baseline represented by this mapping. No SPREC 3.0 or 4.0 code is silently interpreted as SPREC 2.0.
 
@@ -21,7 +22,7 @@ For fluid biospecimens the seven positions are: type of sample, type of primary 
 
 For solid biospecimens the seven positions are: type of sample, type of collection, warm ischemia time, cold ischemia time, fixation/stabilization type, fixation time, and long-term storage.
 
-Codes explicitly described as `Unknown` or `Other` in Tables S1/S2 remain distinguishable from codes that are not present in the supplied SPREC 2.0 reference vocabulary. These states will feed the governance layer in the complete reference API.
+Codes explicitly described as `Unknown` or `Other` in Tables S1/S2 remain distinguishable from codes that are not present in the supplied SPREC 2.0 reference vocabulary. In `rcs_certify()`, any raw SPREC component that is not a standard resolved value prevents additive scoring; it is not accepted merely because the separately supplied governance evidence is admissible.
 
 ## Matrix-specific RCS axes
 
@@ -86,4 +87,4 @@ The C resolver returns `RCS_SPREC_NOT_SCORED` with a non-numeric severity for:
 - an explicitly indicated semantic incompatibility with recorded specimen context;
 - unresolved context for a conditional Table S3 rule.
 
-`Not scored` never means severity zero. The complete reference API will route such conditions through the non-compensable governance layer before additive RCS scoring.
+`Not scored` never means severity zero. In the complete reference API it sets the non-compensable SPREC gate-failure condition, leaves numerical `P_bio` and RCS unavailable, and returns the governance-failure Grade E route.
