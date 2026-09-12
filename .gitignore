@@ -9,6 +9,7 @@ outputs/figures/*
 *.log
 
 # Compiled native artifacts
+bin/
 *.o
 *.so
 *.a
