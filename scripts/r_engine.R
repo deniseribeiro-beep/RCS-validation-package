@@ -14,36 +14,23 @@ read_start <- proc.time()[["elapsed"]]
 profiles <- benchmark_read_profiles(args$input)
 read_sec <- proc.time()[["elapsed"]] - read_start
 
-score_chunk <- function(x) {
-  fluid_w <- c(30, 15, 10, 20, 25)
-  solid_w <- c(25, 25, 15, 20, 15)
-  n <- length(x$matrix)
-  p_bio <- numeric(n)
-  fluid <- x$matrix == 0L
-  if (any(fluid)) p_bio[fluid] <- as.numeric(x$severity[fluid, 1:5, drop = FALSE] %*% fluid_w)
-  if (any(!fluid)) p_bio[!fluid] <- as.numeric(x$severity[!fluid, 6:10, drop = FALSE] %*% solid_w)
-  score <- 100 - p_bio
-  grade <- ifelse(score >= 90, 0L, ifelse(score >= 80, 1L, ifelse(score >= 65, 2L, ifelse(score >= 50, 3L, 4L))))
-  route <- ifelse(x$governance == 0L, 2L, ifelse(score < 50, 1L, 0L))
-  grade[x$governance == 0L] <- 4L
-  list(p_bio = p_bio, score = score, grade = as.integer(grade), route = as.integer(route))
-}
+score_chunk <- function(x) benchmark_score_r_secondary(x)
 
 cluster <- NULL
 init_start <- proc.time()[["elapsed"]]
 if (args$implementation == "r_psock") {
   cluster <- parallel::makePSOCKcluster(workers)
   on.exit(parallel::stopCluster(cluster), add = TRUE)
-  parallel::clusterExport(cluster, "score_chunk", envir = environment())
+  parallel::clusterExport(cluster, "benchmark_score_r_secondary", envir = environment())
   starts <- floor((seq_len(workers) - 1L) * profiles$n / workers) + 1L
   ends <- floor(seq_len(workers) * profiles$n / workers)
   bounds <- Map(function(first, last) seq.int(first, last), starts, ends)
   chunks <- lapply(bounds, function(i) list(
-    matrix = profiles$matrix[i], governance = profiles$governance[i],
+    n = length(i), matrix = profiles$matrix[i], governance = profiles$governance[i],
     severity = profiles$severity[i, , drop = FALSE]
   ))
   score_once <- function() {
-    parts <- parallel::parLapply(cluster, chunks, score_chunk)
+    parts <- parallel::parLapply(cluster, chunks, benchmark_score_r_secondary)
     list(
       p_bio = unlist(lapply(parts, `[[`, "p_bio"), use.names = FALSE),
       score = unlist(lapply(parts, `[[`, "score"), use.names = FALSE),
@@ -52,7 +39,7 @@ if (args$implementation == "r_psock") {
     )
   }
 } else if (args$implementation == "r_sequential") {
-  score_once <- function() benchmark_score_core(profiles)
+  score_once <- function() benchmark_score_r_secondary(profiles)
 } else stop("Unknown R implementation: ", args$implementation)
 init_sec <- proc.time()[["elapsed"]] - init_start
 
@@ -66,7 +53,7 @@ if (args$mode == "e2e") {
   internal_sec <- read_sec + init_sec + compute_sec + write_sec
   cat(sprintf("RCSPHASES,%.12g,%.12g,%.12g,%.12g,%.12g\n",
               read_sec, init_sec, compute_sec, write_sec, internal_sec))
-  cat(sprintf("RCSRESULT,%s,%d,%d,1,NA\n", args$implementation, profiles$n, workers))
+  cat(sprintf("RCSRESULT,%s,%d,%d,1,NA,NA,FALSE,0\n", args$implementation, profiles$n, workers))
   quit(status = 0L)
 }
 if (args$mode != "compute") stop("mode must be compute or e2e")
