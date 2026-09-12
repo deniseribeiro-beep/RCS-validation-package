@@ -1,11 +1,18 @@
 @echo off
 setlocal EnableExtensions
 
-call scripts\check_figure_requirements.cmd
-if errorlevel 1 exit /b 1
-
 set "SCOPE=%RCS_RUN_SCOPE%"
 if not defined SCOPE set "SCOPE=local"
+
+if /I not "%SCOPE%"=="local" if /I not "%SCOPE%"=="smoke" if /I not "%SCOPE%"=="publication" (
+  echo Error: RCS_RUN_SCOPE must be local, smoke, or publication.
+  exit /b 1
+)
+
+if /I "%SCOPE%"=="publication" if /I not "%RCS_ALLOW_PUBLICATION_WRITE%"=="TRUE" (
+  echo Error: publication output is protected. Set RCS_ALLOW_PUBLICATION_WRITE=TRUE only for the deliberate final publication run.
+  exit /b 1
+)
 
 if defined RCS_OUTPUT_ROOT (
   set "ROOT=%RCS_OUTPUT_ROOT%"
@@ -13,16 +20,27 @@ if defined RCS_OUTPUT_ROOT (
   set "ROOT=outputs\local"
 ) else if /I "%SCOPE%"=="smoke" (
   set "ROOT=outputs\smoke"
-) else if /I "%SCOPE%"=="publication" (
+) else (
+  set "ROOT=results\publication"
+)
+
+for %%I in ("%ROOT%") do set "RESOLVED_ROOT=%%~fI"
+for %%I in ("%CD%\results\publication") do set "PROTECTED_ROOT=%%~fI"
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$root=[IO.Path]::GetFullPath($env:RESOLVED_ROOT).TrimEnd([char[]]@(92,47)); $protected=[IO.Path]::GetFullPath($env:PROTECTED_ROOT).TrimEnd([char[]]@(92,47)); if ($root.Equals($protected,[StringComparison]::OrdinalIgnoreCase) -or $root.StartsWith($protected + '\',[StringComparison]::OrdinalIgnoreCase)) { exit 42 } else { exit 0 }"
+set "GUARD_STATUS=%ERRORLEVEL%"
+if "%GUARD_STATUS%"=="42" (
   if /I not "%RCS_ALLOW_PUBLICATION_WRITE%"=="TRUE" (
-    echo Error: publication output is protected. Set RCS_ALLOW_PUBLICATION_WRITE=TRUE only for the deliberate final publication run.
+    echo Error: publication output is protected. RCS_OUTPUT_ROOT resolves inside results\publication; set RCS_ALLOW_PUBLICATION_WRITE=TRUE only for the deliberate final publication run.
     exit /b 1
   )
-  set "ROOT=results\publication"
-) else (
-  echo Error: RCS_RUN_SCOPE must be local, smoke, or publication.
+) else if not "%GUARD_STATUS%"=="0" (
+  echo Error: unable to validate the resolved figure output path.
   exit /b 1
 )
+
+call scripts\check_figure_requirements.cmd
+if errorlevel 1 exit /b 1
 
 set "TABLES_DIR=%ROOT%\tables"
 set "FIGURES_DIR=%ROOT%\figures"
