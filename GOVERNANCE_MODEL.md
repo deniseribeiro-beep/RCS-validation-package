@@ -1,6 +1,8 @@
 # Executable metadata-governance admissibility model
 
-This layer implements the metadata-governance admissibility structure described in **Supplementary File 2, Supplementary Methods S1 and Supplementary Table S1**. It does not convert governance evidence into additive RCS penalties. Its only role is to determine whether a biospecimen is admissible for SPREC-derived RCS scoring or requires failure, review, restriction, or quarantine before scoring.
+This layer implements the metadata-governance admissibility structure described in **Supplementary File 2, Supplementary Methods S1 and Supplementary Table S1**. It does not convert governance evidence into additive RCS penalties. Its role is to determine whether a biospecimen is admissible for SPREC-derived RCS scoring or requires failure, review, restriction, or quarantine before scoring.
+
+The complete C certification API integrates this governance result with SPREC validation/resolution and weighted scoring. Governance evidence is never inferred from the numerical score.
 
 ## Evidence model
 
@@ -24,7 +26,7 @@ Every evidence category must be supplied explicitly as one of:
 
 The zero/default C state is `UNSET`, which is rejected by the evaluator. Therefore, a missing field can never be interpreted as satisfied.
 
-`NOT_APPLICABLE` is accepted only for storage monitoring when `thermal_control_relevant=false`, because Supplementary Table S1 states that storage monitoring is required when thermal control is relevant. For all other governance categories, `NOT_APPLICABLE` is rejected unless the scientific specification is later amended to define such applicability explicitly.
+`NOT_APPLICABLE` is accepted only for storage monitoring when `thermal_control_relevant=false`, because Supplementary Table S1 states that storage monitoring is required when thermal control is relevant. For all other governance categories, `NOT_APPLICABLE` is rejected unless the scientific specification is amended to define such applicability explicitly.
 
 ## Aggregation policies derived from Supplementary Table S1
 
@@ -52,8 +54,16 @@ The evaluator can return the richer outcomes:
 
 Only `ADMISSIBLE` maps to the binary governance gate value `PASS`. All other outcomes are non-admissible for additive RCS scoring until resolved by the upstream governance process.
 
-This preserves Algorithm S1 of Supplementary File 2: governance admissibility is non-compensable and precedes SPREC-derived penalty computation.
+In `rcs_certify()`, invalid or incomplete governance input is returned as an input error. A complete but non-admissible governance decision is returned as a scientific non-admissibility result: no numerical `P_bio` or RCS is produced, the final grade is E, and the route is governance failure.
+
+This preserves the non-compensable order defined by the supplementary method: governance admissibility precedes additive penalty computation.
+
+## Relationship with SPREC-derived failures
+
+SPREC controlled-vocabulary validation and severity resolution are separate from the fourteen supplied governance evidence items. A governance profile cannot override a missing, unknown, other/non-standard, invalid, semantically incompatible, or unresolved SPREC condition.
+
+When the SPREC layer returns a non-scoreable condition, the complete API sets the SPREC gate-failure flag and follows the same non-compensable Grade E governance-failure route without assigning a numerical severity of zero.
 
 ## Traceability
 
-The result includes independent bit masks for blocking, review, restriction, and quarantine conditions. Each bit corresponds to one of the fourteen Supplementary Table S1 evidence categories. This preserves the reason for a non-admissible decision without converting governance evidence into a numerical penalty.
+The governance result includes independent bit masks for blocking, review, restriction, and quarantine conditions. Each bit corresponds to one of the fourteen Supplementary Table S1 evidence categories. This preserves the reason for a non-admissible decision without converting governance evidence into a numerical penalty.
