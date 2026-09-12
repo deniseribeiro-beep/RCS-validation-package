@@ -1,0 +1,96 @@
+descriptor,condition_or_description,code
+Type of sample,Fresh cells from non blood specimen type (e.g. biopsy),CEN
+Type of sample,"Cells from non blood specimen type (e.g. dissociated tissue), viable",CLN
+Type of sample,Cells from fine needle aspirate,FNA
+Type of sample,Hair,HAR
+Type of sample,Cells from laser capture microdissected tissue,LCM
+Type of sample,"Cells from non blood specimen type (e.g. dissociated tissue), non viable",PEN
+Type of sample,Placenta,PLC
+Type of sample,Solid tissue,TIS
+Type of sample,"Disrupted tissue, non-viable",TCM
+Type of sample,Other,ZZZ
+Type of collection,Autopsy < 6 h post-mortem,A06
+Type of collection,Autopsy 6-12 h post-mortem,A12
+Type of collection,Autopsy 12-24 h post-mortem,A24
+Type of collection,Autopsy 24-48 h post-mortem,A48
+Type of collection,Autopsy 48-72 h post-mortem,A72
+Type of collection,Biopsy in culture media,BCM
+Type of collection,Biopsy,BPS
+Type of collection,Biopsy in normal saline or phosphate buffered saline,BSL
+Type of collection,Biopsy in tissue low temperature transport media,BTM
+Type of collection,Fine needle aspirate,FNA
+Type of collection,Punction,PUN
+Type of collection,Surgical excision in culture media,SCM
+Type of collection,Surgical excision,SRG
+Type of collection,Surgical excision in normal saline or phosphate buffered saline,SSL
+Type of collection,Surgical excision in tissue low temperature transport media,STM
+Type of collection,Surgical excision in vacuum container,VAC
+Type of collection,Swab,SWB
+Type of collection,Other,ZZZ
+Warm ischemia time,< 2 min,A
+Warm ischemia time,2 to 10 min,B
+Warm ischemia time,10 to 20 min,C
+Warm ischemia time,20 to 30 min,D
+Warm ischemia time,30 to 60 min,E
+Warm ischemia time,> 60 min,F
+Warm ischemia time,Unknown,X
+Warm ischemia time,Not applicable,N
+Warm ischemia time,Other,Z
+Cold ischemia time,< 2 min,A
+Cold ischemia time,2 to 10 min,B
+Cold ischemia time,10 to 20 min,C
+Cold ischemia time,20 to 30 min,D
+Cold ischemia time,30 to 60 min,E
+Cold ischemia time,> 60 min,F
+Cold ischemia time,Unknown,X
+Cold ischemia time,Not applicable,N
+Cold ischemia time,Other,Z
+Fixation/stabil. type,Non-aldehyde with acetic acid,ACA
+Fixation/stabil. type,Aldehyde-based,ALD
+Fixation/stabil. type,Allprotect® tissue reagent,ALL
+Fixation/stabil. type,Alcohol-based,ETH
+Fixation/stabil. type,Non-buffered formalin,FOR
+Fixation/stabil. type,Heat stabilization,HST
+Fixation/stabil. type,Snap freezing,SNP
+Fixation/stabil. type,Non-aldehyde based without acetic acid,NAA
+Fixation/stabil. type,Neutral buffered formalin,NBF
+Fixation/stabil. type,Optimum cutting temperature medium,OCT
+Fixation/stabil. type,PAXgene® tissue,PXT
+Fixation/stabil. type,RNA Later®,RNL
+Fixation/stabil. type,Unknown,XXX
+Fixation/stabil. type,Other,ZZZ
+Fixation time,< 15 min,A
+Fixation time,15 min to 1 h,B
+Fixation time,1 to 4 h,C
+Fixation time,4 to 8 h,D
+Fixation time,8 to 24 h,E
+Fixation time,24 to 48 h,F
+Fixation time,48 to 72 h,G
+Fixation time,Not applicable,N
+Fixation time,Unknown,X
+Fixation time,Other,Z
+Long-term storage,PP tube 0.5- to 2-mL; (−85) to (−60) °C,A
+Long-term storage,PP tube 0.5- to 2-mL; (−35) to (−18) °C,B
+Long-term storage,PP tube 0.5- to 2-mL; < −135 °C,V
+Long-term storage,Cryotube 1- to 2-mL; liquid nitrogen,C
+Long-term storage,Cryotube 1- to 2-mL; (−85) to (−60) °C,D
+Long-term storage,Cryotube 1- to 2-mL; programmable freezing to < −135 °C,E
+Long-term storage,Plastic cryostraw; liquid nitrogen,F
+Long-term storage,Straw; (−85) to (−60) °C,G
+Long-term storage,Straw; (−35) to (−18) °C,H
+Long-term storage,Straw; programmable freezing to < −135 °C,I
+Long-term storage,PP tube ≥ 5 mL; (−85) to (−60) °C,J
+Long-term storage,PP tube ≥ 5 mL; (−35) to (−18) °C,K
+Long-term storage,Microplate; (−85) to (−60) °C,L
+Long-term storage,Microplate; (−35) to (−18) °C,M
+Long-term storage,Cryotube 1- to 2-mL; LN after temporary (−85) to (−60) °C,N
+Long-term storage,Straw; LN after temporary (−85) to (−60) °C,O
+Long-term storage,Paraffin block; RT or 2 to 10 °C,P
+Long-term storage,Bag; LN,Q
+Long-term storage,Dry technology medium; RT,R
+Long-term storage,PP tube 40 to 500µL; (−85) to (−60) °C,S
+Long-term storage,PP tube 40 to 500µL; (−35) to (−18) °C,T
+Long-term storage,PP tube 40- to 500-µL; < −135 °C,W
+Long-term storage,Original primary container; (−35) to (−18) °C or (−85) to (−60) °C,Y
+Long-term storage,Unknown,X
+Long-term storage,Other,Z
