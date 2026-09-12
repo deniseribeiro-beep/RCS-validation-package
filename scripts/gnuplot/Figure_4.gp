@@ -6,6 +6,7 @@ load "scripts/gnuplot/ieee_access_style.gp"
 
 if (!exists("TABLES_DIR")) TABLES_DIR = "outputs/local/tables"
 DATA = sprintf("%s/Table_Threshold_Transition_Detail.csv", TABLES_DIR)
+set datafile columnheaders
 
 array TRANS_KEY[4]
 TRANS_KEY[1] = "A to B"
