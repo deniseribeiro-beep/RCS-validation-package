@@ -22,6 +22,8 @@ for %%T in (
 )
 
 if not exist outputs\figures mkdir outputs\figures
+if exist outputs\figures\Figure_1.pdf del /q outputs\figures\Figure_1.pdf
+if exist outputs\figures\Figure_1.png del /q outputs\figures\Figure_1.png
 
 for %%M in (pdf png) do (
   for %%F in (2 3 4 5 6 7) do (
