@@ -1,4 +1,4 @@
-name: Gnuplot figure smoke validation
+name: Figure smoke validation
 
 on:
   pull_request:
@@ -6,9 +6,22 @@ on:
       - "scripts/gnuplot/**"
       - "scripts/generate_figures.sh"
       - "scripts/generate_figures.cmd"
-      - "outputs/tables/**"
-      - "FIGURE_STANDARD.md"
+      - "scripts/check_figure_requirements.sh"
+      - "scripts/check_figure_requirements.cmd"
+      - "scripts/create_figure_smoke_fixtures.sh"
       - ".github/workflows/figure-smoke.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/gnuplot/**"
+      - "scripts/generate_figures.sh"
+      - "scripts/generate_figures.cmd"
+      - "scripts/check_figure_requirements.sh"
+      - "scripts/check_figure_requirements.cmd"
+      - "scripts/create_figure_smoke_fixtures.sh"
+      - ".github/workflows/figure-smoke.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,28 +35,43 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install Gnuplot
+      - name: Install figure-generation requirements
         run: |
           sudo apt-get update
           sudo apt-get install -y gnuplot-nox fonts-urw-base35
+          bash scripts/check_figure_requirements.sh
 
-      - name: Seed stale Figure 1 artifacts
-        run: |
-          mkdir -p outputs/figures
-          printf 'stale\n' > outputs/figures/Figure_1.pdf
-          printf 'stale\n' > outputs/figures/Figure_1.png
-
-      - name: Generate publication figures
+      - name: Create isolated schema fixtures
         env:
+          FIGURE_SMOKE_ROOT: ${{ runner.temp }}/figure-smoke
+        run: bash scripts/create_figure_smoke_fixtures.sh "$FIGURE_SMOKE_ROOT"
+
+      - name: Seed stale Figure 1 artifacts in smoke workspace
+        env:
+          FIGURE_SMOKE_ROOT: ${{ runner.temp }}/figure-smoke
+        run: |
+          mkdir -p "$FIGURE_SMOKE_ROOT/figures"
+          printf 'stale\n' > "$FIGURE_SMOKE_ROOT/figures/Figure_1.pdf"
+          printf 'stale\n' > "$FIGURE_SMOKE_ROOT/figures/Figure_1.png"
+
+      - name: Generate figures from current schemas
+        env:
+          RCS_RUN_SCOPE: smoke
+          RCS_OUTPUT_ROOT: ${{ runner.temp }}/figure-smoke
           OUTPUT_MODES: "pdf png"
         run: bash scripts/generate_figures.sh
 
-      - name: Verify figure artifacts
+      - name: Verify figure artifacts and stale cleanup
+        env:
+          FIGURE_SMOKE_ROOT: ${{ runner.temp }}/figure-smoke
         run: |
           for figure in 2 3 4 5 6 7; do
-            test -s "outputs/figures/Figure_${figure}.pdf"
-            test -s "outputs/figures/Figure_${figure}.png"
+            test -s "$FIGURE_SMOKE_ROOT/figures/Figure_${figure}.pdf"
+            test -s "$FIGURE_SMOKE_ROOT/figures/Figure_${figure}.png"
           done
-          test ! -e outputs/figures/Figure_1.pdf
-          test ! -e outputs/figures/Figure_1.png
-          test ! -d outputs/tables/figure_source
+          test ! -e "$FIGURE_SMOKE_ROOT/figures/Figure_1.pdf"
+          test ! -e "$FIGURE_SMOKE_ROOT/figures/Figure_1.png"
+
+      - name: Verify figure smoke is isolated from repository outputs
+        run: |
+          test -z "$(git status --porcelain -- outputs results)"
