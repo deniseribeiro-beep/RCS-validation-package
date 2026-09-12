@@ -1,16 +1,27 @@
 # Executable SPREC 2.0 to RCS severity mapping
 
-This layer implements the SPREC-to-RCS severity rules supplied in **Supplementary File 1. SPREC Reference and Severity Tables**. It does not redefine SPREC and it does not infer a severity when the supplementary mapping does not provide enough information.
+This layer implements the SPREC reference vocabularies and SPREC-to-RCS severity rules supplied in **Supplementary File 1. SPREC Reference and Severity Tables**. It does not redefine SPREC and it does not infer a severity when the supplementary mapping does not provide enough information.
 
 ## Repository artifacts
 
 - `reference/sprec2_fluid_reference.csv` mirrors Supplementary Table S1 (SPREC 2.0 descriptors for fluid samples).
 - `reference/sprec2_solid_reference.csv` mirrors Supplementary Table S2 (SPREC 2.0 descriptors for solid samples).
 - `reference/rcs_sprec_severity_mapping.csv` is the machine-readable mirror of Supplementary Table S3.
-- `include/rcs_sprec.h` defines the C resolution API and the explicit contexts required by conditional Table S3 rules.
-- `src/rcs_sprec.c` is the executable C implementation of those rules.
+- `include/rcs_sprec_reference.h` and `src/rcs_sprec_reference.c` make all seven Table S1/S2 SPREC positions executable as controlled-vocabulary validation, distinguishing standard, unknown, other/non-standard, and invalid/unrecognized codes exactly where those states are defined by the supplied tables.
+- `include/rcs_sprec.h` defines the C severity-resolution API and the explicit contexts required by conditional Table S3 rules.
+- `src/rcs_sprec.c` is the executable C implementation of the Table S3 severity rules.
 
 SPREC 2.0 is the fixed SPREC baseline represented by this mapping. No SPREC 3.0 or 4.0 code is silently interpreted as SPREC 2.0.
+
+## Complete SPREC reference validation
+
+Supplementary Tables S1 and S2 define seven matrix-specific SPREC positions. The C reference layer validates every supplied code against the corresponding position rather than treating the tables as documentation only.
+
+For fluid biospecimens the seven positions are: type of sample, type of primary container, pre-centrifugation delay, centrifugation, second centrifugation, post-centrifugation delay, and long-term storage.
+
+For solid biospecimens the seven positions are: type of sample, type of collection, warm ischemia time, cold ischemia time, fixation/stabilization type, fixation time, and long-term storage.
+
+Codes explicitly described as `Unknown` or `Other` in Tables S1/S2 remain distinguishable from codes that are not present in the supplied SPREC 2.0 reference vocabulary. These states will feed the governance layer in the complete reference API.
 
 ## Matrix-specific RCS axes
 
