@@ -4,7 +4,8 @@ FIGURE_WIDTH = 7.16
 FIGURE_HEIGHT = 3.45
 load "scripts/gnuplot/ieee_access_style.gp"
 
-DATA = "outputs/tables/Table_Synthetic_Validation_Grade_Distribution.csv"
+if (!exists("TABLES_DIR")) TABLES_DIR = "outputs/local/tables"
+DATA = sprintf("%s/Table_Synthetic_Validation_Grade_Distribution.csv", TABLES_DIR)
 
 scenario_id(s) = s eq "optimal" ? 1 : \
                  s eq "mild_suboptimal" ? 2 : \
@@ -25,10 +26,6 @@ set ytics ("Grade A" 1, "Grade B" 2, "Grade C" 3, "Grade D" 4, "Grade E" 5)
 set xlabel "Synthetic validation scenario" offset 0,0.25
 set ylabel "Assigned RCS grade" offset 0.8,0
 
-# Sparse rows are the non-zero cells, so absent grade/scenario combinations
-# are true zero-valued cells and are rendered as the white plot background.
-# The palette therefore uses white at zero to keep the legend semantically
-# consistent with the plotted heatmap.
 set palette defined (0 "#FFFFFF", 0.02 "#E7F0FF", 0.25 "#C8DCF9", 0.50 "#94BDF4", 0.75 "#6A9FF0", 1.00 "#4589FF")
 set cbrange [0:1]
 set cbtics ("0" 0, "25" 0.25, "50" 0.50, "75" 0.75, "100" 1)
@@ -39,12 +36,11 @@ set label 100 "Fluid biospecimens" at graph 0.23,1.065 center font "Helvetica,10
 set label 101 "Solid biospecimens" at graph 0.77,1.065 center font "Helvetica,10"
 set arrow 100 from first 7, graph 0 to first 7, graph 1 nohead dt 3 lw 0.65 lc rgb "#C8C8C8" back
 
-# Cell labels are percentages; the unit is stated on the colourbar.
-plot DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):7 \
+plot DATA every ::1 using (xpos(stringcolumn("matrix"),stringcolumn("scenario"))):(grade_id(stringcolumn("final_grade"))):(column("proportion")) \
          with points pointtype 5 pointsize 5.0 linecolor palette notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 <= 0.55 ? sprintf("%.1f",100.0*$7) : "") \
+     DATA every ::1 using (xpos(stringcolumn("matrix"),stringcolumn("scenario"))):(grade_id(stringcolumn("final_grade"))):(column("proportion") <= 0.55 ? sprintf("%.1f",100.0*column("proportion")) : "") \
          with labels center font "Helvetica,8" textcolor rgb "#202020" notitle, \
-     DATA every ::1 using (xpos(strcol(1),strcol(2))):(grade_id(strcol(4))):($7 > 0.55 ? sprintf("%.1f",100.0*$7) : "") \
+     DATA every ::1 using (xpos(stringcolumn("matrix"),stringcolumn("scenario"))):(grade_id(stringcolumn("final_grade"))):(column("proportion") > 0.55 ? sprintf("%.1f",100.0*column("proportion")) : "") \
          with labels center font "Helvetica,8" textcolor rgb "#FFFFFF" notitle
 
 unset output
