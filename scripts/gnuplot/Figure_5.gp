@@ -1,44 +1,50 @@
 reset
 FIGURE_NAME = "Figure_5"
 FIGURE_WIDTH = 7.16
-FIGURE_HEIGHT = 5.65
+FIGURE_HEIGHT = 5.55
 load "scripts/gnuplot/ieee_access_style.gp"
 
 if (!exists("TABLES_DIR")) TABLES_DIR = "outputs/local/tables"
 DATA = sprintf("%s/Table_Benchmark_Runtime_Summary.csv", TABLES_DIR)
 
-set logscale x 10
-set xrange [8000:6500000]
-set xtics ("10k" 10000, "50k" 50000, "100k" 100000, "500k" 500000, "1M" 1000000, "2M" 2000000, "5M" 5000000) font "Helvetica,8"
-set grid xtics ytics
+workload_id(n) = n == 10000 ? 1 : \
+                 n == 50000 ? 2 : \
+                 n == 100000 ? 3 : \
+                 n == 500000 ? 4 : \
+                 n == 1000000 ? 5 : \
+                 n == 2000000 ? 6 : \
+                 n == 5000000 ? 7 : 1/0
 
-set multiplot layout 2,1 rowsfirst margins 0.13,0.975,0.105,0.94 spacing 0.0,0.13
+set xrange [0.6:7.4]
+set xtics ("10k" 1, "50k" 2, "100k" 3, "500k" 4, "1M" 5, "2M" 6, "5M" 7) font "Helvetica,8"
+set grid ytics
+set multiplot layout 2,1 rowsfirst margins 0.14,0.975,0.11,0.955 spacing 0.0,0.12
 
-# (a) C reference batch elapsed time
+# (a) Batch runtime: lower is better.
 set logscale y 10
-set autoscale y
-set format y "%.3g"
+set yrange [0.0001:1]
+set ytics ("0.0001" 0.0001, "0.001" 0.001, "0.01" 0.01, "0.1" 0.1, "1" 1)
 unset xlabel
-set ylabel "Median elapsed time (s)" offset 0.7,0
+set ylabel "Median batch runtime (s)" offset 0.55,0
 set key top left horizontal opaque nobox
-set label 100 "(a) C reference" at graph 0.015,0.91 left font "Helvetica,10"
-plot DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "compute") ? column("n_records") : 1/0):(column("median_elapsed_sec")):(column("median_ci95_low_sec")):(column("median_ci95_high_sec")) \
+set label 100 "(a) Batch runtime — lower is better" at graph 0.015,0.91 left font "Helvetica,10"
+plot DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "compute") ? workload_id(column("n_records")) : 1/0):(column("median_elapsed_sec")):(column("median_ci95_low_sec")):(column("median_ci95_high_sec")) \
          with yerrorlines ls 1 title "Compute", \
-     DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "end_to_end") ? column("n_records") : 1/0):(column("median_elapsed_sec")):(column("median_ci95_low_sec")):(column("median_ci95_high_sec")) \
+     DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "end_to_end") ? workload_id(column("n_records")) : 1/0):(column("median_elapsed_sec")):(column("median_ci95_low_sec")):(column("median_ci95_high_sec")) \
          with yerrorlines ls 2 title "End-to-end"
 unset label 100
 
-# (b) Per-profile cost derived from the same medians and bootstrap intervals
+# (b) Throughput: higher is better.
 unset key
-set autoscale y
-set format y "%.3g"
+set yrange [100000:100000000]
+set ytics ("0.1M" 100000, "1M" 1000000, "10M" 10000000, "100M" 100000000)
 set xlabel "Number of biospecimen profiles" offset 0,0.35
-set ylabel "Median time per profile (µs)" offset 0.7,0
-set label 101 "(b)" at graph 0.015,0.91 left font "Helvetica,10"
-plot DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "compute") ? column("n_records") : 1/0):(1e6*column("median_elapsed_sec")/column("n_records")):(1e6*column("median_ci95_low_sec")/column("n_records")):(1e6*column("median_ci95_high_sec")/column("n_records")) \
-         with yerrorlines ls 1 notitle, \
-     DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "end_to_end") ? column("n_records") : 1/0):(1e6*column("median_elapsed_sec")/column("n_records")):(1e6*column("median_ci95_low_sec")/column("n_records")):(1e6*column("median_ci95_high_sec")/column("n_records")) \
-         with yerrorlines ls 2 notitle
+set ylabel "Median throughput (profiles/s)" offset 0.55,0
+set label 101 "(b) Throughput — higher is better" at graph 0.015,0.91 left font "Helvetica,10"
+plot DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "compute") ? workload_id(column("n_records")) : 1/0):(column("median_throughput_profiles_sec")) \
+         with linespoints ls 1 notitle, \
+     DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "end_to_end") ? workload_id(column("n_records")) : 1/0):(column("median_throughput_profiles_sec")) \
+         with linespoints ls 2 notitle
 unset label 101
 
 unset multiplot
