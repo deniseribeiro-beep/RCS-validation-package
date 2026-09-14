@@ -60,19 +60,24 @@ for %%T in (
 )
 
 if not exist "%FIGURES_DIR%" mkdir "%FIGURES_DIR%"
+
+rem Figure 1 is maintained with the manuscript, not generated here.
 if exist "%FIGURES_DIR%\Figure_1.pdf" del /q "%FIGURES_DIR%\Figure_1.pdf"
 if exist "%FIGURES_DIR%\Figure_1.png" del /q "%FIGURES_DIR%\Figure_1.png"
+
+rem Final generated figures are PDF only. Remove any stale PNGs from older runs.
+for %%F in (2 3 4 5 6 7) do (
+  if exist "%FIGURES_DIR%\Figure_%%F.png" del /q "%FIGURES_DIR%\Figure_%%F.png"
+)
 
 set "GP_TABLES=%TABLES_DIR:\=/%"
 set "GP_FIGURES=%FIGURES_DIR:\=/%"
 
-for %%M in (pdf png) do (
-  for %%F in (2 3 4 5 6 7) do (
-    echo Generating Figure_%%F.%%M
-    gnuplot -e "OUTPUT_MODE='%%M';TABLES_DIR='%GP_TABLES%';OUTPUT_DIR='%GP_FIGURES%'" "scripts/gnuplot/Figure_%%F.gp"
-    if errorlevel 1 exit /b 1
-  )
+for %%F in (2 3 4 5 6 7) do (
+  echo Generating Figure_%%F.pdf
+  gnuplot -e "TABLES_DIR='%GP_TABLES%';OUTPUT_DIR='%GP_FIGURES%'" "scripts/gnuplot/Figure_%%F.gp"
+  if errorlevel 1 exit /b 1
 )
 
-echo Figures 2 through 7 generated from %TABLES_DIR%.
+echo Figures 2 through 7 generated as PDF from %TABLES_DIR%.
 endlocal
