@@ -1,7 +1,7 @@
 reset
 FIGURE_NAME = "Figure_4"
 FIGURE_WIDTH = 7.16
-FIGURE_HEIGHT = 3.95
+FIGURE_HEIGHT = 4.95
 load "scripts/gnuplot/ieee_access_style.gp"
 
 if (!exists("TABLES_DIR")) TABLES_DIR = "outputs/local/tables"
@@ -28,10 +28,8 @@ SOLID_AXIS[3] = "P_fix"
 SOLID_AXIS[4] = "P_fixTime"
 SOLID_AXIS[5] = "P_store"
 
-# Collapse the five perturbation settings for each axis/transition into the
-# count that reached that RCS grade-transition threshold. Points are used for
-# the heatmap cells rather than `with image` so rendering is portable across
-# Windows and Linux gnuplot builds.
+# Collapse the five renormalized weight settings for each axis/transition into
+# the number of settings that can reach that RCS grade-transition threshold.
 set print $FLUID
 do for [i=1:5] {
     do for [j=1:4] {
@@ -54,29 +52,33 @@ unset key
 unset grid
 set xrange [0.5:4.5]
 set yrange [5.5:0.5]
-set xtics ("A→B" 1, "B→C" 2, "C→D" 3, "D→E" 4) font "Sans,8"
+set xtics ("A→B" 1, "B→C" 2, "C→D" 3, "D→E" 4) font "Sans,10"
 set cbrange [0:5]
-set palette maxcolors 6 defined (0 "#F4F4F4", 1 "#D8E0FA", 2 "#BFCBF7", 3 "#96AAF1", 4 "#6F91EC", 5 "#4A86E8")
-set cbtics ("0" 0, "1" 1, "2" 2, "3" 3, "4" 4, "5" 5) font "Sans,7"
+# Zero is deliberately light gray rather than white so a 0/5 cell remains a
+# visible categorical marker instead of blending into the page background.
+set palette maxcolors 6 defined (0 "#E5E7EB", 1 "#D5DDF7", 2 "#BDC9F4", 3 "#95A9EE", 4 "#6D8FE8", 5 "#4A86E8")
+set cbtics ("0" 0, "1" 1, "2" 2, "3" 3, "4" 4, "5" 5) font "Sans,9"
 unset colorbox
 
-set label 900 "RCS grade-transition threshold" at screen 0.50,0.125 center font "Sans,9"
-set label 901 "Perturbation scenarios reached" at screen 0.50,0.055 center font "Sans,8"
-set multiplot layout 1,2 rowsfirst margins 0.20,0.94,0.22,0.88 spacing 0.13,0.0
+# Reserve a complete lower band for the shared x label and color scale so the
+# PDF does not clip the legend at final page width.
+set label 900 "RCS grade-transition threshold" at screen 0.50,0.145 center font "Sans,11"
+set label 901 "Perturbation scenarios reached (0–5 of five weight settings)" at screen 0.50,0.075 center font "Sans,10"
+set multiplot layout 1,2 rowsfirst margins 0.18,0.95,0.27,0.90 spacing 0.12,0.0
 
-set ytics ("Pre-centrif. delay" 1, "Primary centrif." 2, "Second centrif." 3, "Post-centrif. delay" 4, "Storage" 5) font "Sans,7"
-set label 100 "Fluid biospecimens" at graph 0.5,1.075 center font "Sans,9"
-plot $FLUID using 1:2:3 with points pointtype 5 pointsize 5.1 linecolor palette notitle, \
-     $FLUID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#202020" notitle, \
-     $FLUID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#FFFFFF" notitle
+set ytics ("Pre-centrif. delay" 1, "Primary centrif." 2, "Second centrif." 3, "Post-centrif. delay" 4, "Storage" 5) font "Sans,9"
+set label 100 "Fluid biospecimens" at graph 0.5,1.065 center font "Sans,11"
+plot $FLUID using 1:2:3 with points pointtype 5 pointsize 5.25 linecolor palette notitle, \
+     $FLUID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,9" tc rgb "#202020" notitle, \
+     $FLUID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,9" tc rgb "#FFFFFF" notitle
 unset label 100
 
-set ytics ("Warm ischemia" 1, "Cold ischemia" 2, "Fixation / stabil." 3, "Fixation time" 4, "Storage" 5) font "Sans,7"
-set label 101 "Solid biospecimens" at graph 0.5,1.075 center font "Sans,9"
-set colorbox horizontal user origin screen 0.39,0.025 size screen 0.22,0.018
-plot $SOLID using 1:2:3 with points pointtype 5 pointsize 5.1 linecolor palette notitle, \
-     $SOLID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#202020" notitle, \
-     $SOLID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#FFFFFF" notitle
+set ytics ("Warm ischemia" 1, "Cold ischemia" 2, "Fixation / stabil." 3, "Fixation time" 4, "Storage" 5) font "Sans,9"
+set label 101 "Solid biospecimens" at graph 0.5,1.065 center font "Sans,11"
+set colorbox horizontal user origin screen 0.37,0.030 size screen 0.26,0.025
+plot $SOLID using 1:2:3 with points pointtype 5 pointsize 5.25 linecolor palette notitle, \
+     $SOLID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,9" tc rgb "#202020" notitle, \
+     $SOLID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,9" tc rgb "#FFFFFF" notitle
 unset label 101
 
 unset multiplot
