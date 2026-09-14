@@ -12,8 +12,7 @@ set logscale x 2
 set xrange [0.8:20]
 set xtics ("1" 1, "2" 2, "4" 4, "8" 8, "16" 16) font "Helvetica,8"
 set yrange [0.25:1.50]
-set ytics 0.25
-set format y "%.2g"
+set ytics ("0.25" 0.25, "0.50" 0.50, "0.75" 0.75, "1.00" 1.00, "1.25" 1.25, "1.50" 1.50)
 set grid ytics
 set arrow 900 from graph 0, first 1 to graph 1, first 1 nohead dashtype 3 linewidth 1.0 linecolor rgb "#666666" back
 set label 950 "Workload: 5 million biospecimen profiles" at screen 0.975,0.985 right font "Helvetica,8" tc rgb "#444444"
