@@ -28,13 +28,16 @@ SOLID_AXIS[3] = "P_fix"
 SOLID_AXIS[4] = "P_fixTime"
 SOLID_AXIS[5] = "P_store"
 
+# Collapse the five perturbation settings for each axis/transition into the
+# count that reached that RCS grade-transition threshold. Points are used for
+# the heatmap cells rather than `with image` so rendering is portable across
+# Windows and Linux gnuplot builds.
 set print $FLUID
 do for [i=1:5] {
     do for [j=1:4] {
         stats DATA every ::1 using ((stringcolumn("matrix") eq "fluid" && stringcolumn("axis") eq FLUID_AXIS[i] && stringcolumn("threshold_transition") eq TRANS_KEY[j] && stringcolumn("reached") eq "TRUE") ? 1 : 0) nooutput
         print sprintf("%d,%d,%.0f", j, i, STATS_sum)
     }
-    print ""
 }
 set print
 
@@ -44,7 +47,6 @@ do for [i=1:5] {
         stats DATA every ::1 using ((stringcolumn("matrix") eq "solid" && stringcolumn("axis") eq SOLID_AXIS[i] && stringcolumn("threshold_transition") eq TRANS_KEY[j] && stringcolumn("reached") eq "TRUE") ? 1 : 0) nooutput
         print sprintf("%d,%d,%.0f", j, i, STATS_sum)
     }
-    print ""
 }
 set print
 
@@ -52,29 +54,29 @@ unset key
 unset grid
 set xrange [0.5:4.5]
 set yrange [5.5:0.5]
-set xtics ("A→B" 1, "B→C" 2, "C→D" 3, "D→E" 4) font "Helvetica,8"
+set xtics ("A→B" 1, "B→C" 2, "C→D" 3, "D→E" 4) font "Sans,8"
 set cbrange [0:5]
-set palette maxcolors 6 defined (0 "#F4F4F4", 1 "#E4EEF9", 2 "#C8DCF4", 3 "#9FC1EA", 4 "#6E9EDB", 5 "#2F6FB2")
-set cbtics ("0" 0, "1" 1, "2" 2, "3" 3, "4" 4, "5" 5) font "Helvetica,7"
+set palette maxcolors 6 defined (0 "#F4F4F4", 1 "#D8E0FA", 2 "#BFCBF7", 3 "#96AAF1", 4 "#6F91EC", 5 "#4A86E8")
+set cbtics ("0" 0, "1" 1, "2" 2, "3" 3, "4" 4, "5" 5) font "Sans,7"
 unset colorbox
 
-set label 900 "RCS grade-transition threshold" at screen 0.50,0.125 center font "Helvetica,9"
-set label 901 "Perturbation scenarios reached" at screen 0.50,0.055 center font "Helvetica,8"
+set label 900 "RCS grade-transition threshold" at screen 0.50,0.125 center font "Sans,9"
+set label 901 "Perturbation scenarios reached" at screen 0.50,0.055 center font "Sans,8"
 set multiplot layout 1,2 rowsfirst margins 0.20,0.94,0.22,0.88 spacing 0.13,0.0
 
-set ytics ("Pre-centrif. delay" 1, "Primary centrif." 2, "Second centrif." 3, "Post-centrif. delay" 4, "Storage" 5) font "Helvetica,7"
-set label 100 "Fluid biospecimens" at graph 0.5,1.075 center font "Helvetica,9"
-plot $FLUID using 1:2:3 with image notitle, \
-     $FLUID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,7" tc rgb "#202020" notitle, \
-     $FLUID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,7" tc rgb "#FFFFFF" notitle
+set ytics ("Pre-centrif. delay" 1, "Primary centrif." 2, "Second centrif." 3, "Post-centrif. delay" 4, "Storage" 5) font "Sans,7"
+set label 100 "Fluid biospecimens" at graph 0.5,1.075 center font "Sans,9"
+plot $FLUID using 1:2:3 with points pointtype 5 pointsize 5.1 linecolor palette notitle, \
+     $FLUID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#202020" notitle, \
+     $FLUID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#FFFFFF" notitle
 unset label 100
 
-set ytics ("Warm ischemia" 1, "Cold ischemia" 2, "Fixation / stabil." 3, "Fixation time" 4, "Storage" 5) font "Helvetica,7"
-set label 101 "Solid biospecimens" at graph 0.5,1.075 center font "Helvetica,9"
+set ytics ("Warm ischemia" 1, "Cold ischemia" 2, "Fixation / stabil." 3, "Fixation time" 4, "Storage" 5) font "Sans,7"
+set label 101 "Solid biospecimens" at graph 0.5,1.075 center font "Sans,9"
 set colorbox horizontal user origin screen 0.39,0.025 size screen 0.22,0.018
-plot $SOLID using 1:2:3 with image notitle, \
-     $SOLID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,7" tc rgb "#202020" notitle, \
-     $SOLID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Helvetica,7" tc rgb "#FFFFFF" notitle
+plot $SOLID using 1:2:3 with points pointtype 5 pointsize 5.1 linecolor palette notitle, \
+     $SOLID using 1:2:($3 < 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#202020" notitle, \
+     $SOLID using 1:2:($3 >= 4 ? sprintf("%d/5",int($3)) : "") with labels center font "Sans,7" tc rgb "#FFFFFF" notitle
 unset label 101
 
 unset multiplot
