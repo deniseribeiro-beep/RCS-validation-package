@@ -1,6 +1,6 @@
 # RCS classification/scoring-kernel benchmark protocol
 
-This protocol evaluates computational equivalence and execution behaviour of the RCS classification/scoring kernel. The ISO C11 implementation is the **computational reference** and is the sole generator of expected benchmark outputs. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations whose outputs must first match the C reference before their timings are accepted.
+This protocol evaluates computational equivalence and execution behaviour of the RCS classification/scoring kernel. The C11 reference implementation is the **computational reference** and is the sole generator of expected benchmark outputs. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations whose outputs must first match the C reference before their timings are accepted.
 
 The benchmark does not use one language as a performance reference for another and does not report cross-language speedups. Parallel speedup is calculated only within each implementation family. CUDA acceleration is compared only with C++ sequential.
 
@@ -10,7 +10,7 @@ The benchmark operates on deterministic, pre-resolved binary inputs containing m
 
 | Role/family | Sequential implementation | Parallel/accelerated implementation |
 |---|---|---|
-| Computational reference | ISO C11 `c_reference` | none |
+| Computational reference | C11 `c_reference` | none |
 | R | `r_sequential` | persistent `r_psock` processes |
 | Python/Cython | `cython_sequential` | `cython_openmp` threads |
 | C++ | `cpp_sequential` | `cpp_openmp` threads |
@@ -58,7 +58,7 @@ Runtime summaries include the median, bootstrap 95% confidence interval for the 
 
 For the final publication-oriented configuration:
 
-- 30 repetitions are planned per benchmark condition;
+- 30 repetitions are used per benchmark condition;
 - 5,000 bootstrap repetitions are used;
 - workload sizes are `10,000`, `50,000`, `100,000`, `500,000`, `1,000,000`, `2,000,000`, and `5,000,000` profiles;
 - R/PSOCK worker counts are `1,2,4,8,16`;
@@ -68,7 +68,7 @@ For the final publication-oriented configuration:
 - the minimum accepted compute-stability rate is `90%`;
 - end-to-end stability is reported separately and is diagnostic by default.
 
-The final GCP run has **not yet been executed for the restructured package**. These values define the frozen planned configuration and must not be reported as new study results until that execution is completed.
+The final GPU-enabled GCP run was completed on 2026-09-14 using the frozen configuration. The retained quality-gate summary reports C-reference equivalence passed, 4,200/4,200 calibrated compute measurements passing the calibration floor, 139/140 stable compute conditions (99.3%; required minimum 90%), 139/140 stable end-to-end conditions (99.3%; diagnostic only), and `all_quality_gates_passed=TRUE`. Final benchmark tables and environment records are retained under `results/publication/`.
 
 ## Requirements
 
@@ -108,7 +108,7 @@ GitHub Actions uses an even smaller diagnostic configuration in an isolated runn
 
 ## Final publication-oriented GCP run
 
-Publication output is protected and must be enabled deliberately. The planned complete run is:
+Publication output is protected and must be enabled deliberately. The frozen complete-run configuration is:
 
 ```bash
 export OMP_PROC_BIND=true
@@ -140,7 +140,7 @@ BENCHMARK_RESUME=FALSE \
 Rscript scripts/run_benchmark.R
 ```
 
-This command is reserved for the deliberate final GPU-enabled GCP execution after the pre-publication repository audit.
+This frozen configuration defines the completed final GPU-enabled GCP execution. The retained publication outputs were promoted only after the benchmark completed successfully and the quality/equivalence gates were audited.
 
 ## Speedup estimands
 
@@ -157,7 +157,7 @@ No R-versus-Cython, R-versus-C++, C-reference-versus-C++, or other cross-languag
 
 ## Benchmark outputs
 
-For local and smoke runs, tables are written under the selected transient output root. The future retained final benchmark tables will be promoted under:
+For local and smoke runs, tables are written under the selected transient output root. The retained final benchmark tables are stored under:
 
 ```text
 results/publication/tables/
