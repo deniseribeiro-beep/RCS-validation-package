@@ -52,7 +52,8 @@ set xrange [0.5:4.5]
 set yrange [5.5:0.5]
 set xtics ("A→B" 1, "B→C" 2, "C→D" 3, "D→E" 4) font "Helvetica,9"
 set cbrange [0:5]
-set palette maxcolors 6 defined (0 "#F4F4F4", 1 "#E4EEF9", 2 "#C8DCF4", 3 "#9FC1EA", 4 "#6E9EDB", 5 "#2F6FB2")
+set palette maxcolors 6
+set palette defined (0 "#F4F4F4", 1 "#E4EEF9", 2 "#C8DCF4", 3 "#9FC1EA", 4 "#6E9EDB", 5 "#2F6FB2")
 set cbtics ("0" 0, "1" 1, "2" 2, "3" 3, "4" 4, "5" 5)
 unset colorbox
 
