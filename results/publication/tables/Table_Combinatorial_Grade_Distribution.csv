@@ -1,0 +1,11 @@
+matrix,final_grade,n,proportion,total
+fluid,Grade A,20,0.0064,3125
+fluid,Grade B,104,0.03328,3125
+fluid,Grade C,517,0.16544,3125
+fluid,Grade D,967,0.30944,3125
+fluid,Grade E,1517,0.48544,3125
+solid,Grade A,16,0.00512,3125
+solid,Grade B,91,0.02912,3125
+solid,Grade C,501,0.16032,3125
+solid,Grade D,1001,0.32032,3125
+solid,Grade E,1516,0.48512,3125

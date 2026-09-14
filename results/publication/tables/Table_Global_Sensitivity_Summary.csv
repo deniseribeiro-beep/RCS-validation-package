@@ -1,0 +1,11 @@
+matrix,axis,weight,analytical_morris_mu_star_Pbio,finite_difference_elementary_effect_Pbio,morris_identity_abs_error,analytical_first_order_variance_share_Pbio,variance_assumption,interaction_variance_share_Pbio
+fluid,P_pre,30,30,30,0,0.4,independent_equal_finite_nonzero_variance_severities,0
+fluid,P_cent1,15,15,15,0,0.1,independent_equal_finite_nonzero_variance_severities,0
+fluid,P_cent2,10,10,10,0,0.044444444444444446,independent_equal_finite_nonzero_variance_severities,0
+fluid,P_post,20,20,20,0,0.17777777777777778,independent_equal_finite_nonzero_variance_severities,0
+fluid,P_store,25,25,25,0,0.2777777777777778,independent_equal_finite_nonzero_variance_severities,0
+solid,P_warm,25,25,25,0,0.2976190476190476,independent_equal_finite_nonzero_variance_severities,0
+solid,P_cold,25,25,25,0,0.2976190476190476,independent_equal_finite_nonzero_variance_severities,0
+solid,P_fix,15,15,15,0,0.10714285714285714,independent_equal_finite_nonzero_variance_severities,0
+solid,P_fixTime,20,20,20,0,0.19047619047619047,independent_equal_finite_nonzero_variance_severities,0
+solid,P_store,15,15,15,0,0.10714285714285714,independent_equal_finite_nonzero_variance_severities,0
