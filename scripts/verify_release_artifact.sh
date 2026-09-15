@@ -48,6 +48,7 @@ assert metadata["upload_type"] == "software"
 assert metadata["access_right"] == "open"
 assert metadata["license"] == "MIT"
 assert metadata["language"] == "eng"
+assert "doi" not in metadata
 assert len(metadata["creators"]) == 4
 expected_creators = [
     ("Ribeiro, Denise", "0000-0001-9365-4924"),
