@@ -53,7 +53,7 @@ jobs:
       - name: Install figure-generation requirements
         run: |
           sudo apt-get update
-          sudo apt-get install -y gnuplot-nox fonts-urw-base35
+          sudo apt-get install -y gnuplot-nox fonts-urw-base35 poppler-utils
           bash scripts/check_figure_requirements.sh
 
       - name: Create isolated schema fixtures
@@ -80,8 +80,11 @@ jobs:
           FIGURE_SMOKE_ROOT: ${{ runner.temp }}/figure-smoke
         run: |
           for figure in 2 3 4 5 6 7; do
-            test -s "$FIGURE_SMOKE_ROOT/figures/Figure_${figure}.pdf"
+            pdf="$FIGURE_SMOKE_ROOT/figures/Figure_${figure}.pdf"
+            test -s "$pdf"
             test ! -e "$FIGURE_SMOKE_ROOT/figures/Figure_${figure}.png"
+            test "$(pdfinfo "$pdf" | awk '/^Pages:/ {print $2}')" = "1"
+            pdffonts "$pdf" | awk 'NR > 2 && $(NF-4) != "yes" {exit 1}'
           done
           test ! -e "$FIGURE_SMOKE_ROOT/figures/Figure_1.pdf"
           test ! -e "$FIGURE_SMOKE_ROOT/figures/Figure_1.png"
