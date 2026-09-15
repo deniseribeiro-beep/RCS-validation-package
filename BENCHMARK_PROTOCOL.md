@@ -75,7 +75,8 @@ The final GPU-enabled GCP run was completed on 2026-09-14 using the frozen confi
 Benchmark requirements are checked independently from scientific validation and figure generation:
 
 ```bash
-python3 -m pip install numpy cython setuptools
+python3 -m pip install -r requirements-python.txt
+Rscript scripts/install_r_dependencies.R
 BENCHMARK_RUN_PYTHON=TRUE \
 BENCHMARK_RUN_CUDA=FALSE \
 Rscript scripts/00_check_environment.R benchmark
