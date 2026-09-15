@@ -39,6 +39,8 @@ The artifact enables a reviewer to verify that:
 - C++17 compiler with OpenMP support;
 - Gnuplot with `pdfcairo` support for figure generation;
 - Poppler tools (`pdfinfo` and `pdffonts`) for release verification.
+- SHA-256 checksum utility: `sha256sum` on Linux/WSL or the native
+  `shasum` utility on macOS; the verification script detects either one.
 
 The direct R and Python versions from the retained publication run are listed in
 `requirements-r.txt` and `requirements-python.txt`. Complete resolved package
