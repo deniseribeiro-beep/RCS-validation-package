@@ -6,7 +6,7 @@ the IEEE Author Portal.
 
 ## Repository and Zenodo readiness
 
-The following repository-controlled items have been verified on pull request #17:
+The following repository-controlled items have been verified during the release-readiness review:
 
 - [x] Public documentation and metadata are written in English.
 - [x] `CITATION.cff` and `.zenodo.json` contain the four authors in manuscript order.
@@ -14,8 +14,8 @@ The following repository-controlled items have been verified on pull request #17
 - [x] Zenodo metadata declare software version 1.0.0, English language, MIT license, open access, description, and keywords.
 - [x] Source code, deterministic tests, reference material, retained tables, environment records, PDF figures, reviewer instructions, and checksums are present.
 - [x] The release verifier validates metadata, retained quality gates, checksums, one-page PDFs, and embedded fonts.
-- [x] GitHub Validation CI passed on the reviewed pull-request head before the final checklist update.
-- [ ] Merge pull request #17 into `main`.
+- [ ] Confirm GitHub Validation CI passes on the final release-readiness pull-request head.
+- [ ] Merge all release-readiness pull requests into `main`.
 - [ ] Confirm Validation CI completed successfully on the exact resulting `main` commit before creating tag `v1.0.0`.
 - [ ] Run the final release-candidate checks listed in `ZENODO_RELEASE.md`.
 - [ ] Publish GitHub release `v1.0.0` and verify the resulting Zenodo record.
@@ -104,7 +104,7 @@ numbers in place of the citation keys shown here:
 
 > During preparation of this article and its reproducibility artifact, the
 > authors used OpenAI ChatGPT and Codex
-> `\\cite{openai_chatgpt,openai_codex}` solely to support grammatical review
+> `\cite{openai_chatgpt,openai_codex}` solely to support grammatical review
 > and limited textual corrections, LaTeX formatting troubleshooting,
 > configuration of the Google Cloud execution environment, and assistance with
 > software-testing agents and targeted corrections to validation and Gnuplot

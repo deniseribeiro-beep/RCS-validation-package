@@ -10,7 +10,7 @@ Zenodo landing page and citation exports contain the DOI.
 
 Complete every item before creating the tag:
 
-- [ ] Merge pull request #17 into `main`.
+- [ ] Merge all release-readiness pull requests into `main`.
 - [ ] Record the exact resulting merge commit SHA from `main`.
 - [ ] Confirm that Validation CI triggered by the push to `main` completed successfully for that exact merge commit.
 - [ ] Confirm the repository is public and enabled in the Zenodo GitHub integration.
@@ -27,7 +27,7 @@ The `doi` field is not required when Zenodo is expected to mint the DOI.
 
 ## Create the immutable release
 
-1. Merge pull request #17 into `main`.
+1. Merge all release-readiness pull requests into `main`.
 2. Wait for Validation CI to complete successfully on the exact resulting `main` commit.
 3. Record and verify that commit SHA.
 4. From a clean clone of that exact commit, run `bash scripts/verify_release_artifact.sh`.
