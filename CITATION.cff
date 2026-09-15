@@ -2,6 +2,7 @@ cff-version: 1.2.0
 title: "Ribeiro Classification Score validation package"
 message: "If you use this validation package, please cite the associated manuscript."
 type: software
+abstract: "Reproducibility artifact for A Governance-Aware Rule-Based Computational Method for Biospecimen Qualification in Biobank Information Systems, including the C11 computational reference, deterministic synthetic validation, equivalence tests, benchmarks, retained results, and publication figures."
 authors:
   - family-names: Ribeiro
     given-names: Denise
@@ -12,6 +13,12 @@ authors:
   - family-names: Becerra Sablon
     given-names: Vicente Idalberto
 version: "1.0.0"
-date-released: "2026-05-05"
+date-released: "2026-09-15"
 license: MIT
 repository-code: "https://github.com/deniseribeiro-beep/RCS-validation-package"
+keywords:
+  - biospecimen qualification
+  - biobank information systems
+  - Ribeiro Classification Score
+  - SPREC
+  - computational reproducibility
