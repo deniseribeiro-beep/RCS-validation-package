@@ -4,9 +4,28 @@ This checklist covers manuscript and artifact items that cannot all be enforced
 inside the source repository. Complete it against the final files submitted to
 the IEEE Author Portal.
 
+## Repository and Zenodo readiness
+
+The following repository-controlled items have been verified on pull request #17:
+
+- [x] Public documentation and metadata are written in English.
+- [x] `CITATION.cff` and `.zenodo.json` contain the four authors in manuscript order.
+- [x] All four ORCID identifiers have valid check digits.
+- [x] Zenodo metadata declare software version 1.0.0, English language, MIT license, open access, description, and keywords.
+- [x] Source code, deterministic tests, reference material, retained tables, environment records, PDF figures, reviewer instructions, and checksums are present.
+- [x] The release verifier validates metadata, retained quality gates, checksums, one-page PDFs, and embedded fonts.
+- [x] GitHub Validation CI passed on the reviewed pull-request head before the final checklist update.
+- [ ] Merge pull request #17 into `main`.
+- [ ] Confirm Validation CI completed successfully on the exact resulting `main` commit before creating tag `v1.0.0`.
+- [ ] Run the final release-candidate checks listed in `ZENODO_RELEASE.md`.
+- [ ] Publish GitHub release `v1.0.0` and verify the resulting Zenodo record.
+- [ ] Insert the minted Zenodo version DOI in the manuscript and IEEE supplementary-material entry.
+
+The repository cannot verify manuscript-only items such as the final IEEE template, biographies, affiliations, corresponding-author designation, acknowledgments, reference list, English prose, or agreement between the editable manuscript and its PDF. These require inspection of the final submission files.
+
 ## Manuscript package
 
-- [ ] Select `Research Article` unless the handling editor directs otherwise.
+- [ ] Select `Methods` as the best-aligned manuscript type for this new computational method, unless the handling editor directs otherwise.
 - [ ] Use the current mandatory IEEE Access double-column template.
 - [ ] Submit both the editable Word/LaTeX source and a matching PDF.
 - [ ] Keep each submitted manuscript file below 40 MB.
@@ -15,7 +34,8 @@ the IEEE Author Portal.
 - [ ] Use the same author names and order in the source, PDF, portal, Zenodo,
       and `CITATION.cff`.
 - [ ] Include a short biography for every author below the references.
-- [ ] Ensure the corresponding author's public ORCID is populated.
+- [ ] Ensure the corresponding author's ORCID is public and populated.
+- [ ] Verify the names, affiliations, author order, and ORCIDs of all four authors in the source, PDF, IEEE Author Portal, `CITATION.cff`, and `.zenodo.json`.
 - [ ] Define each acronym at first use, including RCS and SPREC.
 - [ ] Select 3-10 accurate manuscript keywords.
 - [ ] Verify every reference for accuracy and retraction status.

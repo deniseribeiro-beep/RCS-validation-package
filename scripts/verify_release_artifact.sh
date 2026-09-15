@@ -46,7 +46,9 @@ metadata = json.loads(Path(".zenodo.json").read_text(encoding="utf-8"))
 assert metadata["version"] == "1.0.0"
 assert metadata["upload_type"] == "software"
 assert metadata["access_right"] == "open"
-assert metadata["license"] == "MIT"
+assert metadata["license"] == "mit"
+assert metadata["language"] == "eng"
+assert "doi" not in metadata
 assert len(metadata["creators"]) == 4
 expected_creators = [
     ("Ribeiro, Denise", "0000-0001-9365-4924"),
