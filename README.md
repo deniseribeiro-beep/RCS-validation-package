@@ -1,10 +1,12 @@
 # Ribeiro Classification Score (RCS) validation package
 
-Reproducibility package for the governance-aware, rule-based Ribeiro Classification Score (RCS) described in *A Governance-Aware Rule-Based Computational Framework for Biospecimen Qualification in Biobank Information Systems*.
+Reproducibility package for the governance-aware, rule-based Ribeiro Classification Score (RCS) described in *A Governance-Aware Rule-Based Computational Method for Biospecimen Qualification in Biobank Information Systems*.
 
 The scientific definition of the RCS is language-independent. The **C11 reference implementation is the computational reference implementation** in this repository. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations used for analysis, equivalence testing, and benchmarking; they do not define the RCS.
 
 The complete scientific-validation and GPU-enabled GCP benchmark execution has been completed using the frozen code/protocol configuration. Retained publication tables and environment records are stored under `results/publication/`; transient benchmark workspaces are not retained.
+
+The `v1.0.0` release is the intended immutable artifact associated with the manuscript. Reviewers should follow [`ARTIFACT_EVALUATION.md`](ARTIFACT_EVALUATION.md), verify retained files with `SHA256SUMS`, and cite the version DOI minted from the release rather than the moving `main` branch. The exact Zenodo publication sequence is documented in [`ZENODO_RELEASE.md`](ZENODO_RELEASE.md).
 
 ## Package components
 
@@ -82,7 +84,8 @@ This requires `cc`, `make`, R, and the scientific-analysis R packages used by th
 Benchmarking:
 
 ```bash
-python3 -m pip install numpy cython setuptools
+python3 -m pip install -r requirements-python.txt
+Rscript scripts/install_r_dependencies.R
 Rscript scripts/00_check_environment.R benchmark
 ```
 
@@ -224,4 +227,22 @@ results/publication/     protected destination for final retained publication ou
 .github/workflows/       clean-build, determinism, equivalence, and figure smoke CI
 ```
 
-Root documentation includes `SCIENTIFIC_SPECIFICATION.md`, `SPREC_MAPPING.md`, `GOVERNANCE_MODEL.md`, `VALIDATION_PROTOCOL.md`, `BENCHMARK_PROTOCOL.md`, `FIGURE_STANDARD.md`, `CITATION.cff`, and `LICENSE`.
+Root documentation includes `SCIENTIFIC_SPECIFICATION.md`, `SPREC_MAPPING.md`, `GOVERNANCE_MODEL.md`, `VALIDATION_PROTOCOL.md`, `BENCHMARK_PROTOCOL.md`, `FIGURE_STANDARD.md`, `ARTIFACT_EVALUATION.md`, `IEEE_SUBMISSION_CHECKLIST.md`, `ZENODO_RELEASE.md`, `CITATION.cff`, `CHANGELOG.md`, and `LICENSE`.
+
+## Artifact citation and integrity
+
+The repository is prepared for archival as Zenodo software release `v1.0.0`.
+After Zenodo mints the DOI, cite the DOI shown on the archived release and add it
+to `CITATION.cff` on the next development commit. Do not modify the archived tag.
+
+Verify the retained publication artifact with:
+
+```bash
+bash scripts/verify_release_artifact.sh
+```
+
+Publication benchmark data were produced at commit
+`a6fd359d3ff41536cb4ec0424b0c4f82ffe4792f`. Subsequent commits through the
+release candidate changed publication graphics, schema fixtures, and
+documentation without replacing the retained benchmark measurements. See the
+provenance section in `ARTIFACT_EVALUATION.md`.
