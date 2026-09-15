@@ -28,7 +28,14 @@ grep -Fq 'version: "1.0.0"' CITATION.cff
 grep -Fq 'A Governance-Aware Rule-Based Computational Method' README.md
 grep -Fq 'A Governance-Aware Rule-Based Computational Method' ARTIFACT_EVALUATION.md
 
-sha256sum --check SHA256SUMS
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256sum --check SHA256SUMS
+elif command -v shasum >/dev/null 2>&1; then
+  shasum -a 256 --check SHA256SUMS
+else
+  echo "No SHA-256 checksum utility found. Install sha256sum or use the macOS shasum utility." >&2
+  exit 1
+fi
 
 python3 - <<'PY'
 import csv
@@ -41,6 +48,15 @@ assert metadata["upload_type"] == "software"
 assert metadata["access_right"] == "open"
 assert metadata["license"] == "MIT"
 assert len(metadata["creators"]) == 4
+expected_creators = [
+    ("Ribeiro, Denise", "0000-0001-9365-4924"),
+    ("Andrijauskas, Fábio", "0000-0002-1254-8570"),
+    ("de Carvalho, Lucas Miguel", "0000-0002-8766-0452"),
+    ("Becerra Sablón, Vicente Idalberto", "0000-0003-3127-1906"),
+]
+assert [
+    (creator["name"], creator["orcid"]) for creator in metadata["creators"]
+] == expected_creators
 
 with Path("results/publication/tables/Table_Benchmark_Quality_Gates.csv").open(
     newline="", encoding="utf-8"
