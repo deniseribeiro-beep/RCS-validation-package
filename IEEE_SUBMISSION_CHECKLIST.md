@@ -1,0 +1,84 @@
+# IEEE Access submission checklist
+
+This checklist covers manuscript and artifact items that cannot all be enforced
+inside the source repository. Complete it against the final files submitted to
+the IEEE Author Portal.
+
+## Manuscript package
+
+- [ ] Select `Research Article` unless the handling editor directs otherwise.
+- [ ] Use the current mandatory IEEE Access double-column template.
+- [ ] Submit both the editable Word/LaTeX source and a matching PDF.
+- [ ] Keep each submitted manuscript file below 40 MB.
+- [ ] Keep the main article preferably below 20 pages.
+- [ ] Use the exact article title recorded in `ARTIFACT_EVALUATION.md`.
+- [ ] Use the same author names and order in the source, PDF, portal, Zenodo,
+      and `CITATION.cff`.
+- [ ] Include a short biography for every author below the references.
+- [ ] Ensure the corresponding author's public ORCID is populated.
+- [ ] Define each acronym at first use, including RCS and SPREC.
+- [ ] Select 3-10 accurate manuscript keywords.
+- [ ] Verify every reference for accuracy and retraction status.
+- [ ] Perform final technical-English and grammar review.
+- [ ] Confirm the article is not under review elsewhere.
+
+## Results and claims
+
+- [ ] State that the C11 implementation is the computational reference.
+- [ ] State that benchmark inputs are deterministic, synthetic, and pre-resolved.
+- [ ] State that the benchmark measures the scoring/classification kernel rather
+      than a complete biobank information-system workflow.
+- [ ] Report compute and end-to-end timing regions separately.
+- [ ] Do not report cross-language speedup.
+- [ ] Compare CUDA acceleration only with C++ sequential.
+- [ ] Report 4,200/4,200 calibrated compute measurements passing.
+- [ ] Report 139/140 stable compute conditions and the 90% acceptance threshold.
+- [ ] Disclose the unstable R/PSOCK compute condition rather than removing it.
+- [ ] Describe end-to-end stability as diagnostic and disclose its one unstable
+      C-reference condition.
+- [ ] Ensure every numerical claim can be traced to a retained CSV table.
+
+## Graphics and supplementary material
+
+- [ ] Confirm Figures 2-7 are the PDFs from the immutable release.
+- [ ] Confirm each PDF contains one page and embedded fonts.
+- [ ] Ensure figures remain legible at their final manuscript dimensions.
+- [ ] Upload applicable supplementary material with the initial submission so it
+      can be peer reviewed.
+- [ ] Include the GitHub release URL and Zenodo version DOI.
+
+## Ethics and disclosure
+
+- [ ] Confirm that no personal or patient data are present in the artifact.
+- [ ] Disclose the exclusive use of synthetic data in Methods and Data
+      Availability.
+- [ ] Disclose AI-assisted content according to the current IEEE policy,
+      identifying the system, affected sections, and level of use when required.
+- [ ] Obtain approval from every author for authorship, order, and final files.
+
+## Suggested Code and Data Availability statement
+
+> The code, deterministic synthetic inputs, retained validation tables,
+> benchmark summaries, environment records, and figure-generation scripts are
+> available in the versioned RCS validation artifact at [ZENODO VERSION DOI].
+> Development history is available at
+> https://github.com/deniseribeiro-beep/RCS-validation-package. The archived
+> artifact corresponds to release v1.0.0. No personal or patient data were used.
+
+Replace `[ZENODO VERSION DOI]` only after Zenodo has minted the DOI.
+
+## Suggested reproducibility statement
+
+> The artifact provides a C11 computational reference implementation,
+> deterministic tests, seeded synthetic validation, cross-implementation
+> equivalence checks, retained publication outputs, and three levels of reviewer
+> execution described in ARTIFACT_EVALUATION.md. Hardware-dependent timing is
+> not expected to be bitwise reproducible; scoring outputs, grades, routes,
+> schemas, equivalence tolerances, and declared quality gates are reproducible.
+
+## AI-use disclosure
+
+Draft the final acknowledgment from the actual use history. It must not claim
+that AI was used only for grammar if it also contributed text, figures, or code.
+The authors remain responsible for verifying every claim, reference, output, and
+submitted file.
