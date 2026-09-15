@@ -7,10 +7,22 @@
   "license": "MIT",
   "access_right": "open",
   "creators": [
-    {"name": "Ribeiro, Denise"},
-    {"name": "Andrijauskas, Fabio"},
-    {"name": "de Carvalho, Lucas Miguel"},
-    {"name": "Becerra Sablon, Vicente Idalberto"}
+    {
+      "name": "Ribeiro, Denise",
+      "orcid": "0000-0001-9365-4924"
+    },
+    {
+      "name": "Andrijauskas, Fábio",
+      "orcid": "0000-0002-1254-8570"
+    },
+    {
+      "name": "de Carvalho, Lucas Miguel",
+      "orcid": "0000-0002-8766-0452"
+    },
+    {
+      "name": "Becerra Sablón, Vicente Idalberto",
+      "orcid": "0000-0003-3127-1906"
+    }
   ],
   "keywords": [
     "biospecimen qualification",
