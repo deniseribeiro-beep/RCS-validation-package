@@ -6,11 +6,22 @@ tables="${root}/tables"
 mkdir -p "${tables}"
 
 # CI-only schema fixtures. These are not scientific or publication results.
-cat > "${tables}/Table_Synthetic_Validation_Grade_Distribution.csv" <<'CSV'
-matrix,scenario,expected_grade,final_grade,grade_route,n,proportion
-fluid,optimal,Grade A,Grade A,Score-based certification,1,1
-solid,optimal,Grade A,Grade A,Score-based certification,1,1
-CSV
+synthetic_file="${tables}/Table_Synthetic_Validation_Grade_Distribution.csv"
+printf '%s\n' 'matrix,scenario,expected_grade,final_grade,grade_route,n,proportion' > "${synthetic_file}"
+scenarios=(optimal mild_suboptimal moderate_suboptimal severe_suboptimal critical_penalty_burden governance_failure)
+grades=("Grade A" "Grade B" "Grade C" "Grade D" "Grade E")
+for matrix in fluid solid; do
+  for scenario in "${scenarios[@]}"; do
+    for grade in "${grades[@]}"; do
+      proportion=0
+      if [[ "$scenario" == "optimal" && "$grade" == "Grade A" ]]; then
+        proportion=1
+      fi
+      printf '%s,%s,Grade A,%s,Score-based certification,1,%s\n' \
+        "$matrix" "$scenario" "$grade" "$proportion" >> "${synthetic_file}"
+    done
+  done
+done
 
 cat > "${tables}/Table_Combinatorial_Grade_Distribution.csv" <<'CSV'
 matrix,final_grade,n,proportion,total
@@ -69,18 +80,37 @@ CSV
 
 cat > "${tables}/Table_Benchmark_Within_Language_Speedup_Summary.csv" <<'CSV'
 language_family,n_records,implementation,workers,timing_region,repetitions,geometric_mean_speedup,speedup_ci95_low,speedup_ci95_high,median_speedup,median_efficiency
+dummy,0,dummy,0,compute,0,0,0,0,0,0
 R,5000000,r_psock,1,compute,2,1.0,0.95,1.05,1.0,1.0
 R,5000000,r_psock,2,compute,2,1.4,1.3,1.5,1.4,0.7
+R,5000000,r_psock,4,compute,2,1.5,1.4,1.6,1.5,0.38
+R,5000000,r_psock,8,compute,2,1.5,1.4,1.6,1.5,0.19
+R,5000000,r_psock,16,compute,2,1.5,1.4,1.6,1.5,0.09
 R,5000000,r_psock,1,end_to_end,2,1.0,0.95,1.05,1.0,1.0
 R,5000000,r_psock,2,end_to_end,2,1.2,1.1,1.3,1.2,0.6
+R,5000000,r_psock,4,end_to_end,2,1.3,1.2,1.4,1.3,0.33
+R,5000000,r_psock,8,end_to_end,2,1.3,1.2,1.4,1.3,0.16
+R,5000000,r_psock,16,end_to_end,2,1.3,1.2,1.4,1.3,0.08
 Python/Cython,5000000,cython_openmp,1,compute,2,1.0,0.95,1.05,1.0,1.0
 Python/Cython,5000000,cython_openmp,2,compute,2,1.5,1.4,1.6,1.5,0.75
+Python/Cython,5000000,cython_openmp,4,compute,2,1.5,1.4,1.6,1.5,0.38
+Python/Cython,5000000,cython_openmp,8,compute,2,1.5,1.4,1.6,1.5,0.19
+Python/Cython,5000000,cython_openmp,16,compute,2,1.5,1.4,1.6,1.5,0.09
 Python/Cython,5000000,cython_openmp,1,end_to_end,2,1.0,0.95,1.05,1.0,1.0
 Python/Cython,5000000,cython_openmp,2,end_to_end,2,1.3,1.2,1.4,1.3,0.65
+Python/Cython,5000000,cython_openmp,4,end_to_end,2,1.4,1.3,1.5,1.4,0.35
+Python/Cython,5000000,cython_openmp,8,end_to_end,2,1.4,1.3,1.5,1.4,0.18
+Python/Cython,5000000,cython_openmp,16,end_to_end,2,1.4,1.3,1.5,1.4,0.09
 C++,5000000,cpp_openmp,1,compute,2,1.0,0.95,1.05,1.0,1.0
 C++,5000000,cpp_openmp,2,compute,2,1.6,1.5,1.7,1.6,0.8
+C++,5000000,cpp_openmp,4,compute,2,1.6,1.5,1.7,1.6,0.40
+C++,5000000,cpp_openmp,8,compute,2,1.6,1.5,1.7,1.6,0.20
+C++,5000000,cpp_openmp,16,compute,2,1.6,1.5,1.7,1.6,0.10
 C++,5000000,cpp_openmp,1,end_to_end,2,1.0,0.95,1.05,1.0,1.0
 C++,5000000,cpp_openmp,2,end_to_end,2,1.4,1.3,1.5,1.4,0.7
+C++,5000000,cpp_openmp,4,end_to_end,2,1.5,1.4,1.6,1.5,0.38
+C++,5000000,cpp_openmp,8,end_to_end,2,1.5,1.4,1.6,1.5,0.19
+C++,5000000,cpp_openmp,16,end_to_end,2,1.5,1.4,1.6,1.5,0.09
 CSV
 
 cat > "${tables}/Table_Benchmark_CUDA_Speedup_Summary.csv" <<'CSV'

@@ -2,9 +2,9 @@
 
 Reproducibility package for the governance-aware, rule-based Ribeiro Classification Score (RCS) described in *A Governance-Aware Rule-Based Computational Framework for Biospecimen Qualification in Biobank Information Systems*.
 
-The scientific definition of the RCS is language-independent. The **ISO C11 implementation is the computational reference implementation** in this repository. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations used for analysis, equivalence testing, and benchmarking; they do not define the RCS.
+The scientific definition of the RCS is language-independent. The **C11 reference implementation is the computational reference implementation** in this repository. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations used for analysis, equivalence testing, and benchmarking; they do not define the RCS.
 
-The repository currently contains no retained legacy study results. Final publication outputs will be generated again only after code/protocol freeze and the planned complete execution on GCP.
+The complete scientific-validation and GPU-enabled GCP benchmark execution has been completed using the frozen code/protocol configuration. Retained publication tables and environment records are stored under `results/publication/`; transient benchmark workspaces are not retained.
 
 ## Package components
 
@@ -137,6 +137,25 @@ CUDA acceleration       = T_C++,sequential / T_CUDA
 
 No R-versus-Cython, R-versus-C++, C-reference-versus-C++, or other cross-language speedup is reported. See [`BENCHMARK_PROTOCOL.md`](BENCHMARK_PROTOCOL.md).
 
+## Retained publication results
+
+The completed publication run is retained under:
+
+```text
+results/publication/tables/
+results/publication/environment/
+```
+
+The retained benchmark quality-gate summary reports:
+
+- C-reference equivalence passed for every retained implementation/worker configuration;
+- 4,200/4,200 calibrated compute measurements passed the calibration floor;
+- 139/140 compute timing conditions were stable (99.3%; required minimum 90%);
+- 139/140 end-to-end timing conditions were stable (99.3%; diagnostic only);
+- all enforced quality gates passed.
+
+The retained scientific-validation outputs include the 6,000-profile synthetic cohort, combinatorial analyses, property-based checks, governance sensitivity, weight perturbation, analytical sensitivity, ablation analyses, and their derived summary tables.
+
 ## Output isolation and publication protection
 
 All scripts use one of three output scopes:
@@ -159,7 +178,7 @@ RCS_ALLOW_PUBLICATION_WRITE=TRUE \
 
 `RCS_OUTPUT_ROOT` can override the destination root for an isolated run. The **resolved** override path is checked against the protected `results/publication/` tree, so an override that points to that directory or any descendant still requires `RCS_ALLOW_PUBLICATION_WRITE=TRUE`, regardless of whether `RCS_RUN_SCOPE` is `local`, `smoke`, or `publication`.
 
-The future final GCP execution will populate `results/publication/` only after the repository passes the pre-publication audit. Until then, no existing file should be interpreted as a final study result.
+The final GCP execution was run under the frozen protocol and its audited retained outputs were promoted to `results/publication/`. The transient `.benchmark_work` workspace is intentionally excluded from the retained package.
 
 ## Figure generation
 
@@ -177,7 +196,7 @@ On Windows:
 scripts\generate_figures.cmd
 ```
 
-For a future retained publication run, figure generation must use the deliberately enabled publication scope. Plotting scripts read columns by header name and do not use a persistent `figure_source` cache. See [`FIGURE_STANDARD.md`](FIGURE_STANDARD.md).
+For retained publication figures, generation must use the deliberately enabled publication scope. Plotting scripts read columns by header name and do not use a persistent `figure_source` cache. See [`FIGURE_STANDARD.md`](FIGURE_STANDARD.md).
 
 ## Continuous integration
 
@@ -190,7 +209,7 @@ The GitHub Actions validation workflow performs:
 - regression checks that absolute or descendant `RCS_OUTPUT_ROOT` overrides cannot bypass publication protection;
 - verification that smoke runs do not modify repository publication/local output trees.
 
-The figure workflow uses CI-only schema fixtures in a temporary directory to validate Figures 2–7 without depending on retained scientific results. CUDA equivalence is not executed on the CPU-only hosted CI runner and will be exercised during the final GPU-enabled GCP run.
+The figure workflow uses CI-only schema fixtures in a temporary directory to validate Figures 2–7 without depending on retained scientific results. CUDA equivalence is not executed on the CPU-only hosted CI runner; it was exercised in the final GPU-enabled GCP run and is retained in `Table_Benchmark_Equivalence_Check.csv`.
 
 ## Repository structure
 
@@ -201,7 +220,7 @@ reference/               machine-readable SPREC/governance reference material
 scripts/                 validation, benchmark, requirement, and figure orchestration
 tests/                   deterministic C reference tests
 outputs/                 transient local/smoke outputs only
-results/publication/     protected destination for the future final retained run
+results/publication/     protected destination for final retained publication outputs
 .github/workflows/       clean-build, determinism, equivalence, and figure smoke CI
 ```
 

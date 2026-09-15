@@ -121,18 +121,18 @@ for table in "${required_tables[@]}"; do
 done
 
 mkdir -p "${figures_dir}"
+
+# Figure 1 is maintained with the manuscript, not generated here.
 rm -f "${figures_dir}/Figure_1.pdf" "${figures_dir}/Figure_1.png"
 
-read -r -a output_modes <<< "${OUTPUT_MODES:-pdf png}"
-for mode in "${output_modes[@]}"; do
-  if [[ "$mode" != "pdf" && "$mode" != "png" ]]; then
-    echo "Error: unsupported OUTPUT_MODES entry: $mode" >&2
-    exit 1
-  fi
-  for figure in 2 3 4 5 6 7; do
-    echo "Generating Figure_${figure}.${mode}"
-    gnuplot -e "OUTPUT_MODE='${mode}';TABLES_DIR='${tables_dir}';OUTPUT_DIR='${figures_dir}'" "scripts/gnuplot/Figure_${figure}.gp"
-  done
+# Final generated figures are PDF only. Remove stale PNGs from earlier runs.
+for figure in 2 3 4 5 6 7; do
+  rm -f "${figures_dir}/Figure_${figure}.png"
 done
 
-echo "Figures 2 through 7 generated from ${tables_dir}."
+for figure in 2 3 4 5 6 7; do
+  echo "Generating Figure_${figure}.pdf"
+  gnuplot -e "TABLES_DIR='${tables_dir}';OUTPUT_DIR='${figures_dir}'" "scripts/gnuplot/Figure_${figure}.gp"
+done
+
+echo "Figures 2 through 7 generated as PDF from ${tables_dir}."

@@ -1,6 +1,6 @@
 # RCS scientific validation protocol
 
-This protocol defines the executable scientific-validation analyses used in the RCS reproducibility package. It complements `SCIENTIFIC_SPECIFICATION.md`: the scientific rules are language-independent, the ISO C11 implementation is the computational reference, and the R scripts are an analysis harness used for deterministic validation experiments and summary generation.
+This protocol defines the executable scientific-validation analyses used in the RCS reproducibility package. It complements `SCIENTIFIC_SPECIFICATION.md`: the scientific rules are language-independent, the C11 reference implementation is the computational reference, and the R scripts are an analysis harness used for deterministic validation experiments and summary generation.
 
 The validation protocol is intentionally separated from performance benchmarking. Benchmark methodology is defined in `BENCHMARK_PROTOCOL.md`.
 
@@ -181,4 +181,4 @@ RCS_ALLOW_PUBLICATION_WRITE=TRUE
 
 `RCS_OUTPUT_ROOT` may be supplied to redirect a run to another isolated directory, including CI temporary directories. The resolved override path is validated against the protected `results/publication/` tree before any output directory is created. Therefore an override that resolves to `results/publication/` or any descendant is rejected unless `RCS_ALLOW_PUBLICATION_WRITE=TRUE`, even when `RCS_RUN_SCOPE` is `local` or `smoke`.
 
-The final GCP execution will be performed only after the repository code and validation protocol are frozen. Until that execution is completed and promoted, `results/publication/` must not be interpreted as containing final study results.
+The final scientific-validation execution was completed on GCP using the frozen code and validation protocol. The retained publication tables and environment records are stored under `results/publication/tables/` and `results/publication/environment/`. Transient execution workspaces are not part of the retained publication package.

@@ -1,7 +1,7 @@
 reset
 FIGURE_NAME = "Figure_3"
 FIGURE_WIDTH = 7.16
-FIGURE_HEIGHT = 3.35
+FIGURE_HEIGHT = 4.00
 load "scripts/gnuplot/ieee_access_style.gp"
 
 if (!exists("TABLES_DIR")) TABLES_DIR = "outputs/local/tables"
@@ -12,25 +12,29 @@ xpos(m,g) = grade_id(g) + (m eq "solid" ? 6 : 0)
 
 unset key
 set xrange [0.35:11.65]
-set yrange [0:0.60]
+set yrange [0:60]
+set lmargin 10.8
+set rmargin 1.4
+set bmargin 3.8
+set tmargin 2.2
 set boxwidth 0.72
 set style fill solid 0.92 border lc rgb "#FFFFFF"
 set xtics ("Grade A" 1, "Grade B" 2, "Grade C" 3, "Grade D" 4, "Grade E" 5, \
-           "Grade A" 7, "Grade B" 8, "Grade C" 9, "Grade D" 10, "Grade E" 11) font "Helvetica,8"
-set ytics ("0" 0, "10" 0.10, "20" 0.20, "30" 0.30, "40" 0.40, "50" 0.50, "60" 0.60)
-set ylabel "Proportion of admissible combinatorial profiles (%)" offset 0.8,0
+           "Grade A" 7, "Grade B" 8, "Grade C" 9, "Grade D" 10, "Grade E" 11) font "Sans,10"
+set ytics 0,10,60 font "Sans,10"
+set ylabel "Proportion of admissible combinatorial profiles (%)" offset 0.7,0 font "Sans,11"
 unset xlabel
 set grid ytics
 
-set label 100 "Fluid biospecimens" at graph 0.23,1.065 center font "Helvetica,10"
-set label 101 "Solid biospecimens" at graph 0.77,1.065 center font "Helvetica,10"
-set arrow 100 from first 6, graph 0 to first 6, graph 1 nohead dt 3 lw 0.65 lc rgb "#C8C8C8" back
+set label 100 "Fluid biospecimens" at first 3, first 56 center font "Sans,11"
+set label 101 "Solid biospecimens" at first 9, first 56 center font "Sans,11"
+set arrow 100 from first 6, first 0 to first 6, first 60 nohead dt 3 lw 0.65 lc rgb "#D0D0D0" back
 
-plot DATA every ::1 using (stringcolumn("matrix") eq "fluid" ? xpos(stringcolumn("matrix"),stringcolumn("final_grade")) : 1/0):(column("proportion")) \
+plot DATA every ::1 using (stringcolumn("matrix") eq "fluid" ? xpos(stringcolumn("matrix"),stringcolumn("final_grade")) : 1/0):(100.0*column("proportion")) \
          with boxes lc rgb "#4C78A8" notitle, \
-     DATA every ::1 using (stringcolumn("matrix") eq "solid" ? xpos(stringcolumn("matrix"),stringcolumn("final_grade")) : 1/0):(column("proportion")) \
+     DATA every ::1 using (stringcolumn("matrix") eq "solid" ? xpos(stringcolumn("matrix"),stringcolumn("final_grade")) : 1/0):(100.0*column("proportion")) \
          with boxes lc rgb "#D9822B" notitle, \
-     DATA every ::1 using (xpos(stringcolumn("matrix"),stringcolumn("final_grade"))):(column("proportion") + 0.025):(sprintf("%.1f",100.0*column("proportion"))."\nn=".sprintf("%d",int(column("n")))) \
-         with labels center font "Helvetica,8" tc rgb "#202020" notitle
+     DATA every ::1 using (xpos(stringcolumn("matrix"),stringcolumn("final_grade"))):(100.0*column("proportion") + 2.5):(sprintf("%.1f%%\nn=%d",100.0*column("proportion"),int(column("n")))) \
+         with labels center font "Sans,9" tc rgb "#202020" notitle
 
 unset output

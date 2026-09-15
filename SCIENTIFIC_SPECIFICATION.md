@@ -1,6 +1,6 @@
 # RCS scientific specification
 
-This document separates the scientific definition of the Ribeiro Classification Score (RCS) from any programming language used to implement it. The scientific rules are defined by the manuscript and its supplementary files. The ISO C11 implementation in this repository is the computational reference implementation of those rules. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations used for equivalence testing, validation analysis, and benchmarking.
+This document separates the scientific definition of the Ribeiro Classification Score (RCS) from any programming language used to implement it. The scientific rules are defined by the manuscript and its supplementary files. The C11 reference implementation in this repository is the computational reference implementation of those rules. R, Cython, C++, OpenMP, and CUDA implementations are secondary implementations used for equivalence testing, validation analysis, and benchmarking.
 
 ## Scientific precedence
 
@@ -82,7 +82,7 @@ When governance is not admissible, or when a SPREC condition is not scoreable, n
 
 ## Computational reference
 
-The computational reference is written in ISO C11 and is split into explicit layers:
+The computational reference is written in C11 and is split into explicit layers:
 
 ```text
 include/rcs_reference.h        / src/rcs_reference.c

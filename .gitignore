@@ -25,9 +25,10 @@ rcs_cuda
 .Rproj.user/
 .vscode/
 
-# Python state
+# Python/Cython state
 __pycache__/
 *.py[cod]
 .venv/
 .venv-benchmark/
 build/
+scripts/cython_kernel.c
