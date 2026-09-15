@@ -168,7 +168,25 @@ Exact timing values are hardware-specific. Reproduction is evaluated through
 equivalence, protocol adherence, quality-gate behaviour, and consistency of the
 reported analyses, not bitwise equality of elapsed times.
 
-## 9. Provenance
+## 9. Acknowledgments and AI-assisted preparation
+
+This material is based upon work supported by the Google Cloud Research Credits program with the award number 529423026.
+
+During preparation of the associated article and this reproducibility artifact,
+the authors used OpenAI ChatGPT and Codex solely to support grammatical review
+and limited textual corrections, LaTeX formatting troubleshooting,
+configuration of the Google Cloud execution environment, and assistance with
+software-testing agents and targeted corrections to validation and Gnuplot
+scripts. AI assistance affected language and LaTeX formatting throughout the
+manuscript and the supplementary artifact's environment-configuration
+instructions, automated tests, validation scripts, and Gnuplot scripts. The AI
+tools were not used to generate the synthetic data, execute or select the
+retained measurements, define the scientific method, interpret the results, or
+formulate the conclusions. All AI-assisted suggestions and code changes were
+reviewed, tested, and validated by the authors, who take full responsibility
+for the final content.
+
+## 10. Provenance
 
 - Publication benchmark-producing commit: `a6fd359d3ff41536cb4ec0424b0c4f82ffe4792f`.
 - Publication release-candidate base: `0584a4a9bd1402ebff8d6cb28325cdbfdc464b47`.
@@ -179,7 +197,7 @@ reported analyses, not bitwise equality of elapsed times.
   `results/publication/environment/`.
 - File integrity is verified by `SHA256SUMS`.
 
-## 10. Expected variability
+## 11. Expected variability
 
 Elapsed times, throughput, speedup, and confidence intervals may differ on other
 hardware. Deterministic scores, grades, routes, table schemas, and equivalence

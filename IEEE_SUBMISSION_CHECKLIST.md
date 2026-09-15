@@ -72,8 +72,8 @@ The repository cannot verify manuscript-only items such as the final IEEE templa
 - [ ] Confirm that no personal or patient data are present in the artifact.
 - [ ] Disclose the exclusive use of synthetic data in Methods and Data
       Availability.
-- [ ] Disclose AI-assisted content according to the current IEEE policy,
-      identifying the system, affected sections, and level of use when required.
+- [ ] Include the finalized AI-use disclosure in Acknowledgments, identify OpenAI ChatGPT and Codex, cite both systems, and identify the affected manuscript and supplementary-artifact sections.
+- [ ] Include the Google Cloud Research Credits acknowledgment exactly as supplied by the program.
 - [ ] Obtain approval from every author for authorship, order, and final files.
 
 ## Suggested Code and Data Availability statement
@@ -98,7 +98,34 @@ Replace `[ZENODO VERSION DOI]` only after Zenodo has minted the DOI.
 
 ## AI-use disclosure
 
-Draft the final acknowledgment from the actual use history. It must not claim
-that AI was used only for grammar if it also contributed text, figures, or code.
-The authors remain responsible for verifying every claim, reference, output, and
-submitted file.
+Use the following statement in the manuscript Acknowledgments section. Preserve
+the scope of use and cite the two systems using the manuscript's IEEE reference
+numbers in place of the citation keys shown here:
+
+> During preparation of this article and its reproducibility artifact, the
+> authors used OpenAI ChatGPT and Codex
+> `\\cite{openai_chatgpt,openai_codex}` solely to support grammatical review
+> and limited textual corrections, LaTeX formatting troubleshooting,
+> configuration of the Google Cloud execution environment, and assistance with
+> software-testing agents and targeted corrections to validation and Gnuplot
+> scripts. AI assistance affected language and LaTeX formatting throughout the
+> manuscript and the supplementary artifact's environment-configuration
+> instructions, automated tests, validation scripts, and Gnuplot scripts. The
+> AI tools were not used to generate the synthetic data, execute or select the
+> retained measurements, define the scientific method, interpret the results,
+> or formulate the conclusions. All AI-assisted suggestions and code changes
+> were reviewed, tested, and validated by the authors, who take full
+> responsibility for the final content.
+
+The affected manuscript sections must also cite the applicable AI system, as
+required by the current IEEE Access policy. The final reference entries should
+identify OpenAI as the organization, the system name, the online URL, and the
+actual access date.
+
+## Funding acknowledgment
+
+Include this statement verbatim in the manuscript Acknowledgments or funding
+information:
+
+> This material is based upon work supported by the Google Cloud Research
+> Credits program with the award number 529423026.
