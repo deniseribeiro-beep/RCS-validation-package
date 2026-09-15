@@ -42,11 +42,11 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
+          r-version: "4.3.3"
           use-public-rspm: true
 
       - name: Install scientific-validation R dependencies
-        run: |
-          Rscript -e 'install.packages(c("dplyr", "tidyr", "purrr", "readr", "stringr", "tibble"))'
+        run: Rscript scripts/install_r_dependencies.R
 
       - name: Check scientific-validation requirements
         run: Rscript scripts/00_check_environment.R scientific
@@ -155,12 +155,13 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
+          r-version: "4.3.3"
           use-public-rspm: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.12.3"
 
       - name: Configure Python for R subprocesses
         run: |
@@ -175,8 +176,8 @@ jobs:
 
       - name: Install benchmark dependencies
         run: |
-          Rscript -e 'install.packages(c("dplyr", "tidyr", "purrr", "readr", "stringr", "tibble"))'
-          python3 -m pip install numpy cython setuptools
+          Rscript scripts/install_r_dependencies.R
+          python3 -m pip install -r requirements-python.txt
 
       - name: Check benchmark requirements
         env:
@@ -248,3 +249,23 @@ jobs:
       - name: Verify benchmark smoke is isolated from repository outputs
         run: |
           test -z "$(git status --porcelain -- outputs results)"
+
+  release-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install PDF verification tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+          python3 -m pip install cffconvert==2.0.0
+
+      - name: Validate citation metadata
+        run: cffconvert --validate
+
+      - name: Verify release metadata, checksums, results, and PDFs
+        run: bash scripts/verify_release_artifact.sh
