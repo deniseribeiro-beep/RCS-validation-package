@@ -229,6 +229,24 @@ results/publication/     protected destination for final retained publication ou
 
 Root documentation includes `SCIENTIFIC_SPECIFICATION.md`, `SPREC_MAPPING.md`, `GOVERNANCE_MODEL.md`, `VALIDATION_PROTOCOL.md`, `BENCHMARK_PROTOCOL.md`, `FIGURE_STANDARD.md`, `ARTIFACT_EVALUATION.md`, `IEEE_SUBMISSION_CHECKLIST.md`, `ZENODO_RELEASE.md`, `CITATION.cff`, `CHANGELOG.md`, and `LICENSE`.
 
+## Acknowledgments and AI-assisted preparation
+
+This material is based upon work supported by the Google Cloud Research Credits program with the award number 529423026.
+
+During preparation of the associated article and this reproducibility artifact,
+the authors used OpenAI ChatGPT and Codex solely to support grammatical review
+and limited textual corrections, LaTeX formatting troubleshooting,
+configuration of the Google Cloud execution environment, and assistance with
+software-testing agents and targeted corrections to validation and Gnuplot
+scripts. AI assistance affected language and LaTeX formatting throughout the
+manuscript and the supplementary artifact's environment-configuration
+instructions, automated tests, validation scripts, and Gnuplot scripts. The AI
+tools were not used to generate the synthetic data, execute or select the
+retained measurements, define the scientific method, interpret the results, or
+formulate the conclusions. All AI-assisted suggestions and code changes were
+reviewed, tested, and validated by the authors, who take full responsibility
+for the final content.
+
 ## Artifact citation and integrity
 
 The repository is prepared for archival as Zenodo software release `v1.0.0`.
