@@ -6,7 +6,7 @@ the IEEE Author Portal.
 
 ## Repository and Zenodo readiness
 
-The following repository-controlled items have been verified on pull request #16:
+The following repository-controlled items have been verified on pull request #17:
 
 - [x] Public documentation and metadata are written in English.
 - [x] `CITATION.cff` and `.zenodo.json` contain the four authors in manuscript order.
@@ -15,7 +15,8 @@ The following repository-controlled items have been verified on pull request #16
 - [x] Source code, deterministic tests, reference material, retained tables, environment records, PDF figures, reviewer instructions, and checksums are present.
 - [x] The release verifier validates metadata, retained quality gates, checksums, one-page PDFs, and embedded fonts.
 - [x] GitHub Validation CI passed on the reviewed pull-request head before the final checklist update.
-- [ ] Merge pull request #16 and confirm the final Validation CI result.
+- [ ] Merge pull request #17 into `main`.
+- [ ] Confirm Validation CI completed successfully on the exact resulting `main` commit before creating tag `v1.0.0`.
 - [ ] Run the final release-candidate checks listed in `ZENODO_RELEASE.md`.
 - [ ] Publish GitHub release `v1.0.0` and verify the resulting Zenodo record.
 - [ ] Insert the minted Zenodo version DOI in the manuscript and IEEE supplementary-material entry.
