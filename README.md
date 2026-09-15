@@ -232,8 +232,12 @@ Root documentation includes `SCIENTIFIC_SPECIFICATION.md`, `SPREC_MAPPING.md`, `
 ## Artifact citation and integrity
 
 The repository is prepared for archival as Zenodo software release `v1.0.0`.
-After Zenodo mints the DOI, cite the DOI shown on the archived release and add it
-to `CITATION.cff` on the next development commit. Do not modify the archived tag.
+The GitHub-Zenodo integration mints the version DOI only after archiving the
+release. Therefore, the immutable `v1.0.0` tag cannot contain its own DOI. After
+Zenodo mints it, cite the DOI shown on the archived record and add the version
+DOI and concept DOI badge to the moving `main` branch. Do not modify the
+archived tag. A later release is required only if the updated metadata must also
+be preserved inside a new immutable source archive.
 
 Verify the retained publication artifact with:
 
