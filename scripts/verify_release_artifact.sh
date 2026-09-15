@@ -28,7 +28,14 @@ grep -Fq 'version: "1.0.0"' CITATION.cff
 grep -Fq 'A Governance-Aware Rule-Based Computational Method' README.md
 grep -Fq 'A Governance-Aware Rule-Based Computational Method' ARTIFACT_EVALUATION.md
 
-sha256sum --check SHA256SUMS
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256sum --check SHA256SUMS
+elif command -v shasum >/dev/null 2>&1; then
+  shasum -a 256 --check SHA256SUMS
+else
+  echo "No SHA-256 checksum utility found. Install sha256sum or use the macOS shasum utility." >&2
+  exit 1
+fi
 
 python3 - <<'PY'
 import csv
