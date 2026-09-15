@@ -1,0 +1,30 @@
+{
+  "title": "Ribeiro Classification Score validation package",
+  "description": "Versioned reproducibility artifact for A Governance-Aware Rule-Based Computational Method for Biospecimen Qualification in Biobank Information Systems. The package contains the C11 computational reference implementation, deterministic tests, synthetic validation, within-language benchmarks, retained publication tables, environment records, and vector figures.",
+  "upload_type": "software",
+  "publication_date": "2026-09-15",
+  "version": "1.0.0",
+  "license": "MIT",
+  "access_right": "open",
+  "creators": [
+    {"name": "Ribeiro, Denise"},
+    {"name": "Andrijauskas, Fabio"},
+    {"name": "de Carvalho, Lucas Miguel"},
+    {"name": "Becerra Sablon, Vicente Idalberto"}
+  ],
+  "keywords": [
+    "biospecimen qualification",
+    "biobank information systems",
+    "Ribeiro Classification Score",
+    "SPREC",
+    "computational reproducibility",
+    "governance"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/deniseribeiro-beep/RCS-validation-package",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
