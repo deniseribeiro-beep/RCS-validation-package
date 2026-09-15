@@ -10,14 +10,15 @@ Zenodo landing page and citation exports contain the DOI.
 
 Complete every item before creating the tag:
 
-- [ ] Merge pull request #16 into `main`.
-- [ ] Confirm all GitHub Actions checks are green on the reviewed pull-request head.
+- [ ] Merge pull request #17 into `main`.
+- [ ] Record the exact resulting merge commit SHA from `main`.
+- [ ] Confirm that Validation CI triggered by the push to `main` completed successfully for that exact merge commit.
 - [ ] Confirm the repository is public and enabled in the Zenodo GitHub integration.
 - [ ] Confirm `CITATION.cff` and `.zenodo.json` contain the same four authors, in the manuscript order, with verified ORCIDs.
 - [ ] Confirm the title, version `1.0.0`, MIT license, English language, description, keywords, and open-access status in `.zenodo.json`.
 - [ ] Confirm `LICENSE`, `README.md`, `CHANGELOG.md`, `ARTIFACT_EVALUATION.md`, `SHA256SUMS`, source code, tests, retained tables, environment records, and Figures 2-7 are present.
 - [ ] Confirm all public-facing documentation, metadata, code comments, table headers, and figure labels are in English.
-- [ ] In a clean clone of the reviewed `main`, run `bash scripts/verify_release_artifact.sh`.
+- [ ] In a clean clone checked out at that exact validated `main` commit, run `bash scripts/verify_release_artifact.sh`.
 - [ ] Confirm the manuscript title, author order, affiliations, and ORCIDs match the repository metadata and the IEEE Author Portal.
 - [ ] Confirm no patient, participant, personal, secret, credential, transient workspace, or untracked benchmark file is included.
 
@@ -26,14 +27,16 @@ The `doi` field is not required when Zenodo is expected to mint the DOI.
 
 ## Create the immutable release
 
-1. Open the reviewed `main` commit on GitHub.
-2. Create the tag `v1.0.0` from that exact commit.
-3. Create the GitHub release `v1.0.0` from the tag.
-4. Use the release notes provided below.
-5. Publish the GitHub release.
-6. Wait for Zenodo to archive the release.
-7. Open the Zenodo record and verify its files and metadata before using the DOI.
-8. Record both identifiers:
+1. Merge pull request #17 into `main`.
+2. Wait for Validation CI to complete successfully on the exact resulting `main` commit.
+3. Record and verify that commit SHA.
+4. From a clean clone of that exact commit, run `bash scripts/verify_release_artifact.sh`.
+5. Create the tag `v1.0.0` from that exact validated commit.
+6. Create the GitHub release `v1.0.0` from the tag.
+7. Use the release notes provided below and publish the GitHub release.
+8. Wait for Zenodo to archive the release.
+9. Open the Zenodo record and verify its files and metadata before using the DOI.
+10. Record both identifiers:
    - the **version DOI**, which identifies only `v1.0.0`;
    - the **concept DOI**, which resolves to the latest Zenodo version.
 
