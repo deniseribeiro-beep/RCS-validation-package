@@ -29,9 +29,9 @@ set ylabel "Median elapsed time (s)" offset 0.6,0 font "Sans,11"
 set key top left horizontal opaque nobox font "Sans,10"
 set label 100 "A. C reference batch elapsed time" at graph 0.0,1.075 left font "Sans,11"
 plot DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "compute") ? workload_id(column("n_records")) : 1/0):(column("median_elapsed_sec")):(column("median_ci95_low_sec")):(column("median_ci95_high_sec")) \
-         with yerrorlines ls 1 title "Compute", \
+         with yerrorlines ls 1 title "Compute only", \
      DATA every ::1 using ((stringcolumn("language_family") eq "C reference" && stringcolumn("implementation") eq "c_reference" && stringcolumn("timing_region") eq "end_to_end") ? workload_id(column("n_records")) : 1/0):(column("median_elapsed_sec")):(column("median_ci95_low_sec")):(column("median_ci95_high_sec")) \
-         with yerrorlines ls 2 title "End-to-end"
+         with yerrorlines ls 2 title "End-to-end pipeline"
 unset label 100
 
 # B. Per-profile computational cost.

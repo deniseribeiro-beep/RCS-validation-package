@@ -17,7 +17,7 @@ workload_id(n) = n == 10000 ? 1 : \
 
 set xrange [0.6:7.4]
 set xtics ("10k" 1, "50k" 2, "100k" 3, "500k" 4, "1M" 5, "2M" 6, "5M" 7) font "Sans,10"
-set grid ytics
+set grid xtics ytics back linewidth 0.8 dashtype 1 linecolor rgb "#403b3b"
 
 # Scientific-role clarification: the C implementation is the computational
 # correctness/equivalence reference. Per the frozen benchmark protocol, CUDA
