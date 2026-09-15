@@ -4,7 +4,7 @@
 
 **Associated article:** *A Governance-Aware Rule-Based Computational Method for Biospecimen Qualification in Biobank Information Systems*
 
-**Authors:** Denise Ribeiro; Fabio Andrijauskas; Lucas Miguel de Carvalho; Vicente Idalberto Becerra Sablon.
+**Authors:** Denise Ribeiro; Fábio Andrijauskas; Lucas Miguel de Carvalho; Vicente Idalberto Becerra Sablón.
 
 This artifact supports the computational claims of the article. It contains the
 C11 computational reference implementation of the Ribeiro Classification Score
