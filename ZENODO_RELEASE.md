@@ -1,34 +1,54 @@
 # Zenodo publication procedure
 
-## Before creating the DOI
+This procedure assumes the official GitHub-Zenodo integration. With this
+integration, Zenodo creates the version DOI only after GitHub publishes the
+release. Consequently, the immutable `v1.0.0` source archive cannot contain its
+own DOI. This is expected and does not make the archived record incomplete: the
+Zenodo landing page and citation exports contain the DOI.
 
-1. Merge the release-readiness pull request into `main`.
-2. Confirm all GitHub Actions checks are green on the merge commit.
-3. Confirm `git status --short` is empty in a clean clone.
-4. Run `bash scripts/verify_release_artifact.sh`.
-5. Confirm the manuscript title and author order match `CITATION.cff`,
-   `.zenodo.json`, `README.md`, and `ARTIFACT_EVALUATION.md`.
-6. Add verified ORCID identifiers and affiliations to the Zenodo deposit. Do not
-   guess or infer these identifiers.
+## Release candidate checklist
 
-## Create the archived release
+Complete every item before creating the tag:
 
-1. Connect the GitHub repository to Zenodo.
-2. Enable archiving for `RCS-validation-package`.
-3. Create the annotated tag `v1.0.0` on the reviewed `main` commit.
-4. Create the GitHub release `v1.0.0` from that tag.
-5. Allow Zenodo to archive the release and mint the version DOI.
-6. Record both the version DOI and Zenodo concept DOI.
+- [ ] Merge pull request #16 into `main`.
+- [ ] Confirm all GitHub Actions checks are green on the reviewed pull-request head.
+- [ ] Confirm the repository is public and enabled in the Zenodo GitHub integration.
+- [ ] Confirm `CITATION.cff` and `.zenodo.json` contain the same four authors, in the manuscript order, with verified ORCIDs.
+- [ ] Confirm the title, version `1.0.0`, MIT license, English language, description, keywords, and open-access status in `.zenodo.json`.
+- [ ] Confirm `LICENSE`, `README.md`, `CHANGELOG.md`, `ARTIFACT_EVALUATION.md`, `SHA256SUMS`, source code, tests, retained tables, environment records, and Figures 2-7 are present.
+- [ ] Confirm all public-facing documentation, metadata, code comments, table headers, and figure labels are in English.
+- [ ] In a clean clone of the reviewed `main`, run `bash scripts/verify_release_artifact.sh`.
+- [ ] Confirm the manuscript title, author order, affiliations, and ORCIDs match the repository metadata and the IEEE Author Portal.
+- [ ] Confirm no patient, participant, personal, secret, credential, transient workspace, or untracked benchmark file is included.
 
-## After Zenodo mints the DOI
+Do not add a guessed, placeholder, or pre-reserved DOI to `.zenodo.json`.
+The `doi` field is not required when Zenodo is expected to mint the DOI.
 
-1. Add the version DOI to `CITATION.cff` under `doi`.
-2. Add the DOI badge and citation to `README.md`.
-3. Add the Zenodo identifier to `.zenodo.json` only if required for the next
-   release; do not retroactively alter the archived `v1.0.0` tag.
-4. Cite the version DOI in the manuscript's Data and Code Availability section.
-5. Upload the repository URL and DOI with the supplementary/reproducibility
-   material in the IEEE submission system.
+## Create the immutable release
+
+1. Open the reviewed `main` commit on GitHub.
+2. Create the tag `v1.0.0` from that exact commit.
+3. Create the GitHub release `v1.0.0` from the tag.
+4. Use the release notes provided below.
+5. Publish the GitHub release.
+6. Wait for Zenodo to archive the release.
+7. Open the Zenodo record and verify its files and metadata before using the DOI.
+8. Record both identifiers:
+   - the **version DOI**, which identifies only `v1.0.0`;
+   - the **concept DOI**, which resolves to the latest Zenodo version.
+
+## DOI handling after archiving
+
+1. Use the **version DOI** in the manuscript's Code and Data Availability statement and in the IEEE supplementary-material record.
+2. Add the Zenodo DOI badge, version DOI, and concept DOI to the moving `main` branch.
+3. Add the version DOI to `CITATION.cff` on the moving `main` branch.
+4. Do not rewrite, move, delete, or recreate the archived `v1.0.0` tag.
+5. Do not create `v1.0.1` merely to place the DOI inside a source archive. Create a later release only for a real metadata, documentation, code, or artifact correction.
+6. For a later release, update its version metadata and allow Zenodo to mint a new version DOI under the same concept DOI.
+
+## Suggested GitHub release title
+
+`RCS validation package v1.0.0`
 
 ## Suggested GitHub release text
 
